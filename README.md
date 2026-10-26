@@ -165,6 +165,17 @@ PostgreSQL service (`DATABASE_URL` is injected), and set
 `collectstatic` at build and the `Procfile` release phase runs migrations
 before the new version takes traffic. Healthcheck: `/healthz`.
 
+The release phase also runs `seed_demo_data`, which creates one superuser
+(`admin@heliograph.agency`) and one active example client
+(`client@example.com`) if they don't already exist, and prints their
+generated passwords to the release log — read them from the Railway
+deployment's log once, since they are never stored anywhere. Safe to
+leave in place; it does nothing on later deploys once both accounts
+exist. Override the addresses with `--admin-email`/`--client-email`
+arguments if you edit the Procfile, or create accounts yourself with
+`manage.py createsuperuser` instead and drop the command from the release
+line.
+
 ## Messaging
 
 This version sends nothing outbound — no email, SMS or WhatsApp. Every
