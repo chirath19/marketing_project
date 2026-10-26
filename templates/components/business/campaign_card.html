@@ -1,0 +1,42 @@
+{% load ui %}
+{% comment %}
+  A campaign as a card, for narrow screens and dashboard summaries; the
+  same data appears as a table row on wider list pages.
+{% endcomment %}
+<article class="surface relative flex flex-col gap-3 p-5 transition hover:shadow-raised">
+  <div class="flex items-start justify-between gap-3">
+    <div class="min-w-0">
+      <p class="t-eyebrow">{% if campaign.module_label %}{{ campaign.module_label }}{% else %}{{ campaign.service }}{% endif %}</p>
+      <h3 class="mt-1 t-card-title">
+        {% if href %}<a href="{{ href }}" class="focus-ring after:absolute after:inset-0">{{ campaign.name }}</a>
+        {% else %}{{ campaign.name }}{% endif %}
+      </h3>
+    </div>
+    {% ui_status_badge campaign.status %}
+  </div>
+
+  {% if campaign.result_summary %}
+    <p class="t-body">{{ campaign.result_summary }}</p>
+  {% endif %}
+
+  <dl class="flex flex-wrap items-baseline gap-x-6 gap-y-1 border-t border-mist pt-3">
+    {% if campaign.spend_display %}
+      <div class="flex items-baseline gap-1.5">
+        <dt class="t-micro">Spend</dt>
+        <dd class="text-sm font-semibold text-navy t-numeric">{{ campaign.spend_display }}</dd>
+      </div>
+    {% endif %}
+    {% if campaign.start_date %}
+      <div class="flex items-baseline gap-1.5">
+        <dt class="t-micro">Starts</dt>
+        <dd class="text-sm text-navy">{{ campaign.start_date }}</dd>
+      </div>
+    {% endif %}
+    {% if campaign.owner %}
+      <div class="flex items-baseline gap-1.5">
+        <dt class="t-micro">Owner</dt>
+        <dd class="text-sm text-navy">{{ campaign.owner }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+</article>

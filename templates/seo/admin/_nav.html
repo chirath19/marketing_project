@@ -1,0 +1,19 @@
+{% comment %}
+  The sections of one client's SEO workspace, shared by every page under
+  it. `section` says which is current; it comes from the view so a page
+  and its tab can never disagree.
+{% endcomment %}
+<nav class="-mx-1 mt-1 overflow-x-auto" aria-label="SEO sections">
+  <ul class="flex min-w-max items-center gap-1 px-1">
+    <li><a href="{% url 'staff:seo_workspace' organization.slug %}" {% if section == 'overview' %}aria-current="page"{% endif %}
+           class="inline-flex whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring {% if section == 'overview' %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Overview</a></li>
+    <li><a href="{% url 'staff:seo_audits' organization.slug %}" {% if section == 'audits' %}aria-current="page"{% endif %}
+           class="inline-flex whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring {% if section == 'audits' %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Audits</a></li>
+    <li><a href="{% url 'staff:seo_keywords' organization.slug %}" {% if section == 'keywords' %}aria-current="page"{% endif %}
+           class="inline-flex whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring {% if section == 'keywords' %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Keywords</a></li>
+    <li><a href="{% url 'staff:seo_tasks' organization.slug %}" {% if section == 'tasks' %}aria-current="page"{% endif %}
+           class="inline-flex whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring {% if section == 'tasks' %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Work</a></li>
+    <li><a href="{% url 'staff:seo_backlinks' organization.slug %}" {% if section == 'links' %}aria-current="page"{% endif %}
+           class="inline-flex whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring {% if section == 'links' %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Links</a></li>
+  </ul>
+</nav>

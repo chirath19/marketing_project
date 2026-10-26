@@ -1,0 +1,69 @@
+# Local stack: PostgreSQL plus the Django application.
+#
+#   docker compose up --build     → http://localhost:8000
+#
+# The database is the same major version Railway runs, so local behaviour
+# matches production.
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: heliograph_db
+    environment:
+      POSTGRES_DB: heliograph
+      POSTGRES_USER: heliograph
+      POSTGRES_PASSWORD: heliograph
+    ports:
+      # Exposed so host tooling (psql, a GUI, the test suite run outside
+      # the container) can still reach it.
+      - "5432:5432"
+    volumes:
+      - heliograph_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U heliograph -d heliograph"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    container_name: heliograph_web
+    # The dev server, for the auto-reload that makes the mounted source
+    # below worth having. The image's own CMD is gunicorn, which is what
+    # production uses.
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env
+    environment:
+      # Real environment variables take precedence over .env (django-environ
+      # reads it with setdefault), so these override the host-oriented
+      # values without the file needing to change.
+      DATABASE_URL: postgres://heliograph:heliograph@db:5432/heliograph
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0,[::1],web
+      DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost:8000,http://127.0.0.1:8000
+      # The container talks to the database over the compose network, not
+      # through a proxy, so a forwarded-for header here would be spoofable.
+      DJANGO_TRUST_PROXY_HEADERS: "False"
+    volumes:
+      # Source mounted for live editing. Named volumes mask the build
+      # artefacts so a host directory cannot shadow them.
+      - .:/app
+      - /app/staticfiles
+      - /app/mediafiles
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+volumes:
+  heliograph_pgdata:

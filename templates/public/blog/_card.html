@@ -1,0 +1,41 @@
+{% load media_tags %}
+{% comment %}
+  One post in a listing. The whole card is a link target via the
+  stretched pseudo-element, so the tap area on a phone is the card rather
+  than just the title.
+
+  `featured` makes the first post on a listing run wide, with its image
+  beside the text instead of above it — a page of identical cards tells
+  the reader nothing about where to start.
+{% endcomment %}
+<article class="site-cell site-blog-card group h-full p-0
+                {% if featured %}site-cell-featured {% endif %}">
+  {% if post.featured_image %}
+    <div class="site-zoom overflow-hidden {% if featured %}{% endif %}">
+      {% media_img post.featured_image alt=post.featured_image_alt preset="card" css_class="h-full w-full object-cover aspect-[16/10]" sizes="(min-width: 1024px) 33vw, 100vw" %}
+    </div>
+  {% else %}<div class="site-blog-art {% if featured %}{% endif %}" aria-hidden="true"><span>{{ site.site_name }} / Journal</span></div>
+  {% endif %}
+
+  <div class="flex flex-1 flex-col p-6 {% if featured %}sm:p-8{% endif %}">
+    {% if post.category %}
+      <p class="site-index site-index-invert">{{ post.category.name|upper }}</p>
+    {% endif %}
+
+    <h2 class="mt-3 font-semibold tracking-tight transition-colors
+               text-white group-hover:text-gold-300 {% if featured %}site-display text-3xl font-normal leading-tight{% else %}text-lg leading-snug{% endif %}">
+      <a href="{{ post.get_absolute_url }}" class="focus-ring after:absolute after:inset-0">{{ post.title }}</a>
+    </h2>
+
+    <p class="site-body mt-3 flex-1 text-white/70">
+      {% if featured %}{{ post.summary|truncatechars:200 }}{% else %}{{ post.summary|truncatechars:140 }}{% endif %}
+    </p>
+
+    <p class="site-micro mt-6 flex flex-wrap items-center gap-x-2 text-white/60">
+      {% if post.byline %}<span>{{ post.byline }}</span><span aria-hidden="true">·</span>{% endif %}
+      <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"j M Y" }}</time>
+      <span aria-hidden="true">·</span>
+      <span>{{ post.reading_minutes }} min read</span>
+    </p>
+  </div>
+</article>

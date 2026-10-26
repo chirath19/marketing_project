@@ -1,0 +1,350 @@
+{% extends "public/base_site.html" %}
+{% load website_copy pricing %}
+{% load ui media_tags %}
+
+{% block title %}{{ meta_title }} · {{ site.site_name }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block og_title %}{{ meta_title }}{% endblock %}
+{% block og_description %}{{ meta_description }}{% endblock %}
+{% block og_image %}
+  {% if service.image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ service.image.url }}">{% endif %}
+{% endblock %}
+
+{% block head_extra %}
+  {{ block.super }}
+  {% comment %}
+    Product structured data, built from the same fields the page shows,
+    so the price a search engine reads cannot drift from the price a
+    visitor sees. Omitted entirely for a custom quote — stating a price
+    we do not have would be worse than stating none.
+  {% endcomment %}
+  {% if service|public_price:operating and service.price %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "{{ service.name|escapejs }}",
+    "description": "{{ service.short_description|escapejs }}",
+    "provider": {"@type": "Organization", "name": "{{ site.site_name|escapejs }}"},
+    "offers": {
+      "@type": "Offer",
+      "price": "{{ service.price }}",
+      "priceCurrency": "{{ service.currency }}"
+    }
+  }
+  </script>
+  {% endif %}
+{% endblock %}
+
+{% block site_art %}{% include "public/_backgrounds.html" with art="service" %}{% endblock %}
+
+{% block content %}
+{% comment %}
+  The masthead is light, like the rest of the site: dark is spent on the
+  cards, the closing band and the footer. The page's own artwork shows
+  through it, which is what distinguishes a service page from the
+  catalogue it was reached from.
+{% endcomment %}
+<header class="site-detail-header site-clear relative">
+  <div class="site-shell relative py-14 sm:py-20">
+    <nav aria-label="Breadcrumb">
+      <ol class="flex flex-wrap items-center gap-x-2 text-sm text-steel-700">
+        <li><a href="{% url 'public:services' %}" class="transition hover:text-teal focus-ring">{% website_copy "public.catalog.detail.001" %}</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="{{ service.category.get_absolute_url }}" class="transition hover:text-teal focus-ring">{{ service.category.name }}</a></li>
+      </ol>
+    </nav>
+
+    {% comment %}
+      The photograph belongs here, beside the name, not two screens down
+      the page: it is what tells a buyer in one glance what the service
+      actually produces. A service without one keeps the full-width
+      masthead rather than leaving a gap where a picture would go.
+    {% endcomment %}
+    <div class="mt-8 grid gap-10 lg:grid-cols-12 lg:items-center">
+      <div class="{% if service.image %}lg:col-span-6{% else %}lg:col-span-8{% endif %}">
+        <p class="site-label">{{ service.category.name }}</p>
+        <h1 class="site-display site-h2 mt-5 text-navy">{{ service.name }}</h1>
+        <p class="site-lead mt-5 text-steel-700">{{ service.short_description }}</p>
+      </div>
+      {% if service.image %}
+        <div class="lg:col-span-6">
+          <div class="site-frame site-frame-tick site-detail-shot" data-reveal="mask">
+            {% media_img service.image alt=service.image_alt preset="wide" css_class="w-full" loading="eager" fetchpriority="high" sizes="(min-width: 1024px) 46vw, 100vw" %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<div class="site-section site-clear">
+  <div class="site-shell site-detail-grid grid gap-12 lg:grid-cols-12 lg:gap-16">
+    <div class="lg:col-span-7 xl:col-span-8">
+      {% if service.paragraphs %}
+        <div class="site-prose max-w-2xl" data-reveal>
+          {% for paragraph in service.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}
+        </div>
+      {% endif %}
+
+      {% if service.ideal_for_lines %}
+        <section class="mt-14" data-reveal>
+          <h2 class="site-display text-2xl text-navy">{% website_copy "public.catalog.detail.002" %}</h2>
+          <ul class="mt-6 max-w-2xl">
+            {% for line in service.ideal_for_lines %}
+              <li class="flex gap-4 border-t border-navy/8 py-3.5">
+                <span class="site-index pt-1">{{ forloop.counter|stringformat:"02d" }}</span>
+                <span class="site-body text-navy/80">{{ line }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endif %}
+
+      {% if features and not comparison %}
+        <section class="mt-14" data-reveal>
+          <h2 class="site-display text-2xl text-navy">{% website_copy "public.catalog.detail.003" %}</h2>
+          <ul class="mt-6 grid max-w-3xl gap-x-8 sm:grid-cols-2">
+            {% for feature in features %}
+              <li class="flex gap-3 border-t border-navy/8 py-3.5">
+                <span class="mt-1 text-gold-700" aria-hidden="true">{% website_copy "public.catalog.detail.004" %}</span>
+                <span>
+                  <span class="site-body font-medium text-navy">{{ feature.label }}</span>
+                  {% if feature.description %}<span class="site-micro mt-0.5 block text-steel-700">{{ feature.description }}</span>{% endif %}
+                </span>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endif %}
+
+      {% if service.deliverable_lines %}
+        <section class="mt-14" data-reveal>
+          <h2 class="site-display text-2xl text-navy">{% website_copy "public.catalog.detail.005" %}</h2>
+          <p class="site-micro mt-2 text-steel-700">{% website_copy "public.catalog.detail.006" %}</p>
+          <ul class="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+            {% for line in service.deliverable_lines %}
+              <li class="site-cell site-spot p-5">
+                <div class="flex gap-3">
+                  <span class="mt-0.5 text-gold" aria-hidden="true">{% website_copy "public.catalog.detail.007" %}</span>
+                  <span class="site-body text-white/80">{{ line }}</span>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endif %}
+
+      {% if service.process_steps %}
+        <section class="mt-14" data-reveal>
+          <h2 class="site-display text-2xl text-navy">{% website_copy "public.catalog.detail.008" %}</h2>
+          <ol class="mt-6 max-w-2xl">
+            {% for step in service.process_steps %}
+              <li class="flex gap-6 border-t border-navy/8 py-5">
+                <span class="site-display site-numeric w-10 shrink-0 text-2xl text-gold-700" aria-hidden="true">
+                  {{ forloop.counter|stringformat:"02d" }}
+                </span>
+                <span class="site-body text-navy/80">{{ step }}</span>
+              </li>
+            {% endfor %}
+          </ol>
+        </section>
+      {% endif %}
+
+      {% if service.reporting %}
+        <section class="mt-14" data-reveal>
+          <h2 class="site-display text-2xl text-navy">{% website_copy "public.catalog.detail.009" %}</h2>
+          <p class="site-body mt-4 max-w-2xl text-navy/80">{{ service.reporting }}</p>
+          <p class="site-micro mt-3 max-w-2xl text-steel-700">{% website_copy "public.catalog.detail.010" %}</p>
+        </section>
+      {% endif %}
+
+      {% if faqs %}
+        <section class="mt-16" data-reveal>
+          <h2 class="site-display text-2xl text-navy">{% website_copy "public.catalog.detail.011" %}</h2>
+          <div class="mt-6 max-w-3xl border-t border-navy/10">
+            {% for faq in faqs %}
+              <details class="site-faq">
+                <summary class="focus-ring">
+                  {{ faq.question }}
+                  <span class="site-faq-sign" aria-hidden="true"></span>
+                </summary>
+                <div class="site-faq-body site-prose max-w-2xl"><p>{{ faq.answer }}</p></div>
+              </details>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+    </div>
+
+    {% comment %} The price and the one action that matters, kept in view. {% endcomment %}
+    <aside class="lg:col-span-5 xl:col-span-4">
+      <div class="lg:sticky lg:top-28">
+        <div class="site-cell site-price-panel overflow-hidden p-7">
+          <span class="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-gold-600 via-gold to-transparent" aria-hidden="true"></span>
+
+{% if service|public_price:operating %}          <p class="site-index site-index-invert">{% if service.billing_display %}{{ service.billing_display|upper }}{% else %}PRICE{% endif %}</p>
+          <p class="site-display site-numeric mt-3 text-5xl text-white">{{ service.price_display }}</p>
+          {% if packages %}<p class="site-micro mt-2 text-white/75">{% website_copy "public.catalog.detail.012" %}</p>{% endif %}
+{% else %}<p class="site-label text-white/75">{% website_copy "public.catalog.detail.013" %}</p><h2 class="site-display text-3xl text-white mt-4">{% website_copy "public.catalog.detail.014" %}</h2><p class="site-micro text-white/75 mt-3">{% website_copy "public.catalog.detail.015" %}</p>{% endif %}
+
+          {% if service.can_request_quote %}
+            {% include "public/catalog/_quote_add.html" with package="" button_class="site-btn-primary site-btn-block site-btn-lg" form_class="mt-7" %}
+            <p class="site-micro mt-4 text-white/75">
+              Adding it does not commit you to anything — you can change the
+              selection before you send it.{% if site.response_time_note %} {{ site.response_time_note }}{% endif %}
+            </p>
+          {% else %}
+            <p class="site-body mt-6 text-white/75">{% website_copy "public.catalog.detail.016" %}<a href="{% url 'public:contact_form' %}" class="site-link site-link-invert text-sm focus-ring">{% website_copy "public.catalog.detail.017" %}</a>.
+            </p>
+          {% endif %}
+        </div>
+
+        {% if addons %}
+          <div class="site-card-static mt-5 p-7">
+            <h2 class="site-index">{% website_copy "public.catalog.detail.018" %}</h2>
+            <ul class="mt-4">
+              {% for addon in addons %}
+                <li class="border-t border-navy/8 py-3.5 first:border-t-0 first:pt-0">
+                  <p class="site-body font-medium text-navy">{{ addon.name }}</p>
+                  {% if addon.short_description %}<p class="site-micro mt-0.5 text-steel-700">{{ addon.short_description }}</p>{% endif %}
+                  {% if addon|public_price:operating %}<p class="site-micro site-numeric mt-1.5 font-semibold text-navy">{{ addon.price_display }} {{ addon.billing_display }}</p>{% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+
+{% if comparison %}
+  <section class="site-section site-band">
+    <div class="site-shell">
+      <header class="grid gap-x-10 gap-y-6 lg:grid-cols-12 lg:items-end">
+        <div class="lg:col-span-7">
+          <p class="site-label">{% website_copy "public.catalog.detail.019" %}</p>
+          <h2 class="site-display site-h2 mt-5" data-reveal>{% website_copy "public.catalog.detail.020" %}</h2>
+        </div>
+        <p class="site-body text-steel-700 lg:col-span-5 lg:pb-2">{% website_copy "public.catalog.detail.021" %}</p>
+      </header>
+      <hr class="site-rule mt-10">
+
+      <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {% for package in comparison.packages %}
+          <div class="site-cell site-spot flex flex-col {% if package.is_recommended %}site-cell-featured{% endif %}"
+               data-reveal style="--reveal-step: {% cycle '0' '1' '2' %}">
+            {% if package.is_recommended %}
+              <span class="site-tag site-tag-gold self-start">{% website_copy "public.catalog.detail.022" %}</span>
+            {% endif %}
+            <h3 class="{% if package.is_recommended %}mt-4{% endif %} text-lg font-semibold tracking-tight text-white">{{ package.name }}</h3>
+            {% if package.summary %}<p class="site-micro mt-2 text-white/70">{{ package.summary }}</p>{% endif %}
+
+            {% if package|public_price:operating %}<p class="site-display site-numeric mt-6 text-4xl text-white">{{ package.price_display }}</p>
+            {% if package.billing_display %}<p class="site-micro mt-1 text-white/60">{{ package.billing_display }}</p>{% endif %}{% endif %}
+
+            {% if service.can_request_quote %}
+              {% include "public/catalog/_quote_add.html" with package=package button_class="site-btn-light site-btn-block" form_class="mt-auto pt-7" %}
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      {% comment %}
+        The matrix scrolls sideways on a narrow screen rather than
+        stacking — a comparison that cannot be seen side by side is not a
+        comparison. The hint below is shown only where the scroll is
+        actually needed, because an off-screen column nobody knows about
+        is the same as a column that is not there.
+      {% endcomment %}
+      <p class="site-micro mt-10 text-steel-700 sm:hidden" aria-hidden="true">{% website_copy "public.catalog.detail.023" %}</p>
+      <div class="site-card-static mt-3 overflow-x-auto p-2 sm:mt-12 sm:p-5">
+        <table class="w-full min-w-[32rem] border-collapse text-left">
+          <caption class="sr-only">{% website_copy "public.catalog.detail.024" %}</caption>
+          <thead>
+            <tr class="border-b border-navy/10">
+              <th scope="col" class="site-index px-4 py-4">{% website_copy "public.catalog.detail.025" %}</th>
+              {% for package in comparison.packages %}
+                <th scope="col" class="site-index px-4 py-4 text-center">{{ package.name|upper }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in comparison.rows %}
+              <tr class="border-b border-navy/6 last:border-0">
+                <th scope="row" class="px-4 py-3.5 text-sm font-medium text-navy">{{ row.feature.label }}</th>
+                {% for cell in row.cells %}
+                  <td class="px-4 py-3.5 text-center text-sm text-navy/80">
+                    {% if cell.value %}
+                      {{ cell.value }}
+                    {% elif cell.included %}
+                      <span class="text-live" aria-hidden="true">{% website_copy "public.catalog.detail.026" %}</span><span class="sr-only">{% website_copy "public.catalog.detail.027" %}</span>
+                    {% else %}
+                      <span class="text-steel-200" aria-hidden="true">{% website_copy "public.catalog.detail.028" %}</span><span class="sr-only">{% website_copy "public.catalog.detail.029" %}</span>
+                    {% endif %}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+{% elif packages %}
+  <section class="site-section site-band">
+    <div class="site-shell">
+      <p class="site-label">{% website_copy "public.catalog.detail.030" %}</p>
+      <h2 class="site-display site-h2 mt-5" data-reveal>{% website_copy "public.catalog.detail.031" %}</h2>
+      <hr class="site-rule mt-10">
+      <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {% for package in packages %}
+          <div class="site-cell site-spot flex flex-col" data-reveal style="--reveal-step: {% cycle '0' '1' '2' %}">
+            <h3 class="text-lg font-semibold tracking-tight text-white">{{ package.name }}</h3>
+            {% if package.summary %}<p class="site-micro mt-2 text-white/75">{{ package.summary }}</p>{% endif %}
+            {% if package|public_price:operating %}<p class="site-display site-numeric mt-6 text-4xl text-white">{{ package.price_display }}</p>
+            {% if package.billing_display %}<p class="site-micro mt-1 text-white/75">{{ package.billing_display }}</p>{% endif %}{% endif %}
+            {% if service.can_request_quote %}
+              {% include "public/catalog/_quote_add.html" with package=package button_class="site-btn-light site-btn-block" form_class="mt-auto pt-7" %}
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{% if related %}
+  <section class="site-section site-clear">
+    <div class="site-shell">
+      <header class="grid gap-x-10 gap-y-6 lg:grid-cols-12 lg:items-end">
+        <div class="lg:col-span-7">
+          <p class="site-label">{% website_copy "public.catalog.detail.032" %}</p>
+          <h2 class="site-display site-h2 mt-5" data-reveal>Others in {{ service.category.name }}</h2>
+        </div>
+        <p class="site-body text-steel-700 lg:col-span-5 lg:pb-2">{% website_copy "public.catalog.detail.033" %}</p>
+      </header>
+      <hr class="site-rule mt-10">
+      <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {% for other in related %}
+          <div data-reveal style="--reveal-step: {% cycle '0' '1' '2' %}">
+            {% include "public/catalog/_card.html" with service=other %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{% url 'public:contact_form' as contact_url %}
+{% url 'public:quote' as quote_url %}
+{% website_copy "public.catalog.detail.034" as editable_34 %}{% website_copy "public.catalog.detail.035" as editable_35 %}{% website_copy "public.catalog.detail.036" as editable_36 %}{% website_copy "public.catalog.detail.037" as editable_37 %}{% include "public/_closing_cta.html" with heading=editable_34 body=editable_35 primary_label=editable_36 primary_href=contact_url secondary_label=editable_37 secondary_href=quote_url %}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>document.addEventListener("DOMContentLoaded", function () {
+    if (window.hgTrack) window.hgTrack("service_view", "{{ service.slug|escapejs }}");
+  });</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% comment %}
+  A KPI tile. When `href` is given the whole tile becomes one link rather
+  than a card containing a small link — a bigger target on a phone, and a
+  single stop for keyboard users.
+{% endcomment %}
+{% if href %}<a href="{{ href }}" class="surface block p-5 transition hover:shadow-raised focus-ring">{% else %}<div class="surface p-5">{% endif %}
+  <div class="flex items-start justify-between gap-3">
+    <p class="t-meta font-medium">{{ label }}</p>
+    {% if icon %}<span class="text-steel-400" aria-hidden="true">{{ icon }}</span>{% endif %}
+  </div>
+  <p class="mt-2 text-3xl font-semibold tracking-tight text-navy t-numeric">{{ value }}</p>
+  {% if delta %}
+    <p class="mt-1.5 text-sm font-medium {{ delta_css }}">
+      {% if arrow %}<span aria-hidden="true">{{ arrow }}</span> {% endif %}{{ delta }}
+    </p>
+  {% endif %}
+  {% if caption %}<p class="mt-1 t-micro">{{ caption }}</p>{% endif %}
+{% if href %}</a>{% else %}</div>{% endif %}

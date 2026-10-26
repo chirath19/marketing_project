@@ -1,0 +1,120 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ provider_label }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}{% if not operating.integrations_enabled %}<div class="workspace-panel mb-6"><h2 class="t-section">External integrations are disabled</h2><p class="t-body mt-3">Connections and credentials are retained. Scheduled and manual syncs are paused.</p>{% if perms.permissions.settings_manage %}<a class="workspace-link mt-4 inline-block" href="{% url 'staff:module_settings' %}">Manage operating settings →</a>{% endif %}</div>{% endif %}
+  {% if not has_adapter %}
+    <div class="mb-5">
+      {% ui_alert tone="info" title="Routing only" message="This provider has no analytics-pull adapter. Connections here are used for event routing, not for syncing performance data back." %}
+    </div>
+  {% endif %}
+
+  <div class="grid gap-5 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <div class="surface p-2 sm:p-4">
+        {% component "table" caption="Connections" columns=columns %}
+          {% for connection in connections %}
+            <tr class="border-b border-mist last:border-0">
+              <td class="ui-td" data-label="Client">
+                {% if connection.organization %}{{ connection.organization.label }}{% else %}<span class="t-meta">Agency-wide</span>{% endif %}
+                {% if connection.display_name %}<span class="block t-micro">{{ connection.display_name }}</span>{% endif %}
+              </td>
+              <td class="ui-td t-micro" data-label="Account">
+                {% if connection.masked_account_id %}{{ connection.masked_account_id }}{% else %}<span class="t-meta">Not set</span>{% endif %}
+              </td>
+              <td class="ui-td" data-label="Status">{% ui_status_badge connection.status label=connection.get_status_display %}</td>
+              <td class="ui-td t-micro" data-label="Last sync">
+                {% if connection.last_sync_at %}{{ connection.last_sync_at|date:"j M Y, H:i" }}{% else %}Never{% endif %}
+              </td>
+              <td class="ui-td text-right" data-label="">
+                <div class="flex items-center justify-end gap-2">
+                  {% if has_adapter %}
+                    <form method="post" action="{% url 'staff:integration_sync_now' provider %}">
+                      {% csrf_token %}
+                      {% if connection.organization %}<input type="hidden" name="organization_slug" value="{{ connection.organization.slug }}">{% endif %}
+                      <button type="submit" class="text-xs font-semibold text-gold-600 underline-offset-2 hover:underline focus-ring">Sync now</button>
+                    </form>
+                  {% endif %}
+                  <form method="post" action="{% url 'staff:integration_connection_disconnect' connection.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-xs font-semibold text-danger underline-offset-2 hover:underline focus-ring">Disconnect</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            {% ui_table_empty colspan=5 icon="◇" title="No connections yet" body="Add one with the account ID and a token from the provider's own developer console. There is no OAuth flow in this version — see the form." %}
+          {% endfor %}
+        {% endcomponent %}
+      </div>
+
+      {% component "card" title="Sync history" subtitle="Every attempt for this provider." %}
+        <ul class="divide-y divide-mist">
+          {% for run in history %}
+            <li class="flex flex-wrap items-center justify-between gap-3 py-2.5">
+              <div class="min-w-0">
+                <p class="t-body">
+                  {% if run.organization %}{{ run.organization.label }}{% else %}Agency-wide{% endif %}
+                  <span class="t-micro">· {{ run.started_at|date:"j M Y, H:i" }}</span>
+                </p>
+                {% if run.error_summary %}<p class="t-micro">{{ run.error_summary }}</p>{% endif %}
+              </div>
+              {% ui_status_badge run.status label=run.get_status_display %}
+            </li>
+          {% empty %}
+            <li class="py-3"><p class="t-meta">No sync has been attempted yet.</p></li>
+          {% endfor %}
+        </ul>
+      {% endcomponent %}
+    </div>
+
+    <aside class="space-y-5">
+      {% if credential_form.fields %}
+        {% component "card" title="App credentials" subtitle="One app registration, shared by every client's connection to this provider." %}
+          {% if credential_status %}
+            <ul class="mb-4 space-y-1">
+              {% for item in credential_status %}
+                <li class="flex items-center justify-between t-micro">
+                  <span>{{ item.label }}</span>
+                  {% if item.configured %}
+                    <span class="text-live">✓ Configured{% if item.source == "environment" %} (environment){% endif %}</span>
+                  {% else %}
+                    <span class="text-steel">Not set</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+          <form method="post" action="{% url 'staff:integration_credentials_update' provider %}" novalidate>
+            {% csrf_token %}
+            {% for field in credential_form %}{% ui_field field %}{% endfor %}
+            {% ui_button label="Save credentials" type="submit" variant="primary" size="sm" full=True %}
+          </form>
+          {% slot "footer" %}
+            <p class="t-micro">Stored encrypted. A value already set is never shown again — leave a field blank to keep it unchanged.</p>
+          {% endslot %}
+        {% endcomponent %}
+      {% endif %}
+
+      {% component "card" title="Add a connection" subtitle="For one client, or leave the client blank for an agency-wide one." %}
+        <form method="post" action="{% url 'staff:integration_connection_create' provider %}" novalidate>
+          {% csrf_token %}
+          <label class="block">
+            <span class="ui-label">Client organization slug <span class="t-micro">(optional)</span></span>
+            <input type="text" name="organization_slug" class="ui-input mt-1" placeholder="e.g. vantage-interiors">
+          </label>
+          <div class="mt-4">
+            {% ui_field form.display_name %}
+            {% ui_field form.external_account_id %}
+            {% ui_field form.access_token %}
+            {% ui_field form.refresh_token %}
+          </div>
+          {% ui_button label="Add connection" type="submit" variant="primary" size="sm" full=True %}
+        </form>
+        {% slot "footer" %}
+          <p class="t-micro">Tokens are never shown again once saved — only a masked account ID.</p>
+        {% endslot %}
+      {% endcomponent %}
+    </aside>
+  </div>
+{% endblock %}

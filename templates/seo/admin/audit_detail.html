@@ -1,0 +1,131 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ audit.title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% include "seo/admin/_nav.html" %}
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-3">
+    <div class="space-y-5 lg:col-span-2">
+
+      {% component "card" title="Findings" subtitle="Worst first. The client sees these once the audit is delivered." %}
+        {% if can_edit %}
+          <form method="post" action="{% url 'staff:seo_issue_create' audit.pk %}" class="mb-5 border-b border-mist pb-5" novalidate>
+            {% csrf_token %}
+            {% ui_field issue_form.title %}
+            <div class="grid gap-x-5 sm:grid-cols-2">
+              {% ui_field issue_form.severity %}
+              {% ui_field issue_form.status %}
+            </div>
+            {% ui_field issue_form.detail %}
+            {% ui_field issue_form.recommendation %}
+            {% ui_field issue_form.affected_urls %}
+            {% ui_button label="Add finding" type="submit" variant="outline" size="sm" %}
+          </form>
+        {% endif %}
+
+        <ul class="divide-y divide-mist">
+          {% for issue in issues %}
+            <li class="py-4 {% if issue.is_resolved %}opacity-70{% endif %}">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    {% if issue.severity == 'critical' %}{% ui_badge label="Critical" tone="danger" %}
+                    {% elif issue.severity == 'high' %}{% ui_badge label="High" tone="warning" %}
+                    {% elif issue.severity == 'medium' %}{% ui_badge label="Medium" tone="neutral" %}
+                    {% else %}{% ui_badge label="Low" tone="neutral" %}{% endif %}
+                    <p class="t-body font-medium">{{ issue.title }}</p>
+                  </div>
+                  {% if issue.detail %}<p class="mt-1 t-meta">{{ issue.detail }}</p>{% endif %}
+                  {% if issue.recommendation %}
+                    <p class="mt-2 rounded-[var(--radius-control)] bg-mist px-3 py-2 t-micro"><span class="font-semibold">Fix:</span> {{ issue.recommendation }}</p>
+                  {% endif %}
+                  {% if issue.pages_affected %}<p class="mt-1 t-micro">{{ issue.pages_affected }} page{{ issue.pages_affected|pluralize }} affected</p>{% endif %}
+                </div>
+
+                {% if can_edit %}
+                  <form method="post" action="{% url 'staff:seo_issue_status' issue.pk %}" class="flex shrink-0 items-center gap-2">
+                    {% csrf_token %}
+                    <select name="status" class="ui-input ui-select max-w-36 py-1 text-xs" aria-label="Status for {{ issue.title }}">
+                      {% for value, label in issue_statuses %}
+                        <option value="{{ value }}" {% if value == issue.status %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit" class="text-xs font-semibold text-gold-600 underline-offset-2 hover:underline focus-ring">Save</button>
+                  </form>
+                {% else %}
+                  {% ui_status_badge issue.status label=issue.get_status_display %}
+                {% endif %}
+              </div>
+            </li>
+          {% empty %}
+            <li class="py-6">
+              {% ui_empty_state icon="✓" title="No findings recorded" body="An audit with no findings is either very good news or an audit nobody has written up yet. Add what you found above." %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endcomponent %}
+
+      {% if can_edit %}
+        {% component "card" title="Audit detail" subtitle="The summary is what the client reads." %}
+          <form method="post" action="{% url 'staff:seo_audit_update' audit.pk %}" novalidate>
+            {% csrf_token %}
+            {% ui_field form.title %}
+            {% ui_field form.site_url %}
+            {% ui_field form.performed_on %}
+            <div class="grid gap-x-5 sm:grid-cols-2">
+              {% ui_field form.health_score %}
+              {% ui_field form.pages_crawled %}
+            </div>
+            {% ui_field form.score_source %}
+            {% ui_field form.summary %}
+            {% ui_field form.internal_notes %}
+            {% ui_button label="Save changes" type="submit" variant="primary" size="sm" %}
+          </form>
+        {% endcomponent %}
+      {% endif %}
+    </div>
+
+    <aside class="space-y-5">
+      {% component "card" title="Status" %}
+        <div class="mb-4">{% ui_status_badge audit.status label=audit.get_status_display %}</div>
+
+        {% if audit.is_delivered %}
+          <p class="t-meta">The client can see this audit and its findings in their workspace.</p>
+        {% elif can_deliver %}
+          <p class="t-meta">
+            Everything here is internal until you deliver it. The client then
+            sees the summary and the findings — so make sure the summary says
+            what you want it to say.
+          </p>
+          <form method="post" action="{% url 'staff:seo_audit_deliver' audit.pk %}" class="mt-4">
+            {% csrf_token %}
+            {% ui_button label="Deliver to the client" type="submit" variant="primary" size="sm" full=True %}
+          </form>
+        {% else %}
+          <p class="t-meta">Internal until somebody with delivery rights publishes it.</p>
+        {% endif %}
+      {% endcomponent %}
+
+      {% component "card" title="Figures" subtitle="As recorded, not fetched." %}
+        <dl class="space-y-3 text-sm">
+          <div><dt class="t-micro">Technical health</dt>
+            <dd class="t-body font-semibold">{% if audit.health_score %}{{ audit.health_score }} / 100{% else %}Not measured{% endif %}</dd></div>
+          <div><dt class="t-micro">Pages crawled</dt>
+            <dd class="t-body">{% if audit.pages_crawled %}{{ audit.pages_crawled }}{% else %}&mdash;{% endif %}</dd></div>
+          <div><dt class="t-micro">Open findings</dt>
+            <dd class="t-body font-semibold">{{ open_issues|length }} of {{ issues|length }}</dd></div>
+          {% if audit.score_source %}
+            <div><dt class="t-micro">Figures came from</dt><dd class="t-body">{{ audit.score_source }}</dd></div>
+          {% else %}
+            <div><dt class="t-micro">Figures came from</dt>
+              <dd class="t-meta">Not recorded. Worth filling in — a number nobody can trace is one nobody can defend.</dd></div>
+          {% endif %}
+          {% if audit.performed_by %}
+            <div><dt class="t-micro">Carried out by</dt><dd class="t-body">{{ audit.performed_by.get_full_name|default:audit.performed_by.email }}</dd></div>
+          {% endif %}
+        </dl>
+      {% endcomponent %}
+    </aside>
+  </div>
+{% endblock %}

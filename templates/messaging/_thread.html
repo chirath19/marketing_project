@@ -1,0 +1,32 @@
+{% now "Ymd" as now_date %}
+<section class="chat" id="{{ chat_id }}" aria-labelledby="{{ title_id }}" data-chat>
+  <header class="chat-head">
+    <span class="chat-avatar chat-avatar-lg" aria-hidden="true">{% if staff %}{% if is_quote %}{{ quote.contact_name|slice:":1"|upper }}{% else %}{{ client.get_full_name|default:client.email|slice:":1"|upper }}{% endif %}{% else %}{{ brand.name|slice:":1"|upper }}{% endif %}</span>
+    <div class="chat-heading">
+      <p class="chat-eyebrow">{% if is_quote %}Quotation conversation{% else %}Client conversation{% endif %}</p>
+      <h2 id="{{ title_id }}" class="chat-title">{% if staff %}{% if is_quote %}{{ quote.contact_name }}{% else %}{{ client.get_full_name|default:client.email }}{% endif %}{% else %}Your account team{% endif %}</h2>
+      <p class="chat-subtitle">{% if is_quote %}{{ quote.reference }} · Messages about this request{% else %}Requests, projects and everything in between{% endif %}</p>
+    </div>
+    <button type="button" class="chat-expand" data-chat-expand aria-pressed="false" aria-label="Expand conversation" title="Expand conversation">{% include "messaging/_icon.html" with icon="expand" %}</button>
+  </header>
+  <div class="chat-toolbar">
+    <label class="chat-search">{% include "messaging/_icon.html" with icon="search" %}<span class="sr-only">Search loaded messages</span><input type="search" placeholder="Search this conversation" data-chat-search aria-controls="{{ feed_id }}"></label>
+    <button type="button" class="chat-latest" data-chat-latest>Latest <span aria-hidden="true">↓</span></button>
+    <span class="chat-sync">{% if is_quote or message_page.number == 1 %}<span aria-hidden="true"></span>Updates every 10s{% else %}Earlier messages{% endif %}</span>
+  </div>
+  <p class="chat-search-status" role="status" data-chat-search-status></p>
+  <div id="{{ feed_id }}" class="chat-feed" data-chat-feed tabindex="0" aria-label="Conversation messages" {% if is_quote or message_page.number == 1 %}hx-get="{{ poll_url }}" hx-trigger="every 10s [document.visibilityState === 'visible']" hx-select="#{{ feed_id }}" hx-swap="outerHTML settle:0" hx-sync="closest [data-chat]:drop"{% endif %}>
+    {% if not is_quote and message_page.has_next %}<a class="chat-history" href="?tab=messages&amp;page={{ message_page.next_page_number }}">↑ Load older messages</a>{% endif %}
+    {% for entry in entries %}
+      {% if entry.new_day %}<div class="chat-divider"><span>{% if entry.created_at|date:"Ymd" == now_date %}Today{% else %}{{ entry.created_at|date:"j F Y" }}{% endif %}</span></div>{% endif %}
+      {% if entry.first_unread %}<div class="chat-divider chat-divider-new" data-chat-unread><span>New messages</span></div>{% endif %}
+      {% include "messaging/_entry.html" %}
+    {% empty %}
+      <div class="chat-empty"><span class="chat-empty-icon" aria-hidden="true">{% include "messaging/_icon.html" with icon="message" %}</span><p class="chat-empty-title">A good conversation starts here</p><p class="chat-empty-body">{% if staff %}Share an update, ask a question or talk through the next step.{% else %}Ask a question or tell us what you have in mind. Your team will reply here.{% endif %}</p></div>
+    {% endfor %}
+    {% if not is_quote and message_page.has_previous %}<a class="chat-history" href="?tab=messages&amp;page={{ message_page.previous_page_number }}">Newer messages ↓</a>{% endif %}
+  </div>
+  {% if can_write %}
+    {% include "messaging/_composer.html" %}
+  {% else %}<p class="chat-readonly">You can read this conversation but do not have permission to reply.</p>{% endif %}
+</section>

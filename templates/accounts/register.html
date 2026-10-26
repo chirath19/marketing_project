@@ -1,0 +1,78 @@
+{% extends "public/base_site.html" %}
+{% load ui %}
+
+{% comment %}
+  Registration is outward-facing, so it wears the marketing shell. The
+  workspace it creates an account for keeps its own.
+{% endcomment %}
+
+{% block title %}Create an account · {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="site-section site-auth">
+  <div class="mx-auto w-full max-w-2xl px-5 sm:px-8">
+    <p class="site-label">Client registration</p>
+    <h1 class="site-display mt-5 text-4xl text-navy">Create your client account</h1>
+    <p class="site-body mt-4 text-steel-700">Your own workspace for the work we do together.</p>
+
+    <div class="site-card-static mt-9 p-7">
+      <p class="site-index">WHAT YOUR ACCOUNT GIVES YOU</p>
+      <ul class="mt-5 grid gap-x-8 sm:grid-cols-2">
+        {% for item in account_benefits %}
+          <li class="flex gap-3 border-t border-navy/8 py-3">
+            <span class="mt-0.5 text-gold-700" aria-hidden="true">&check;</span>
+            <span class="site-body text-navy/80">{{ item }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+      <p class="site-micro mt-5 text-steel-700">
+        Registering does not buy anything and does not commit you to anything.
+        Your workspace fills up as services are activated.
+      </p>
+    </div>
+
+    {% if requires_approval %}
+      <div class="mt-6">
+        {% ui_alert tone="info" title="New accounts are approved by a person" message="Register now and our team will review it. You will be able to sign in as soon as it is approved — there is nothing else you need to do, and no confirmation email is sent." %}
+      </div>
+    {% endif %}
+
+    <form method="post" class="site-form site-card-static mt-6 p-7 sm:p-9" novalidate>
+      {% csrf_token %}
+      {% ui_form_errors form %}
+
+      {% ui_field form.full_name %}
+      {% ui_field form.email %}
+      {% ui_field form.company_name %}
+
+      <div class="grid gap-x-5 sm:grid-cols-2">
+        {% ui_field form.job_title %}
+        {% ui_field form.phone %}
+      </div>
+
+      {% ui_field form.password1 %}
+      {% ui_field form.password2 %}
+
+      {% comment %}
+        The honeypot. Hidden from people with CSS and from assistive
+        technology with aria-hidden, left empty by both, and filled in by
+        the bots that submit every input they find.
+      {% endcomment %}
+      <div class="hidden" aria-hidden="true">{{ form.website_url }}</div>
+
+      <button type="submit" class="site-btn site-btn-primary site-btn-block site-btn-lg">
+        Create my account<span class="site-btn-arrow" aria-hidden="true">&rarr;</span>
+      </button>
+
+      <p class="site-micro mt-5 text-steel-700">
+        Already have an account?
+        <a href="{% url 'accounts:login' %}" class="site-link text-xs focus-ring">Sign in</a>
+      </p>
+      <p class="site-micro mt-1.5 text-steel-700">
+        We use your details to set up and run your account. See our
+        <a href="/privacy/" class="site-link text-xs focus-ring">privacy notice</a>.
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}

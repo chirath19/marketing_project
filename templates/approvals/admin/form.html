@@ -1,0 +1,11 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block admin_content %}
+  {% component "page_header" title="Request client approval" subtitle=organization.label %}{% endcomponent %}
+  <p class="mt-4 t-meta">Request a campaign decision here. For a versioned Social Media or Email Marketing deliverable, request review from that workspace; it will also appear in this inbox.</p>
+  <form method="post" class="mt-6 max-w-3xl surface p-6">
+    {% csrf_token %}{% ui_form_errors form %}
+    <div class="grid gap-4">{% for field in form %}{% ui_field field %}{% endfor %}</div>
+    <div class="mt-6">{% ui_button label="Request approval" type="submit" %}</div>
+  </form>
+{% endblock %}

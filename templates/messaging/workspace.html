@@ -1,0 +1,3 @@
+{% extends shell %}{% load ui %}
+{% block admin_content %}{% include "messaging/_desk.html" %}{% endblock %}
+{% block portal_content %}<h1 class="t-page">{{ desk_heading }}</h1><p class="t-body mt-2">{% if tab == 'messages' %}Talk to your team about your requests and ongoing work.{% elif tab == 'reports' %}Read the updates and files your team has shared with you.{% else %}Your invoices, balances and confirmed payment records.{% endif %}</p>{% include "messaging/_desk.html" %}{% endblock %}

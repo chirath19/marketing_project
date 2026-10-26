@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}Clients · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <div class="surface p-2 sm:p-4">
+    {% component "table" caption="Client organizations" columns=columns %}
+      {% for organization in clients %}
+        <tr class="border-b border-mist last:border-0">
+          <td class="ui-td" data-label="Client">
+            <a href="{% url 'staff:client_detail' organization.slug %}" class="font-medium text-navy underline-offset-2 hover:underline focus-ring">{{ organization.label }}</a>
+          </td>
+          <td class="ui-td" data-label="Status">{% ui_status_badge organization.status %}</td>
+          <td class="ui-td t-micro" data-label="Reference">{{ organization.slug }}</td>
+        </tr>
+      {% empty %}
+        {% if is_scoped %}
+          {% ui_table_empty colspan=3 icon="▣" title="No clients assigned to you" body="You see a client organization here once an administrator assigns you to it. Until then your access is limited to the parts of the platform your role allows." %}
+        {% else %}
+          {% ui_table_empty colspan=3 icon="▣" title="No client organizations yet" body="An organization is created when a client registers, or when you create one for them. Everything the agency delivers — services, campaigns, reports — belongs to an organization rather than to one person." %}
+        {% endif %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+{% endblock %}

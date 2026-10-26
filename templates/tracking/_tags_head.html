@@ -1,0 +1,74 @@
+{% comment %}
+  Third-party tags, gated by consent.
+
+  Nothing here executes until `window.hgConsent` says a category was
+  accepted — every snippet below is wrapped in a check against it, so a
+  visitor who has not decided, or who declined, causes no third-party
+  request at all. GTM is the one exception worth naming: it loads behind
+  the analytics check too, because GTM's whole job is to then decide
+  which further tags to fire, and firing the container itself already
+  contacts Google.
+
+  Included from `base/base.html`'s `tracking_head` block, which exists
+  for exactly this.
+{% endcomment %}
+{% if tracking_settings.any_tag_configured %}
+<script>
+  (function () {
+    function whenConsented(category, run) {
+      if (window.hgConsent && window.hgConsent.has(category)) { run(); return; }
+      document.addEventListener("hg:consent-changed", function once() {
+        if (window.hgConsent.has(category)) { run(); document.removeEventListener("hg:consent-changed", once); }
+      });
+    }
+
+    {% if tracking_settings.gtm_container_id %}
+    whenConsented("analytics", function () {
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0], j = d.createElement(s), dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true; j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "{{ tracking_settings.gtm_container_id|escapejs }}");
+    });
+    {% endif %}
+
+    {% if tracking_settings.ga4_measurement_id %}
+    whenConsented("analytics", function () {
+      var s = document.createElement("script");
+      s.async = true;
+      s.src = "https://www.googletagmanager.com/gtag/js?id={{ tracking_settings.ga4_measurement_id|escapejs }}";
+      document.head.appendChild(s);
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      window.gtag = gtag;
+      gtag("js", new Date());
+      gtag("config", "{{ tracking_settings.ga4_measurement_id|escapejs }}");
+    });
+    {% endif %}
+
+    {% if tracking_settings.meta_pixel_id %}
+    whenConsented("advertising", function () {
+      !function (f, b, e, v, n, t, s) {
+        if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments) };
+        if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = [];
+        t = b.createElement(e); t.async = !0; t.src = v;
+        s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
+      }(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+      fbq("init", "{{ tracking_settings.meta_pixel_id|escapejs }}");
+      fbq("track", "PageView");
+    });
+    {% endif %}
+
+    {% if tracking_settings.rudderstack_write_key and tracking_settings.rudderstack_data_plane_url %}
+    whenConsented("analytics", function () {
+      var e = window.rudderanalytics = window.rudderanalytics || [];
+      e.methods = ["load", "page", "track", "identify"];
+      e.methods.forEach(function (m) { e[m] = function () { e.push([m].concat(Array.prototype.slice.call(arguments))) } });
+      e.load("{{ tracking_settings.rudderstack_write_key|escapejs }}", "{{ tracking_settings.rudderstack_data_plane_url|escapejs }}");
+      e.page();
+    });
+    {% endif %}
+  })();
+</script>
+{% endif %}

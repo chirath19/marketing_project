@@ -1,0 +1,32 @@
+{% comment %}
+  A real <input type="file"> wrapped by its label, so it is reachable and
+  operable by keyboard and announces correctly. Drag-and-drop is layered
+  on top as an enhancement; with JavaScript off it is still an ordinary
+  file picker.
+{% endcomment %}
+<div class="mb-4" x-data="uiFileUpload()">
+  <label for="{{ id }}"
+         class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[var(--radius-card)] border-2 border-dashed border-steel-200 bg-mist-200 px-6 py-8 text-center transition hover:border-gold hover:bg-gold-50 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-gold"
+         :class="dragging && 'border-gold bg-gold-50'"
+         @dragover.prevent="dragging = true"
+         @dragleave.prevent="dragging = false"
+         @drop.prevent="drop($event)">
+    <span class="text-sm font-semibold text-navy">{{ label }}</span>
+    <span class="t-micro">Drag a file here, or choose one</span>
+    <input type="file" name="{{ name }}" id="{{ id }}" class="sr-only"
+           {% if accept %}accept="{{ accept }}"{% endif %}
+           {% if multiple %}multiple{% endif %}
+           {% if required %}required{% endif %}{% if disabled %} disabled{% endif %}
+           {% if described_by %}aria-describedby="{{ described_by }}"{% endif %}
+           {% if error %}aria-invalid="true"{% endif %}
+           x-ref="input" @change="pick($event)"
+           {% for key, value in attrs.items %} {{ key }}="{{ value }}"{% endfor %}>
+  </label>
+
+  <p class="mt-2 text-sm text-navy" role="status" x-show="names.length" x-cloak>
+    <span x-text="names.join(', ')"></span>
+  </p>
+
+  {% if help_text %}<p id="{{ help_id }}" class="ui-help">{{ help_text }}</p>{% endif %}
+  {% if error %}<p id="{{ error_id }}" class="ui-error">{{ error }}</p>{% endif %}
+</div>

@@ -1,0 +1,152 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% if service %}
+    <div class="mb-5 flex flex-wrap items-center gap-3">
+      {% if not service.is_active %}{% ui_badge label="Retired" tone="neutral" %}
+      {% elif not service.is_visible %}{% ui_badge label="Hidden" tone="paused" dot=True %}
+      {% else %}{% ui_badge label="Live" tone="live" dot=True %}{% endif %}
+
+      {% if perms.permissions.catalog_publish %}
+        <form method="post" action="{% url 'staff:catalog_service_visibility' service.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="visible" value="{% if service.is_visible %}0{% else %}1{% endif %}">
+          {% if service.is_visible %}
+            {% ui_button label="Hide from the catalogue" type="submit" variant="outline" size="sm" %}
+          {% else %}
+            {% ui_button label="Show on the catalogue" type="submit" variant="primary" size="sm" %}
+          {% endif %}
+        </form>
+        <form method="post" action="{% url 'staff:catalog_service_active' service.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="active" value="{% if service.is_active %}0{% else %}1{% endif %}">
+          <button type="submit" class="text-sm font-medium text-steel underline-offset-2 hover:text-navy hover:underline focus-ring">
+            {% if service.is_active %}Retire{% else %}Bring back{% endif %}<span class="sr-only"> {{ service.name }}</span>
+          </button>
+        </form>
+      {% endif %}
+
+      {% if service.is_live %}
+        <a href="{{ service.get_absolute_url }}" target="_blank" rel="noopener"
+           class="text-sm font-medium text-gold-600 underline-offset-2 hover:underline focus-ring">View on the site</a>
+      {% endif %}
+
+      {% if perms.permissions.catalog_delete %}
+        <form method="post" action="{% url 'staff:catalog_service_delete' service.pk %}" class="ml-auto">
+          {% csrf_token %}
+          <button type="submit" class="text-sm font-semibold text-danger underline-offset-2 hover:underline focus-ring">Delete service</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="grid gap-5 lg:grid-cols-3" novalidate>
+    {% csrf_token %}
+    <div class="lg:col-span-2">
+      {% component "card" title="Details" %}
+        {% ui_form_errors form %}
+        {% ui_field form.name %}
+        {% ui_field form.category %}
+        {% ui_field form.short_description %}
+        {% ui_field form.full_description %}
+      {% endcomponent %}
+    </div>
+
+    <div class="space-y-5">
+      {% component "card" title="Price" %}
+        {% ui_field form.price_visibility %}{% ui_field form.price %}
+        <div class="grid gap-x-5 sm:grid-cols-2">
+          {% ui_field form.currency %}
+          {% ui_field form.billing_type %}
+        </div>
+      {% endcomponent %}
+
+      {% component "card" title="Presentation" %}
+        {% ui_field form.image %}
+        {% ui_field form.image_alt %}
+        {% ui_field form.icon %}
+        {% ui_field form.is_featured %}
+        {% ui_field form.can_request_quote %}
+      {% endcomponent %}
+
+      {% component "card" title="Search engines" %}
+        {% ui_field form.slug %}
+        {% ui_field form.meta_title %}
+        {% ui_field form.meta_description %}
+      {% endcomponent %}
+
+      {% ui_button label="Save service" type="submit" variant="primary" full=True %}
+    </div>
+  </form>
+
+  {% if service %}
+    <div class="mt-6 grid gap-5 lg:grid-cols-2">
+      {% component "card" title="What is included" subtitle="The feature list. Packages tick which of these they include." %}
+        <ul class="divide-y divide-mist">
+          {% for feature in features %}
+            <li class="flex items-center justify-between gap-3 py-2.5">
+              <div class="min-w-0">
+                <p class="truncate t-body font-medium">{{ feature.label }}</p>
+                {% if feature.description %}<p class="truncate t-micro">{{ feature.description }}</p>{% endif %}
+              </div>
+              {% if perms.permissions.catalog_delete %}
+                <form method="post" action="{% url 'staff:catalog_feature_delete' feature.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="text-xs font-semibold text-danger underline-offset-2 hover:underline focus-ring">Remove<span class="sr-only"> {{ feature.label }}</span></button>
+                </form>
+              {% endif %}
+            </li>
+          {% empty %}
+            <li class="py-3 t-meta">Nothing listed yet.</li>
+          {% endfor %}
+        </ul>
+        {% if perms.permissions.catalog_create %}
+          {% slot "footer" %}
+            <form method="post" action="{% url 'staff:catalog_feature_create' service.pk %}" novalidate>
+              {% csrf_token %}
+              {% ui_field feature_form.label %}
+              {% ui_field feature_form.description %}
+              {% ui_button label="Add feature" type="submit" variant="outline" size="sm" %}
+            </form>
+          {% endslot %}
+        {% endif %}
+      {% endcomponent %}
+
+      {% component "card" title="Packages" subtitle="Tiers of this service. Two or more produce a comparison table." %}
+        <ul class="divide-y divide-mist">
+          {% for package in packages %}
+            <li class="flex items-center justify-between gap-3 py-2.5">
+              <div class="min-w-0">
+                <a href="{% url 'staff:catalog_package' package.pk %}" class="truncate t-body font-medium underline-offset-2 hover:underline focus-ring">{{ package.name }}</a>
+                <p class="t-micro">{{ package.price_display }} {{ package.billing_display }}{% if package.is_recommended %} · recommended{% endif %}</p>
+              </div>
+              {% if perms.permissions.catalog_delete %}
+                <form method="post" action="{% url 'staff:catalog_package_delete' package.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="text-xs font-semibold text-danger underline-offset-2 hover:underline focus-ring">Remove<span class="sr-only"> {{ package.name }}</span></button>
+                </form>
+              {% endif %}
+            </li>
+          {% empty %}
+            <li class="py-3 t-meta">No tiers. The service shows its own price.</li>
+          {% endfor %}
+        </ul>
+        {% if perms.permissions.catalog_create %}
+          {% slot "footer" %}
+            <form method="post" action="{% url 'staff:catalog_package_create' service.pk %}" novalidate>
+              {% csrf_token %}
+              {% ui_field package_form.name %}
+              <div class="grid gap-x-5 sm:grid-cols-2">
+                {% ui_field package_form.price_visibility %}{% ui_field package_form.price %}
+                {% ui_field package_form.billing_type %}
+              </div>
+              {% ui_button label="Add package" type="submit" variant="outline" size="sm" %}
+            </form>
+          {% endslot %}
+        {% endif %}
+      {% endcomponent %}
+    </div>
+  {% endif %}
+{% endblock %}

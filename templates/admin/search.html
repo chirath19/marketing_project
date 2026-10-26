@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+
+{% block title %}Search · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <form method="get" action="{% url 'staff:search' %}" role="search" class="max-w-xl">
+    {% ui_search_box name="q" value=query placeholder="Search clients and staff" label="Search the dashboard" %}
+  </form>
+
+  {% if not query %}
+    <div class="mt-6">
+      {% ui_empty_state title="Search the dashboard" body="Clients and staff accounts you have access to. Results never include records your permissions would hide." %}
+    </div>
+  {% elif not has_results %}
+    <div class="mt-6">
+      {% ui_empty_state title="Nothing found" body="No client or staff account you can see matches that." %}
+    </div>
+  {% else %}
+    <div class="mt-6 grid gap-5 lg:grid-cols-2">
+      {% if clients %}
+        {% component "card" title="Clients" %}
+          <ul class="divide-y divide-mist">
+            {% for organization in clients %}
+              <li class="py-2.5">
+                <a href="{% url 'staff:client_detail' organization.slug %}" class="t-body font-medium underline-offset-2 hover:underline focus-ring">{{ organization.label }}</a>
+                <span class="block t-micro">{{ organization.slug }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endcomponent %}
+      {% endif %}
+
+      {% if staff_results %}
+        {% component "card" title="Staff" %}
+          <ul class="divide-y divide-mist">
+            {% for profile in staff_results %}
+              <li class="py-2.5">
+                <a href="{% url 'staff:detail' profile.pk %}" class="t-body font-medium underline-offset-2 hover:underline focus-ring">{{ profile.user.get_full_name }}</a>
+                <span class="block t-micro">{{ profile.user.email }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endcomponent %}
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

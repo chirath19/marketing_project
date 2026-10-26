@@ -1,0 +1,5 @@
+{% extends "errors/_error_base.html" %}
+{% block title %}Bad request · {{ brand.name }}{% endblock %}
+{% block code %}400{% endblock %}
+{% block heading %}We could not read that request{% endblock %}
+{% block body %}Something in the request was malformed, so we stopped rather than guess. Try again from the page you came from.{% endblock %}

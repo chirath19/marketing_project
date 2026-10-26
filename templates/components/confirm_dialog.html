@@ -1,0 +1,49 @@
+{% comment %}
+  A modal specialised for "are you sure". The confirm control is a real
+  form submission, never a link, because confirming changes state and must
+  not be reachable by a prefetch or a crawler.
+
+  {% component "confirm_dialog" id="cancel-sub" title="Cancel subscription"
+      message="This stops work at the end of the period."
+      action="/subs/1/cancel/" confirm_label="Cancel subscription" destructive=True %}
+  {% endcomponent %}
+{% endcomment %}
+<div x-data="uiOverlay('{{ id }}')"
+     @ui-open.window="openFromEvent($event)"
+     @ui-close.window="closeFromEvent($event)"
+     @keydown.escape.window="close()"
+     @keydown="trap($event)"
+     x-show="open" x-cloak
+     class="fixed inset-0 z-[var(--z-modal)] flex items-end justify-center p-0 sm:items-center sm:p-4">
+
+  <div class="ui-backdrop" @click="close()" aria-hidden="true"
+       x-transition.opacity.duration.200ms></div>
+
+  <div x-ref="panel" tabindex="-1"
+       role="alertdialog" aria-modal="true"
+       aria-labelledby="{{ id }}-title" aria-describedby="{{ id }}-message"
+       class="ui-panel relative w-full max-w-md rounded-b-none p-5 sm:rounded-b-[var(--radius-card)]"
+       x-transition:enter="transition ease-[var(--ease-soft)] duration-200"
+       x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95 sm:translate-y-0"
+       x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+
+    <h2 id="{{ id }}-title" class="t-card-title">{{ title }}</h2>
+    <p id="{{ id }}-message" class="mt-2 t-meta">{{ message }}{{ slot }}</p>
+
+    <div class="mt-5 flex flex-wrap justify-end gap-2">
+      <button type="button" @click="close()"
+              class="inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] border border-steel-200 bg-white px-4 py-2 text-sm font-semibold text-navy transition hover:bg-mist focus-ring">
+        {{ cancel_label|default:"Cancel" }}
+      </button>
+
+      <form method="post" action="{{ action }}" class="contents">
+        {% csrf_token %}
+        {% if method_override %}<input type="hidden" name="_method" value="{{ method_override }}">{% endif %}
+        <button type="submit"
+                class="inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] px-4 py-2 text-sm font-semibold transition focus-ring {% if destructive %}bg-danger text-white hover:opacity-90{% else %}bg-gold text-navy hover:bg-gold-600{% endif %}">
+          {{ confirm_label|default:"Confirm" }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

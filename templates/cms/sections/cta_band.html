@@ -1,0 +1,41 @@
+{% load website_copy %}
+{% load ui %}
+{% comment %}
+  The closing ask. Full-bleed and dark by default, so it reads as the end
+  of the argument rather than one more section of it.
+{% endcomment %}
+<div class="site-cta-wrap"><section id="{{ section.anchor }}"
+         class="relative scroll-mt-24 overflow-hidden
+                {% if section.tone == 'mist' %}site-band text-navy{% elif section.tone == 'light' %}site-clear text-navy{% else %}site-dark{% endif %}">
+
+  {% if section.tone == 'navy' or not section.tone %}
+    <div class="site-beam" aria-hidden="true"></div>
+  {% endif %}
+
+  <div class="site-shell relative flex flex-col gap-10 py-20 sm:py-24 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+    <div class="max-w-2xl">
+      {% if section.eyebrow %}
+        <p class="site-label {% if section.tone == 'navy' or not section.tone %}site-label-invert{% endif %}" data-reveal="fade">{{ section.eyebrow }}</p>
+      {% endif %}
+      <h2 class="site-display site-h2 {% if section.eyebrow %}mt-5{% endif %}" data-reveal>{{ section.heading }}</h2>
+      {% if section.subheading %}
+        <p class="site-body mt-5 max-w-xl {% if section.tone == 'navy' or not section.tone %}text-white/60{% else %}text-steel-700{% endif %}"
+           data-reveal style="--reveal-step: 1">{{ section.subheading }}</p>
+      {% endif %}
+    </div>
+
+    <div class="flex shrink-0 flex-wrap items-center gap-3" data-reveal style="--reveal-step: 2">
+      {% if section.cta_label and section.cta_url %}
+        <a href="{{ section.cta_url }}" class="site-btn site-btn-primary site-btn-lg">
+          {{ section.cta_label }}<span class="site-btn-arrow" aria-hidden="true">{% website_copy "cms.sections.cta_band.001" %}</span>
+        </a>
+      {% endif %}
+      {% if section.secondary_cta_label and section.secondary_cta_url %}
+        <a href="{{ section.secondary_cta_url }}"
+           class="site-btn site-btn-lg {% if section.tone == 'navy' or not section.tone %}site-btn-light{% else %}site-btn-outline{% endif %}">
+          {{ section.secondary_cta_label }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section></div>

@@ -1,0 +1,71 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% include "seo/admin/_nav.html" %}
+
+  <nav class="-mx-1 mt-4 overflow-x-auto" aria-label="Link statuses">
+    <ul class="flex min-w-max items-center gap-1 px-1">
+      <li><a href="?" class="inline-flex whitespace-nowrap rounded-[var(--radius-pill)] px-3 py-1 text-xs font-medium transition focus-ring {% if not status %}bg-mist text-navy{% else %}text-steel hover:bg-mist{% endif %}">All</a></li>
+      {% for value, label in statuses %}
+        <li><a href="?status={{ value }}" class="inline-flex whitespace-nowrap rounded-[var(--radius-pill)] px-3 py-1 text-xs font-medium transition focus-ring {% if value == status %}bg-mist text-navy{% else %}text-steel hover:bg-mist{% endif %}">{{ label }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <div class="mt-5 grid gap-5 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <div class="surface p-2 sm:p-4">
+        {% component "table" caption="Links and outreach" columns=link_columns %}
+          {% for link in backlinks %}
+            <tr class="border-b border-mist last:border-0">
+              <td class="ui-td" data-label="From">
+                <p class="t-body font-medium">{{ link.source_domain }}</p>
+                {% if link.anchor_text %}<span class="block truncate t-micro">“{{ link.anchor_text }}”</span>{% endif %}
+              </td>
+              <td class="ui-td text-right t-numeric" data-label="Authority">
+                {% if link.authority %}{{ link.authority }}{% else %}&mdash;{% endif %}
+              </td>
+              <td class="ui-td t-micro" data-label="Dates">
+                {% if link.contacted_on %}contacted {{ link.contacted_on|date:"j M Y" }}{% endif %}
+                {% if link.went_live_on %}<span class="block">live {{ link.went_live_on|date:"j M Y" }}</span>{% endif %}
+              </td>
+              <td class="ui-td" data-label="Status">
+                {% ui_status_badge link.status label=link.get_status_display %}
+                {% if not link.is_follow %}<span class="mt-1 block t-micro">nofollow</span>{% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            {% ui_table_empty colspan=4 icon="◇" title="No links recorded" body="Outreach and the link it produces are the same record at different stages, so a prospect you contact today becomes the live link you report next month." %}
+          {% endfor %}
+        {% endcomponent %}
+      </div>
+    </div>
+
+    {% if can_create %}
+      <aside>
+        {% component "card" title="Record a link" subtitle="Or a prospect you are about to contact." %}
+          <form method="post" action="{% url 'staff:seo_backlink_create' organization.slug %}" novalidate>
+            {% csrf_token %}
+            {% ui_field form.source_domain %}
+            {% ui_field form.status %}
+            {% ui_field form.source_url %}
+            {% ui_field form.target_url %}
+            {% ui_field form.anchor_text %}
+            <div class="grid gap-x-5 sm:grid-cols-2">
+              {% ui_field form.authority %}
+              {% ui_field form.is_follow %}
+            </div>
+            <div class="grid gap-x-5 sm:grid-cols-2">
+              {% ui_field form.contacted_on %}
+              {% ui_field form.went_live_on %}
+            </div>
+            {% ui_field form.notes %}
+            {% ui_button label="Record link" type="submit" variant="primary" size="sm" full=True %}
+          </form>
+        {% endcomponent %}
+      </aside>
+    {% endif %}
+  </div>
+{% endblock %}

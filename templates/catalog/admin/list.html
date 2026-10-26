@@ -1,0 +1,52 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}Service catalogue · {{ brand.name }}{% endblock %}
+
+{% block page_actions %}
+  {% url 'staff:catalog_addons' as addons_url %}
+  {% url 'staff:catalog_create' as create_url %}
+  {% ui_button label="Add-ons" href=addons_url variant="outline" size="sm" %}
+  {% if perms.permissions.catalog_create %}{% ui_button label="New service" href=create_url variant="primary" size="sm" %}{% endif %}
+{% endblock %}
+
+{% block admin_content %}
+  <div class="surface p-2 sm:p-4">
+    {% component "table" caption="Services" columns=columns %}
+      {% for service in services %}
+        <tr class="border-b border-mist last:border-0 {% if not service.is_live %}opacity-60{% endif %}">
+          <td class="ui-td" data-label="Service">
+            <a href="{% url 'staff:catalog_service' service.pk %}" class="font-medium text-navy underline-offset-2 hover:underline focus-ring">{{ service.name }}</a>
+            <span class="block t-micro">{{ service.feature_count }} feature{{ service.feature_count|pluralize }} · {{ service.package_count }} package{{ service.package_count|pluralize }}</span>
+          </td>
+          <td class="ui-td" data-label="Category">{{ service.category.name }}</td>
+          <td class="ui-td text-right" data-label="Price">
+            <span class="font-semibold t-numeric">{{ service.price_display }}</span>
+            {% if service.billing_display %}<span class="block t-micro">{{ service.billing_display }}</span>{% endif %}
+          </td>
+          <td class="ui-td" data-label="Status">
+            {% if not service.is_active %}{% ui_badge label="Retired" tone="neutral" %}
+            {% elif not service.is_visible %}{% ui_badge label="Hidden" tone="paused" dot=True %}
+            {% else %}{% ui_badge label="Live" tone="live" dot=True %}{% endif %}
+          </td>
+          <td class="ui-td text-right" data-label="">
+            <div class="flex items-center justify-end gap-2">
+              {% if perms.permissions.catalog_edit %}
+                <form method="post" action="{% url 'staff:catalog_service_move' service.pk %}" class="inline">
+                  {% csrf_token %}<input type="hidden" name="direction" value="up">
+                  <button type="submit" class="rounded px-1.5 text-xs text-steel hover:bg-mist focus-ring" aria-label="Move {{ service.name }} up">↑</button>
+                </form>
+                <form method="post" action="{% url 'staff:catalog_service_move' service.pk %}" class="inline">
+                  {% csrf_token %}<input type="hidden" name="direction" value="down">
+                  <button type="submit" class="rounded px-1.5 text-xs text-steel hover:bg-mist focus-ring" aria-label="Move {{ service.name }} down">↓</button>
+                </form>
+              {% endif %}
+              <a href="{% url 'staff:catalog_service' service.pk %}" class="text-xs font-semibold text-gold-600 underline-offset-2 hover:underline focus-ring">Edit</a>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        {% ui_table_empty colspan=5 icon="◇" title="No services in the catalogue" body="The public services page is built entirely from this list. Nothing is shown to visitors until a service here is active and visible." action_label="Add a service" action_href="/staff/services/new/" %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+{% endblock %}

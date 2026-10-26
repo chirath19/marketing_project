@@ -1,0 +1,4 @@
+{% extends "portal/base.html" %}{% block portal_content %}
+<p class="workspace-kicker">EVOLVE YOUR SERVICE</p><h1 class="t-page mt-3">Request a change</h1><p class="t-body mt-3">{{ subscription.name }} · Describe the additional work or time you need. Your team will prepare a quotation; your service changes after you accept and the team applies it.</p>
+<form method="post" class="workspace-panel workspace-form mt-7">{% csrf_token %}{{ form.as_p }}<button class="ui-btn ui-btn-primary">Request quotation for this change</button></form>
+{% endblock %}

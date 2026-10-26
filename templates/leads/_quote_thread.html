@@ -1,0 +1,5 @@
+{% if staff_view %}
+  {% include "messaging/_thread.html" with entries=thread fallback_name=quote.contact_name chat_id="quote-conversation" feed_id="quote-conversation-feed" title_id="quote-chat-title" target="#quote-conversation" staff=True is_quote=True poll_url=quote.get_absolute_url %}
+{% else %}
+  {% include "messaging/_thread.html" with entries=thread fallback_name=quote.contact_name chat_id="quote-conversation" feed_id="quote-conversation-feed" title_id="quote-chat-title" target="#quote-conversation" staff=False is_quote=True poll_url=quote.get_client_url %}
+{% endif %}

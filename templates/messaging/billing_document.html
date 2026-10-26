@@ -1,0 +1,11 @@
+{% extends "base/base.html" %}
+{% block title %}{% if invoice %}Invoice {{ invoice.reference }}{% else %}Receipt {{ receipt.reference }}{% endif %} · {{ brand.name }}{% endblock %}
+{% block body_class %}workspace{% endblock %}
+{% block content %}
+<div class="billing-document-actions print-hide"><a href="{{ payments_url }}" class="ui-btn ui-btn-outline">← Payments</a><div class="billing-actions">{% if record_payment_url %}<a href="{{ record_payment_url }}" class="ui-btn ui-btn-primary">Record payment &amp; issue receipt</a>{% endif %}<button type="button" class="ui-btn ui-btn-outline" onclick="window.print()">Print / save as PDF</button></div></div>
+<article class="receipt-document billing-document">
+  <header class="billing-document-header"><div><p class="billing-eyebrow">{{ site.site_name|default:brand.name }}</p><h1>{% block document_heading %}{% endblock %}</h1><p class="billing-document-ref">{% if invoice %}{{ invoice.reference }}{% else %}{{ receipt.reference }}{% endif %}</p></div><div class="billing-issuer">{% for line in site.address_lines %}<p>{{ line }}</p>{% endfor %}{% if site.contact_email %}<p>{{ site.contact_email }}</p>{% endif %}{% if site.contact_phone %}<p>{{ site.contact_phone }}</p>{% endif %}</div></header>
+  {% block document_content %}{% endblock %}
+  <footer class="billing-document-footer">{% if site.footer_note %}{{ site.footer_note }}{% else %}Thank you for working with {{ site.site_name|default:brand.name }}.{% endif %}</footer>
+</article>
+{% endblock %}

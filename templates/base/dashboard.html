@@ -1,0 +1,59 @@
+{% extends "base/base.html" %}
+{% load ui %}
+
+{% comment %}
+  The SaaS shell shared by the client, staff and super-admin dashboards.
+
+  The navigation items each dashboard supplies are derived server-side
+  from entitlements and permissions. The menu is a reflection of access,
+  never the mechanism that grants it — every route behind it is checked
+  again on the server.
+{% endcomment %}
+
+{% block body_class %}bg-mist text-navy{% endblock %}
+
+{% block chrome_top %}
+<header class="sticky top-0 z-[var(--z-sticky)] border-b border-midnight bg-navy text-white">
+  <div class="mx-auto flex h-14 w-full max-w-[1600px] items-center gap-6 px-[var(--gutter)] sm:px-6 lg:px-8">
+    <a href="/" class="text-base font-semibold tracking-tight focus-ring">{{ brand.name }}</a>
+
+    <nav class="hidden flex-1 items-center gap-1 overflow-x-auto lg:flex" aria-label="Dashboard">
+      {% block dashboard_nav %}{% endblock %}
+    </nav>
+
+    <div class="ml-auto flex items-center gap-3">
+      {% block dashboard_actions %}{% endblock %}
+
+      {% if request.user.is_authenticated %}
+        {% component "dropdown" label=request.user.get_short_name align="right" trigger_css="inline-flex items-center gap-2 rounded-[var(--radius-control)] px-2 py-1.5 text-sm text-white transition hover:bg-midnight focus-ring" %}
+          <a href="#" class="ui-menu-item" role="menuitem">Your profile</a>
+          <a href="#" class="ui-menu-item" role="menuitem">Settings</a>
+          <form method="post" action="/accounts/logout/" role="none">
+            {% csrf_token %}
+            <button type="submit" class="ui-menu-item" role="menuitem">Sign out</button>
+          </form>
+        {% endcomponent %}
+      {% endif %}
+    </div>
+  </div>
+
+  {% comment %}
+    The module nav collapses to a scrollable row rather than a hamburger:
+    on a phone the client still needs to move between SEO, Paid ads and
+    Social without opening a menu first.
+  {% endcomment %}
+  <nav class="flex gap-1 overflow-x-auto border-t border-midnight px-[var(--gutter)] py-2 lg:hidden"
+       aria-label="Dashboard">
+    {% block dashboard_nav_mobile %}{% endblock %}
+  </nav>
+</header>
+{% endblock %}
+
+{% block main_class %}mx-auto w-full max-w-[1600px] px-[var(--gutter)] py-8 sm:px-6 lg:px-8{% endblock %}
+
+{% block content %}
+  {% component "page_header" title=page_title subtitle=page_subtitle eyebrow=page_eyebrow %}
+    {% block page_actions %}{% endblock %}
+  {% endcomponent %}
+  <div class="mt-8">{% block dashboard_content %}{% endblock %}</div>
+{% endblock %}

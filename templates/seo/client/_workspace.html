@@ -1,0 +1,146 @@
+{% load ui %}
+{% comment %}
+  A client's view of their own SEO work, shown inside the portal's Search
+  area.
+
+  Everything here came through `seo.selectors.client_workspace`, which
+  scopes by the tenancy rule and withholds anything not ready: an audit
+  appears only once delivered, a task only once somebody has written a
+  summary for the client. The template does no filtering of its own, on
+  purpose — a condition forgotten here is how an internal note leaks.
+{% endcomment %}
+
+<div>
+  {% component "metrics_grid" columns=4 %}
+    {% ui_metric_card label="Keywords tracked" value=seo.summary.keywords_tracked caption="Terms we are working on" %}
+    {% ui_metric_card label="In the top 10" value=seo.summary.keywords_top_10 caption=seo.summary.keywords_top_3|stringformat:"s"|add:" in the top 3" %}
+    {% if seo.summary.average_position %}
+      {% ui_metric_card label="Average position" value=seo.summary.average_position caption="Across terms with a reading" %}
+    {% else %}
+      {% ui_metric_card label="Average position" value="—" caption="No positions recorded yet" %}
+    {% endif %}
+    {% ui_metric_card label="Issues fixed" value=seo.summary.issues_fixed caption=seo.summary.issues_open|stringformat:"s"|add:" still open" %}
+  {% endcomponent %}
+  <p class="mt-3 t-micro">
+    Every figure is a count of work recorded by your account team. Positions
+    come from their rank tracking, not from a live search — so a number here
+    is one somebody checked.
+  </p>
+</div>
+
+{% if seo.goals %}
+  <div class="mt-6">
+    {% component "card" title="What we are working towards" subtitle="Progress is measured from the records below." %}
+      <ul class="space-y-4">
+        {% for row in seo.goals %}
+          <li>
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <p class="t-body font-medium">{{ row.goal.get_metric_display }}</p>
+              <p class="t-micro">
+                <span class="font-semibold text-navy t-numeric">{{ row.current }}</span> of {{ row.target }}
+                {% if row.goal.due_on %}· by {{ row.goal.due_on|date:"j M Y" }}{% endif %}
+                {% if row.met %}· <span class="font-semibold text-live">met</span>{% endif %}
+              </p>
+            </div>
+            {% ui_progress row.current row.target %}
+            {% if row.goal.note %}<p class="mt-1 t-micro">{{ row.goal.note }}</p>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endcomponent %}
+  </div>
+{% endif %}
+
+<div class="mt-6 grid gap-5 lg:grid-cols-2">
+  {% component "card" title="Your keywords" subtitle="Where each term sat when it was last checked." %}
+    <ul class="divide-y divide-mist">
+      {% for keyword in seo.keywords|slice:":12" %}
+        <li class="flex flex-wrap items-center justify-between gap-3 py-2.5">
+          <div class="min-w-0">
+            <p class="truncate t-body font-medium">{{ keyword.term }}</p>
+            {% if keyword.latest_recorded_on %}
+              <p class="t-micro">checked {{ keyword.latest_recorded_on|date:"j M Y" }}</p>
+            {% endif %}
+          </div>
+          <span class="shrink-0 t-body font-semibold t-numeric">
+            {% if keyword.latest_position %}
+              {{ keyword.latest_position }}
+            {% else %}
+              <span class="t-meta font-normal">Not yet ranking</span>
+            {% endif %}
+          </span>
+        </li>
+      {% empty %}
+        <li class="py-3"><p class="t-meta">No keywords are being tracked yet.</p></li>
+      {% endfor %}
+    </ul>
+    {% if seo.keywords|length > 12 %}
+      {% slot "footer" %}
+        <p class="t-micro">{{ seo.keywords|length }} terms tracked in total.</p>
+      {% endslot %}
+    {% endif %}
+  {% endcomponent %}
+
+  {% component "card" title="Work delivered" subtitle="Content, fixes and outreach done for you." %}
+    <ol class="divide-y divide-mist">
+      {% for task in seo.tasks %}
+        <li class="flex gap-3 py-3">
+          <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full {% if task.status == 'done' %}bg-live{% else %}bg-gold{% endif %}" aria-hidden="true"></span>
+          <div class="min-w-0 flex-1">
+            <p class="t-body">{{ task.client_summary }}</p>
+            <p class="t-micro">
+              {{ task.get_kind_display }} ·
+              {% if task.completed_on %}{{ task.completed_on|date:"j M Y" }}{% else %}{{ task.get_status_display|lower }}{% endif %}
+              {% if task.delivered_url %}
+                · <a href="{{ task.delivered_url }}" target="_blank" rel="noopener" class="font-medium text-gold-600 underline-offset-2 hover:underline focus-ring">see it</a>
+              {% endif %}
+            </p>
+          </div>
+        </li>
+      {% empty %}
+        <li class="py-3"><p class="t-meta">Nothing to report here yet. Work appears once your account team writes it up.</p></li>
+      {% endfor %}
+    </ol>
+  {% endcomponent %}
+
+  {% component "card" title="Audits" subtitle="Reviews of your site, once they are ready." %}
+    <ul class="divide-y divide-mist">
+      {% for audit in seo.audits %}
+        <li class="py-3">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <p class="t-body font-medium">{{ audit.title }}</p>
+            <span class="t-micro">{{ audit.performed_on|date:"j M Y" }}</span>
+          </div>
+          {% if audit.summary %}<p class="mt-1 t-meta">{{ audit.summary|truncatewords:40 }}</p>{% endif %}
+          <p class="mt-1 t-micro">
+            {{ audit.issue_count }} finding{{ audit.issue_count|pluralize }}
+            {% if audit.health_score %}· technical health {{ audit.health_score }}/100{% endif %}
+          </p>
+        </li>
+      {% empty %}
+        <li class="py-3">
+          <p class="t-meta">
+            No audits have been delivered yet. One appears here as soon as
+            your account team has finished writing it up.
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endcomponent %}
+
+  {% component "card" title="Links earned" subtitle="Sites now linking to you." %}
+    <ul class="divide-y divide-mist">
+      {% for link in seo.backlinks %}
+        <li class="flex flex-wrap items-center justify-between gap-3 py-2.5">
+          <div class="min-w-0">
+            <p class="truncate t-body font-medium">{{ link.source_domain }}</p>
+            {% if link.anchor_text %}<p class="truncate t-micro">“{{ link.anchor_text }}”</p>{% endif %}
+          </div>
+          {% if link.went_live_on %}<span class="shrink-0 t-micro">{{ link.went_live_on|date:"j M Y" }}</span>{% endif %}
+        </li>
+      {% empty %}
+        <li class="py-3"><p class="t-meta">None recorded yet.</p></li>
+      {% endfor %}
+    </ul>
+  {% endcomponent %}
+</div>

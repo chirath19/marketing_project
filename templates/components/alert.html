@@ -1,0 +1,17 @@
+{% comment %}
+  `role` comes from the tone: errors and warnings interrupt with `alert`,
+  informational messages use `status` so a screen reader finishes its
+  current sentence first.
+{% endcomment %}
+<div class="mb-3 flex items-start gap-3 rounded-[var(--radius-control)] border px-4 py-3 text-sm {{ css }}"
+     role="{{ role }}"{% if dismissible %} x-data="{ shown: true }" x-show="shown" x-cloak{% endif %}>
+  <div class="flex-1">
+    {% if title %}<p class="font-semibold">{{ title }}</p>{% endif %}
+    <p>{{ message }}{{ slot }}</p>
+  </div>
+  {% if dismissible %}
+    <button type="button" @click="shown = false"
+            class="shrink-0 rounded px-1 opacity-60 transition hover:opacity-100 focus-ring"
+            aria-label="Dismiss this message">&times;</button>
+  {% endif %}
+</div>

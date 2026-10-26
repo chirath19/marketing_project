@@ -1,0 +1,35 @@
+{% comment %}
+  {% component "navbar" tone="light" heading="Heliograph" heading_href="/" %}
+    {% slot "links" %} … {% endslot %}
+    {% slot "actions" %} … {% endslot %}
+    {% slot "mobile" %} … {% endslot %}
+  {% endcomponent %}
+
+  The mobile menu is a disclosure, not a second navigation: the same
+  links, re-laid out. aria-expanded and aria-controls tie the toggle to
+  the panel it opens.
+{% endcomment %}
+<header x-data="{ open: false }"
+        class="sticky top-0 z-[var(--z-sticky)] border-b {% if tone == 'dark' %}border-midnight bg-navy text-white{% else %}border-mist bg-white/95 text-navy backdrop-blur{% endif %}">
+  <div class="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-[var(--gutter)] sm:px-6 lg:px-8">
+    <a href="{{ heading_href|default:'/' }}" class="text-lg font-semibold tracking-tight focus-ring">{{ heading }}</a>
+
+    <nav class="hidden items-center gap-8 md:flex" aria-label="Main">{{ slots.links }}</nav>
+
+    <div class="hidden items-center gap-3 md:flex">{{ slots.actions }}</div>
+
+    <button type="button" class="rounded p-1 md:hidden focus-ring" @click="open = !open"
+            :aria-expanded="open ? 'true' : 'false'" aria-controls="navbar-mobile"
+            aria-label="Toggle navigation">
+      <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8"
+           viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/>
+      </svg>
+    </button>
+  </div>
+
+  <div id="navbar-mobile" x-show="open" x-cloak @click.outside="open = false"
+       class="border-t px-[var(--gutter)] py-4 md:hidden {% if tone == 'dark' %}border-midnight bg-navy{% else %}border-mist bg-white{% endif %}">
+    <nav class="flex flex-col gap-3" aria-label="Main">{% if slots.mobile %}{{ slots.mobile }}{% else %}{{ slots.links }}{% endif %}</nav>
+  </div>
+</header>

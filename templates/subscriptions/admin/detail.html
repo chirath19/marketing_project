@@ -1,0 +1,154 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ subscription.name }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+<section class="journey-panel"><div class="journey-heading"><div><p class="workspace-kicker">PROJECT OVERVIEW</p><h2>{{ subscription.name }}</h2></div>{% ui_status_badge subscription.status label=subscription.get_status_display %}</div><p class="whitespace-pre-line">{{ subscription.custom_scope|default:subscription.service.short_description }}</p><p class="t-meta mt-3">{% if subscription.starts_on %}Starts {{ subscription.starts_on }}{% endif %}{% if subscription.ends_on %} · Ends {{ subscription.ends_on }}{% endif %}</p></section>
+{% if project_reviews %}<section class="journey-panel journey-attention"><h2>Waiting on the client</h2><div class="journey-list">{% for review in project_reviews %}<a href="{% url 'staff:approval_detail' review.pk %}"><strong>{{ review.title }}</strong><span>Review details →</span></a>{% endfor %}</div></section>{% endif %}
+{% if project_contacts %}<section class="journey-panel"><h2>Progress &amp; client communication</h2><p class="t-meta">Publish project updates and files to the right client contact.</p><div class="journey-grid">{% for contact in project_contacts %}<article class="journey-report"><h3>{{ contact.name }}</h3>{% for report in contact.updates %}<p>{{ report.title }}{% if not report.published_at %} · Draft{% endif %}</p><label for="staff-report-{{ report.pk }}">{{ report.get_status_display }} · {{ report.progress }}%</label><progress id="staff-report-{{ report.pk }}" class="workspace-progress" value="{{ report.progress }}" max="100">{{ report.progress }}%</progress>{% endfor %}<div class="journey-actions">{% if contact.reports %}<a class="ui-btn ui-btn-primary" href="{{ contact.url }}?tab=reports&amp;project={{ subscription.pk }}">Update progress &amp; files</a>{% endif %}{% if contact.messages %}<a class="workspace-link" href="{{ contact.url }}?tab=messages&amp;project={{ subscription.pk }}">Message client</a>{% endif %}{% if contact.payments %}<a class="workspace-link" href="{{ contact.url }}?tab=invoices&amp;project={{ subscription.pk }}">Project billing</a>{% endif %}</div></article>{% endfor %}</div></section>{% endif %}
+{% if project_campaigns %}<section class="journey-panel"><h2>Work under this project</h2><div class="journey-list">{% for campaign in project_campaigns %}<a href="{% url 'staff:campaign_detail' campaign.pk %}"><div><strong>{{ campaign.name }}</strong><span>{{ campaign.type_label }}</span></div>{% ui_status_badge campaign.status label=campaign.get_status_display %}</a>{% endfor %}</div></section>{% endif %}
+{% if project_tools %}<details class="journey-panel"><summary>Specialist work &amp; results</summary><div class="journey-actions">{% for tool in project_tools %}<a class="workspace-link" href="{{ tool.href }}">{{ tool.label }} →</a>{% endfor %}</div></details>{% endif %}
+
+<div class="grid gap-5 lg:grid-cols-3">
+  <div class="space-y-5 lg:col-span-2">
+
+    <details class="journey-panel" {% if form.is_bound %}open{% endif %}><summary>Edit scope, pricing &amp; dates</summary>
+    {% component "card" title="Commercial detail" subtitle="What this client agreed to, as sold." %}
+      <form method="post" action="{% url 'staff:subscription_update' subscription.pk %}" novalidate>
+        {% csrf_token %}
+        {% ui_form_errors form %}
+
+        {% ui_field form.name %}
+        <div class="grid gap-x-5 sm:grid-cols-3">
+          {% ui_field form.price %}
+          {% ui_field form.currency %}
+          {% ui_field form.billing_type %}
+        </div>
+        <div class="grid gap-x-5 sm:grid-cols-2">
+          {% ui_field form.starts_on %}
+          {% ui_field form.ends_on %}
+        </div>
+        {% ui_field form.custom_scope %}
+        {% ui_field form.client_notes %}
+        {% ui_field form.internal_notes %}
+
+        {% comment %}
+          The service itself is fixed. Changing which service a client is
+          paying for is not a correction, it is a different agreement —
+          close this one and add the other.
+        {% endcomment %}
+        <input type="hidden" name="service" value="{{ subscription.service_id }}">
+        <input type="hidden" name="package" value="{{ subscription.package_id|default:'' }}">
+
+        {% ui_button label="Save changes" type="submit" variant="primary" size="sm" %}
+      </form>
+    {% endcomponent %}
+    </details>
+
+    {% component "card" title="History" subtitle="Everything that has happened to this service." %}
+      <form method="post" action="{% url 'staff:subscription_note' subscription.pk %}" class="mb-5" novalidate>
+        {% csrf_token %}
+        {% ui_field note_form.body %}
+        {% ui_field note_form.share_with_client %}
+        {% ui_button label="Add note" type="submit" variant="outline" size="sm" %}
+      </form>
+
+      <ol class="divide-y divide-mist border-t border-mist">
+        {% for event in events %}
+          <li class="flex gap-3 py-3">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full {% if event.is_internal %}bg-steel-400{% else %}bg-gold{% endif %}" aria-hidden="true"></span>
+            <div class="min-w-0 flex-1">
+              <p class="t-body">{{ event.body }}</p>
+              <p class="t-micro">
+                {{ event.get_kind_display }} ·
+                {% if event.actor %}{{ event.actor.get_full_name|default:event.actor.email }} · {% endif %}
+                {{ event.created_at|date:"j M Y, H:i" }}
+                {% if event.is_internal %}· <span class="font-medium">staff only</span>{% else %}· <span class="font-medium text-gold-600">client can see this</span>{% endif %}
+              </p>
+            </div>
+          </li>
+        {% endfor %}
+      </ol>
+    {% endcomponent %}
+  </div>
+
+  <aside class="space-y-5">
+    {% component "card" title="Status" %}
+      <div class="mb-4">{% ui_status_badge subscription.status label=subscription.get_status_display %}</div>
+
+      {% if subscription.is_past_end %}
+        <div class="mb-4">
+          {% ui_alert tone="warning" message="The agreed end date has passed. Extend it, or close the service." %}
+        </div>
+      {% endif %}
+
+      {% if status_form.fields.status.choices %}
+        <form method="post" action="{% url 'staff:subscription_status' subscription.pk %}" novalidate>
+          {% csrf_token %}
+          {% ui_field status_form.status %}
+          {% ui_field status_form.note %}
+          {% ui_button label="Update status" type="submit" variant="primary" size="sm" full=True %}
+        </form>
+      {% else %}
+        <p class="t-meta">
+          This service is cancelled. Reviving it should be a new agreement
+          rather than a dropdown, so there is nowhere left for it to go.
+        </p>
+      {% endif %}
+    {% endcomponent %}
+
+    {% component "card" title="What this opens" subtitle="In the client's workspace." %}
+      {% if module %}
+        <p class="t-body font-medium">{{ module.label }}</p>
+        <p class="mt-1 t-meta">{{ module.description }}</p>
+        {% if subscription.is_delivering %}
+          <p class="mt-3 t-micro font-medium text-live">Open to them now.</p>
+        {% else %}
+          <p class="mt-3 t-micro">
+            Closed while this service is {{ subscription.get_status_display|lower }}.
+            Only an active service opens an area.
+          </p>
+        {% endif %}
+      {% else %}
+        <p class="t-meta">
+          Nothing. This service's category has no workspace area attached to
+          it, which is fine for work delivered outside the platform.
+        </p>
+      {% endif %}
+    {% endcomponent %}
+
+    {% component "card" title="Client" %}
+      <p class="t-body font-medium">
+        <a href="{% url 'staff:client_detail' subscription.organization.slug %}" class="underline-offset-2 hover:underline focus-ring">{{ subscription.organization.label }}</a>
+      </p>
+      {% comment %}
+        Labelled, because an unlabelled badge directly under the client
+        name reads as this service's status — and the two are routinely
+        different.
+      {% endcomment %}
+      <p class="mt-2 flex items-center gap-2 t-micro">
+        Account status
+        {% ui_status_badge subscription.organization.status %}
+      </p>
+      <dl class="mt-4 space-y-2 text-sm">
+        <div><dt class="t-micro">Catalogue service</dt>
+          <dd><a href="{{ subscription.service.get_absolute_url }}" target="_blank" rel="noopener" class="text-gold-600 underline-offset-2 hover:underline focus-ring">{{ subscription.service.name }}</a></dd></div>
+        {% if subscription.package %}
+          <div><dt class="t-micro">Package</dt><dd class="t-body">{{ subscription.package.name }}</dd></div>
+        {% endif %}
+        {% if subscription.quote %}
+          <div><dt class="t-micro">From quote</dt>
+            <dd><a href="{% url 'staff:quote_detail' subscription.quote.pk %}" class="text-gold-600 underline-offset-2 hover:underline focus-ring">{{ subscription.quote.reference }}</a></dd></div>
+        {% endif %}
+        {% if subscription.created_by %}
+          <div><dt class="t-micro">Set up by</dt><dd class="t-body">{{ subscription.created_by.get_full_name|default:subscription.created_by.email }}</dd></div>
+        {% endif %}
+        <div><dt class="t-micro">Added</dt><dd class="t-body">{{ subscription.created_at|date:"j M Y" }}</dd></div>
+        {% if subscription.activated_at %}
+          <div><dt class="t-micro">Activated</dt><dd class="t-body">{{ subscription.activated_at|date:"j M Y" }}</dd></div>
+        {% endif %}
+      </dl>
+    {% endcomponent %}
+  </aside>
+</div>
+{% endblock %}

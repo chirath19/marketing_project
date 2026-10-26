@@ -1,0 +1,23 @@
+{% extends "base/public_classic.html" %}
+{% block title %}Request a quotation · {{ brand.name }}{% endblock %}
+{% block body_class %}workspace{% endblock %}
+{% block main_class %}mx-auto w-full max-w-3xl px-4 py-12 sm:px-6{% endblock %}
+{% block content %}
+<section class="workspace-panel">
+  <p class="workspace-kicker">REQUEST A QUOTATION</p>
+  {% if staff_account %}
+    <h1 class="t-page mt-3">You are signed in with a staff account</h1>
+    <p class="t-body mt-4">Clients submit quotation requests from their own accounts. To request a quotation as a client, sign out and sign in with a client account.</p>
+    <p class="t-meta mt-3">You can review and respond to client requests in the staff workspace.</p>
+    <div class="flex flex-wrap gap-3 mt-6">
+      {% if perms.permissions.quotes_view %}<a class="ui-btn ui-btn-primary" href="{% url 'staff:module_quotes' %}">Manage client quotations</a>{% endif %}
+      <a class="ui-btn ui-btn-outline" href="{% url 'staff:dashboard' %}">Staff dashboard</a>
+    </div>
+  {% else %}
+    <h1 class="t-page mt-3">{% if organization.status == 'pending' %}Your workspace is awaiting approval{% else %}Your workspace is not active{% endif %}</h1>
+    <p class="t-body mt-4">{{ organization.label }} must be active before you can send a quotation request. The agency administrator needs to {% if organization.status == 'pending' %}approve{% else %}reactivate{% endif %} your workspace.</p>
+    <p class="t-meta mt-3">Your selected services are still saved. You can return to this page once your workspace is active.</p>
+    <a class="ui-btn ui-btn-primary mt-6" href="{% url 'organizations:overview' %}">Back to your workspace</a>
+  {% endif %}
+</section>
+{% endblock %}

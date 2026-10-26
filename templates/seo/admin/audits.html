@@ -1,0 +1,52 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% include "seo/admin/_nav.html" %}
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <div class="surface p-2 sm:p-4">
+        {% component "table" caption="Audits" columns=columns %}
+          {% for audit in audits %}
+            <tr class="border-b border-mist last:border-0">
+              <td class="ui-td" data-label="Audit">
+                <a href="{% url 'staff:seo_audit_detail' audit.pk %}" class="t-body font-medium text-navy underline-offset-2 hover:underline focus-ring">{{ audit.title }}</a>
+                <span class="block t-micro">{{ audit.performed_on|date:"j M Y" }}</span>
+              </td>
+              <td class="ui-td t-micro" data-label="Findings">
+                {{ audit.open_issue_count }} open of {{ audit.issue_count }}
+              </td>
+              <td class="ui-td t-micro" data-label="Health">
+                {% if audit.health_score %}{{ audit.health_score }}/100{% else %}&mdash;{% endif %}
+              </td>
+              <td class="ui-td" data-label="Status">{% ui_status_badge audit.status label=audit.get_status_display %}</td>
+            </tr>
+          {% empty %}
+            {% ui_table_empty colspan=4 icon="⌕" title="No audits yet" body="An audit is a point-in-time review of the site: what you found, how severe each finding is, and what to do about it. The client sees it only once you deliver it." %}
+          {% endfor %}
+        {% endcomponent %}
+      </div>
+    </div>
+
+    {% if can_create %}
+      <aside>
+        {% component "card" title="New audit" subtitle="Scores are yours to enter — nothing is fetched." %}
+          <form method="post" action="{% url 'staff:seo_audit_create' organization.slug %}" novalidate>
+            {% csrf_token %}
+            {% ui_field form.title %}
+            {% ui_field form.site_url %}
+            {% ui_field form.performed_on %}
+            <div class="grid gap-x-5 sm:grid-cols-2">
+              {% ui_field form.health_score %}
+              {% ui_field form.pages_crawled %}
+            </div>
+            {% ui_field form.score_source %}
+            {% ui_button label="Create audit" type="submit" variant="primary" size="sm" full=True %}
+          </form>
+        {% endcomponent %}
+      </aside>
+    {% endif %}
+  </div>
+{% endblock %}

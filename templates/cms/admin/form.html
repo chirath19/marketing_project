@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <form method="post" enctype="multipart/form-data" class="max-w-2xl surface p-6" novalidate>
+    {% csrf_token %}
+    {% ui_form_errors form %}
+    {% for field in form %}{% ui_field field %}{% endfor %}
+    <div class="flex items-center gap-3">
+      {% ui_button label=submit_label|default:"Save changes" type="submit" variant="primary" %}
+      {% if back_url %}<a href="{{ back_url }}" class="text-sm font-medium text-steel underline-offset-2 hover:text-navy hover:underline focus-ring">Cancel</a>{% endif %}
+    </div>
+  </form>
+{% endblock %}

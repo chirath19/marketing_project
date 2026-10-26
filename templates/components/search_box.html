@@ -1,0 +1,16 @@
+{% comment %}
+  type="search" so the browser offers its own clear control and history.
+  The label is visually hidden rather than absent — a placeholder is not
+  a label, and it disappears the moment someone starts typing.
+{% endcomment %}
+<div class="relative">
+  <label for="id_{{ name }}" class="sr-only">{{ label }}</label>
+  <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-steel-400" aria-hidden="true">
+    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="9" cy="9" r="6"/><path stroke-linecap="round" d="m13.5 13.5 3 3"/>
+    </svg>
+  </span>
+  <input type="search" name="{{ name }}" id="id_{{ name }}" value="{{ value }}"
+         class="ui-input pl-9" placeholder="{{ placeholder }}"
+         {% for key, value in attrs.items %} {{ key }}="{{ value }}"{% endfor %}>
+</div>

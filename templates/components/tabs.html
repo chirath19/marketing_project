@@ -1,0 +1,26 @@
+{% comment %}
+  Filter tabs, rendered as links.
+
+  The selected filter is server-side state, so it belongs in the URL: it
+  must survive a reload, a back button and a shared link. aria-current
+  marks the active one; the row scrolls horizontally on a phone rather
+  than wrapping into an unreadable block.
+{% endcomment %}
+<nav aria-label="{{ label }}" class="-mx-1 overflow-x-auto">
+  <ul class="flex min-w-max items-center gap-1 px-1">
+    {% for tab in tabs %}
+      <li>
+        <a href="{{ tab.href }}"
+           {% if tab.key == active %}aria-current="page"{% endif %}
+           class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                  {% if tab.key == active %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">
+          {{ tab.label }}
+          {% if tab.count is not None %}
+            <span class="rounded-[var(--radius-pill)] px-1.5 py-0.5 text-xs t-numeric
+                         {% if tab.key == active %}bg-white/20 text-white{% else %}bg-mist text-steel{% endif %}">{{ tab.count }}</span>
+          {% endif %}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>

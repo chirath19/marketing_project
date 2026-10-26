@@ -1,0 +1,72 @@
+{% extends "public/base_site.html" %}
+{% load website_copy %}
+{% load ui %}
+
+{% comment %}
+  The success response.
+
+  It says what actually happens next and deliberately does not say
+  "check your inbox for a confirmation" — none is sent, and telling
+  someone to wait for an email that will never arrive is worse than
+  saying nothing.
+
+  No reply time is stated unless the agency has configured one in site
+  settings. A promise printed on this page is a promise somebody has to
+  keep at four o'clock on a Friday.
+{% endcomment %}
+
+{% block title %}{% if is_quote %}Quote request sent{% else %}Message sent{% endif %} · {{ site.site_name }}{% endblock %}
+{% block head_extra %}
+  {{ block.super }}
+  {% comment %} Adds to the shared head rather than replacing it: without block.super this page quietly lost its Open Graph tags and the site's structured data. {% endcomment %}
+  <meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block site_art %}{% include "public/_backgrounds.html" with art="quote" %}{% endblock %}
+
+{% block content %}
+<div class="site-result relative overflow-hidden">
+  <div class="site-beam" aria-hidden="true"></div>
+  <div class="site-shell relative py-24 text-center sm:py-32">
+    <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold text-2xl text-navy shadow-[0_0_48px_color-mix(in_srgb,var(--color-gold)_50%,transparent)]"
+          aria-hidden="true">{% website_copy "public.leads.sent.001" %}</span>
+
+    <p class="site-label site-label-invert mt-8 justify-center">
+      {% if is_quote %}Quote request received{% else %}Enquiry received{% endif %}
+    </p>
+    <h1 class="site-display mt-5 text-4xl sm:text-5xl">{% website_copy "public.leads.sent.002" %}</h1>
+
+    <p class="site-lead mx-auto mt-6 max-w-lg text-steel-700">
+      {% if is_quote %}
+        Your selection and your details are saved, and the team that handles
+        quotes can see them now. Someone will read it and come back to you with
+        a scope and a price.
+      {% else %}
+        Your message is saved and the team can see it now. Someone will read it
+        and reply to you directly.
+      {% endif %}
+      {% if site.response_time_note %}{{ site.response_time_note }}{% endif %}
+    </p>
+
+    <p class="site-micro mx-auto mt-4 max-w-md text-steel-700">{% website_copy "public.leads.sent.003" %}</p>
+
+    {% if site.contact_email or site.whatsapp_url %}
+      <p class="site-micro mx-auto mt-6 max-w-md text-steel-700">
+        Something to add, or need it sooner?
+        {% if site.contact_email %}Email <a href="mailto:{{ site.contact_email }}" class="site-link site-link-invert text-xs focus-ring">{{ site.contact_email }}</a>{% endif %}{% if site.contact_email and site.whatsapp_url %} or {% endif %}{% if site.whatsapp_url %}<a href="{{ site.whatsapp_url }}" target="_blank" rel="noopener" class="site-link site-link-invert text-xs focus-ring">{% website_copy "public.leads.sent.004" %}</a>{% endif %}.
+      </p>
+    {% endif %}
+
+    {% if guest_quote_token %}<div class="mx-auto max-w-xl mt-8"><a href="{% url 'public:guest_quote' guest_quote_token %}" class="site-btn site-btn-primary">{% website_copy 'refinement.sent.1' %}</a><p class="site-micro mt-3">{% website_copy 'refinement.sent.2' %}</p></div>{% endif %}
+    <div class="mt-10 flex flex-wrap justify-center gap-3">
+      {% if is_quote %}
+        <a href="/" class="site-btn site-btn-primary">{% website_copy "public.leads.sent.005" %}<span class="site-btn-arrow" aria-hidden="true">{% website_copy "public.leads.sent.006" %}</span></a>
+        <a href="/blog/" class="site-btn site-btn-light">{% website_copy "public.leads.sent.007" %}</a>
+      {% else %}
+        <a href="{% url 'public:services' %}" class="site-btn site-btn-primary">{% website_copy "public.leads.sent.008" %}<span class="site-btn-arrow" aria-hidden="true">{% website_copy "public.leads.sent.009" %}</span></a>
+        <a href="/" class="site-btn site-btn-light">{% website_copy "public.leads.sent.010" %}</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

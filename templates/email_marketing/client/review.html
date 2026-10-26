@@ -1,0 +1,20 @@
+{% extends "portal/base.html" %}
+{% load ui %}
+{% block portal_content %}
+  <p class="mb-4"><a class="underline focus-ring" href="{% url 'organizations:approval_detail' approval.approval_request.pk %}">Open shared approval, comments and history</a></p>
+  {% component "page_header" title="Review email deliverable" subtitle=organization.label %}{% endcomponent %}
+  <article class="mt-6 surface p-6">
+    <h2 class="t-section">{{ approval.snapshot.name }}</h2>
+    <p class="mt-2 t-meta">{{ approval.get_status_display }} · Deliverable v{{ approval.deliverable_revision }} / work v{{ approval.work_revision }}</p>
+    <div class="mt-5">{% include "email_marketing/partials/snapshot.html" with snapshot=approval.snapshot %}</div>
+    <p class="mt-5 t-meta">Your decision applies to this submitted version. Approval does not send an email or activate a flow. Linked files are hosted externally; review their contents before approving.</p>
+  </article>
+  {% if can_review and approval.status == 'pending' %}
+  <form method="post" class="mt-6 surface p-6">
+    {% csrf_token %}{% ui_form_errors form %}
+    <div class="grid gap-4">{% for field in form %}{% ui_field field %}{% endfor %}</div>
+    <div class="mt-5">{% ui_button label="Submit review" type="submit" %}</div>
+  </form>
+  {% else %}<p class="mt-6 t-meta">{% if approval.status == 'pending' %}Your membership permits viewing only.{% else %}{{ approval.get_status_display }}. {{ approval.feedback }}{% endif %}</p>{% endif %}
+  <a class="mt-6 inline-block underline focus-ring" href="{% url 'organizations:email_marketing_detail' approval.deliverable.work_id %}">Back to work</a>
+{% endblock %}

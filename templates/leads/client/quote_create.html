@@ -1,0 +1,16 @@
+{% extends "portal/base.html" %}{% load ui %}
+{% block portal_content %}
+<section class="workspace-hero"><p class="workspace-kicker">LET’S PLAN YOUR WORK</p><h1 class="text-3xl font-semibold mt-3">Request a quotation</h1><p class="mt-3 max-w-2xl">Choose a service, describe a custom project, or do both. Your team will prepare a proposal with a clear scope and price for your approval.</p></section>
+<div class="grid gap-6 mt-7 lg:grid-cols-3">
+<div class="workspace-panel lg:col-span-2">
+<form method="post" class="workspace-form">{% csrf_token %}
+{% if form.non_field_errors %}<div role="alert" class="ui-alert ui-alert-error">{{ form.non_field_errors }}</div>{% endif %}
+<fieldset><legend class="t-section">1. Choose your services</legend><p class="t-meta mt-2 mb-5">Optional. Leave these blank if your request is custom.</p>
+{% if selected_lines %}<div class="rounded-xl bg-mist p-4 mb-5"><p class="font-semibold">Saved from your selection</p><ul class="mt-2 space-y-1">{% for line in selected_lines %}<li>{{ line.name }}</li>{% endfor %}</ul></div>{% endif %}
+<div class="quote-service-options">{{ form.services }}</div>{{ form.services.errors }}</fieldset>
+<div class="mt-7"><h2 class="t-section mb-4">2. Tell us what you need</h2>{% ui_field form.message %}</div>
+<div class="mt-7 flex flex-wrap gap-4 items-center"><button type="submit" class="ui-btn ui-btn-primary">Send quotation request</button><a class="workspace-link" href="{% url 'organizations:quotes' %}">View your requests</a></div>
+<p class="t-meta mt-4">Submitting a request does not commit you to a purchase.</p>
+</form></div>
+<aside class="workspace-panel self-start"><p class="workspace-kicker">WHAT HAPPENS NEXT</p><ol class="space-y-6 mt-5"><li><strong>01 · Scope and pricing</strong><p class="t-body mt-2">Your account team reviews the request and prepares an itemized proposal.</p></li><li><strong>02 · Discuss and decide</strong><p class="t-body mt-2">Ask questions, refine the scope and accept the agreed quotation in your workspace.</p></li><li><strong>03 · Follow your progress</strong><p class="t-body mt-2">Once work starts, follow service updates{% if features.reports %}, progress reports{% endif %}{% if features.payments %} and payment records{% endif %} here.</p></li></ol></aside>
+</div>{% endblock %}

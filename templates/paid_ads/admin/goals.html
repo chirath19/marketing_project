@@ -1,0 +1,20 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block admin_content %}
+  {% component "page_header" title="Advertising goals" subtitle=organization.label %}
+    
+      {% if can_create %}<a class="ui-menu-item" href="{% url 'staff:paid_ads_goal_create' organization.slug %}">Add goal</a>{% endif %}
+      <a class="ui-menu-item" href="{% url 'staff:paid_ads_workspace' organization.slug %}">Workspace</a>
+    
+  {% endcomponent %}
+  <ul class="mt-6 surface p-5 divide-y divide-mist">
+    {% for goal in page_obj %}
+      <li class="py-4">
+        <p class="t-card-title">{{ goal.title }} · {% if goal.is_active %}Active{% else %}Inactive{% endif %}</p>
+        <p class="t-meta">{{ goal.get_metric_display }} · {{ goal.target }} · {{ goal.currency }} · {{ goal.starts_on }}–{{ goal.ends_on }}</p>
+        {% if can_edit %}<a class="underline focus-ring" href="{% url 'staff:paid_ads_goal_edit' organization.slug goal.pk %}">Edit goal</a>{% endif %}
+      </li>
+    {% empty %}<li>{% ui_empty_state title="No advertising goals yet" body="Add a dated target or spending ceiling to measure against recorded performance." %}</li>{% endfor %}
+  </ul>
+  {% ui_pagination page_obj %}
+{% endblock %}

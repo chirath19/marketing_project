@@ -1,0 +1,42 @@
+{% load ui %}
+{% comment %}
+  One row in the staff Inbox — where every enquiry, quote request and
+  client message lands, since the platform sends nothing outbound.
+
+  `aria-current` marks the open conversation so the selection is
+  announced, not just tinted.
+{% endcomment %}
+<article class="relative flex gap-3 border-b border-mist px-4 py-3 last:border-0 transition hover:bg-mist-200
+                {% if selected %}bg-mist{% endif %}"
+         {% if selected %}aria-current="true"{% endif %}>
+  <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-midnight text-xs font-semibold text-white"
+        aria-hidden="true">{{ message.sender_name|slice:":1"|upper }}</span>
+
+  <div class="min-w-0 flex-1">
+    <div class="flex items-baseline justify-between gap-3">
+      <p class="truncate t-body {% if not message.is_read %}font-semibold{% endif %}">
+        {% if not message.is_read %}<span class="sr-only">Unread. </span>{% endif %}
+        {{ message.sender_name }}
+        {% if message.sender_org %}<span class="t-micro">&middot; {{ message.sender_org }}</span>{% endif %}
+      </p>
+      {% if message.received_at %}
+        <time class="shrink-0 t-micro">{{ message.received_at }}</time>
+      {% endif %}
+    </div>
+
+    <p class="truncate t-body {% if not message.is_read %}font-medium{% endif %}">
+      {% if href %}
+        <a href="{{ href }}" class="focus-ring after:absolute after:inset-0">{{ message.subject }}</a>
+      {% else %}{{ message.subject }}{% endif %}
+    </p>
+
+    {% if message.preview %}<p class="truncate t-micro">{{ message.preview }}</p>{% endif %}
+
+    <div class="mt-1 flex items-center gap-2">
+      {% if message.kind_label %}{% ui_badge label=message.kind_label tone="neutral" %}{% endif %}
+      {% if message.has_attachments %}
+        <span class="t-micro">Attachment<span class="sr-only">s included</span></span>
+      {% endif %}
+    </div>
+  </div>
+</article>

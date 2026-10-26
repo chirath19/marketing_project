@@ -1,0 +1,19 @@
+{% extends "base/base.html" %}
+{% load ui assets workflow %}
+
+{% block body_class %}workspace workspace-client{% endblock %}
+{% block chrome_top %}
+<header class="journey-client-header"><a href="{% url 'organizations:overview' %}" class="journey-brand">{{ brand.name }}<span>Client portal</span></a><div class="journey-header-actions">{% include "notifications/_bell.html" %}{% component "dropdown" label=request.user.get_short_name align="right" trigger_css="journey-account-button" %}<a href="{% url 'accounts:profile' %}" class="ui-menu-item" role="menuitem">Your profile</a><a href="{% url 'accounts:password_change' %}" class="ui-menu-item" role="menuitem">Change password</a><a href="/" class="ui-menu-item" role="menuitem">Visit website</a><form method="post" action="{% url 'accounts:logout' %}" role="none">{% csrf_token %}<button class="ui-menu-item" role="menuitem">Sign out</button></form>{% endcomponent %}</div></header>
+{% endblock %}
+{% block chrome_bottom %}<footer class="journey-footer">{{ brand.name }} · Your client workspace</footer>{% endblock %}
+
+{% block main_class %}mx-auto w-full max-w-7xl px-[var(--gutter)] py-8 sm:px-6 lg:px-8{% endblock %}
+
+{% block content %}
+<div class="journey-client-shell">
+  <aside class="journey-client-sidebar"><p class="journey-nav-caption">{{ organization.label|default:"Your workspace" }}</p>{% workflow_navigation %}{% if available_organizations|length > 1 %}<form class="journey-switcher" method="post" action="{% url 'organizations:switch' %}">{% csrf_token %}<label for="workspace-company">Switch company</label><select class="ui-input" id="workspace-company" name="organization">{% for company in available_organizations %}<option value="{{ company.pk }}" {% if company.pk == organization.pk %}selected{% endif %}>{{ company.label }}</option>{% endfor %}</select><button class="ui-btn ui-btn-outline">Switch</button></form>{% endif %}</aside>
+  <div class="min-w-0">{% workflow_location %}{% block portal_content %}{% endblock %}</div>
+</div>
+{% endblock %}
+
+{% block scripts %}{{ block.super }}<script src="{% static_version 'js/workspace.js' %}" defer></script>{% endblock %}

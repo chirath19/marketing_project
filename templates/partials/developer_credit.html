@@ -1,0 +1,23 @@
+{% load static %}
+{% comment %}
+  The developer credit: C&M Innovations, who built the site.
+
+  Shared by both footers — the marketing shell (`public/base_site.html`,
+  light pearl ground) and the workspace shell (`base/public_classic.html`,
+  navy ground). Pass `tone="dark"` from the navy footer: the logo's
+  wordmark is navy itself, so there it sits on a light chip to stay legible.
+
+  The image is a trimmed, transparent copy of
+  `assets/images/developer_logo/1000319353.png` kept in `static/img/developer/`.
+{% endcomment %}
+<p class="dev-credit{% if tone == 'dark' %} dev-credit--dark{% endif %}">
+  <span class="dev-credit-label">Designed &amp; developed by</span>
+  <span class="dev-credit-logo">
+    <picture>
+      <source srcset="{% static 'img/developer/cm-innovations.webp' %}" type="image/webp">
+      <img src="{% static 'img/developer/cm-innovations.png' %}"
+           alt="C&amp;M Innovations" width="122" height="160"
+           loading="lazy" decoding="async">
+    </picture>
+  </span>
+</p>

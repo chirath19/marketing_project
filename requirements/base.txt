@@ -1,0 +1,17 @@
+# Runtime dependencies shared by every environment.
+#
+# Pinned exactly: a marketing platform that deploys from a branch should
+# not pick up a different dependency tree between a test run and a deploy.
+#
+# Not here, on purpose: redis, celery, and any email/SMS/WhatsApp provider.
+
+Django==6.1.1
+djangorestframework==3.18.1
+psycopg[binary]==3.3.6
+django-environ==0.14.0
+dj-database-url==3.1.2
+django-htmx==1.29.0
+whitenoise==6.12.0
+Pillow==12.3.0
+cloudinary==1.46.2
+cryptography==50.0.2

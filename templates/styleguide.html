@@ -1,0 +1,349 @@
+{% extends "base/public.html" %}
+{% load ui %}
+
+{% comment %}
+  Every component, in every state, on one page.
+
+  This is the surface each phase checks for responsive behaviour and
+  keyboard accessibility before it is reported done. Staff-only outside
+  DEBUG, because it reveals the full component inventory.
+{% endcomment %}
+
+{% block title %}Design system · {{ brand.name }}{% endblock %}
+{% block main_class %}mx-auto w-full max-w-7xl px-[var(--gutter)] py-12 sm:px-6 lg:px-8{% endblock %}
+
+{% block content %}
+{% component "page_header" title="Design system" subtitle="The shared component library. Public pages and dashboards are both built from these." eyebrow="Phase 2" %}
+  {% ui_button label="View tokens" href="#tokens" variant="outline" %}
+{% endcomponent %}
+
+<div class="mt-10 space-y-14">
+
+{# ---------------------------------------------------------------- tokens #}
+<section id="tokens">
+  <h2 class="t-section">Brand palette</h2>
+  <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div><div class="h-16 rounded-[var(--radius-control)] bg-navy"></div><p class="mt-1.5 text-xs font-medium">Deep Navy</p><p class="t-micro">#111C38</p></div>
+    <div><div class="h-16 rounded-[var(--radius-control)] bg-midnight"></div><p class="mt-1.5 text-xs font-medium">Midnight</p><p class="t-micro">#233457</p></div>
+    <div><div class="h-16 rounded-[var(--radius-control)] bg-gold"></div><p class="mt-1.5 text-xs font-medium">Solar Gold</p><p class="t-micro">#E4A33C</p></div>
+    <div><div class="h-16 rounded-[var(--radius-control)] bg-steel"></div><p class="mt-1.5 text-xs font-medium">Steel</p><p class="t-micro">#6E7B96</p></div>
+    <div><div class="h-16 rounded-[var(--radius-control)] border border-steel-200 bg-mist"></div><p class="mt-1.5 text-xs font-medium">Mist</p><p class="t-micro">#EEF1F6</p></div>
+    <div><div class="h-16 rounded-[var(--radius-control)] border border-steel-200 bg-white"></div><p class="mt-1.5 text-xs font-medium">White</p><p class="t-micro">#FFFFFF</p></div>
+  </div>
+
+  <h3 class="mt-8 t-card-title">Typography scale</h3>
+  <div class="mt-3 surface space-y-2 p-5">
+    <p class="t-eyebrow">Eyebrow &middot; t-eyebrow</p>
+    <p class="t-page-title">Page title &middot; t-page-title</p>
+    <p class="t-section">Section &middot; t-section</p>
+    <p class="t-card-title">Card title &middot; t-card-title</p>
+    <p class="t-body">Body &middot; t-body</p>
+    <p class="t-meta">Meta &middot; t-meta</p>
+    <p class="t-micro">Micro &middot; t-micro</p>
+  </div>
+</section>
+
+{# --------------------------------------------------------------- buttons #}
+<section>
+  <h2 class="t-section">Buttons</h2>
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    {% ui_button label="Primary" %}
+    {% ui_button label="Secondary" variant="secondary" %}
+    {% ui_button label="Outline" variant="outline" %}
+    {% ui_button label="Ghost" variant="ghost" %}
+    {% ui_button label="Subtle" variant="subtle" %}
+    {% ui_button label="Danger" variant="danger" %}
+    {% ui_button label="Disabled" disabled=True %}
+    {% ui_button label="As link" href="#" variant="outline" %}
+  </div>
+  <div class="mt-3 flex flex-wrap items-center gap-3">
+    {% ui_button label="Small" size="sm" %}
+    {% ui_button label="Medium" size="md" %}
+    {% ui_button label="Large" size="lg" %}
+    {% ui_icon_button icon="+" label="Add campaign" variant="outline" %}
+    {% ui_icon_button icon="&times;" label="Remove filter" variant="ghost" size="sm" %}
+  </div>
+</section>
+
+{# ---------------------------------------------------------------- badges #}
+<section>
+  <h2 class="t-section">Badges and status</h2>
+  <div class="mt-4 flex flex-wrap items-center gap-2">
+    {% ui_badge label="Neutral" %}
+    {% ui_badge label="Featured" tone="gold" %}
+    {% ui_status_badge "live" %}
+    {% ui_status_badge "paused" %}
+    {% ui_status_badge "planned" %}
+    {% ui_status_badge "done" %}
+    {% ui_status_badge "cancelled" %}
+    {% ui_status_badge "awaiting_approval" label="Awaiting approval" %}
+  </div>
+  <p class="mt-2 t-micro">Status tone is derived from the value, so a status reads the same on a badge, a row and a card.</p>
+</section>
+
+{# --------------------------------------------------------------- metrics #}
+<section>
+  <h2 class="t-section">Metric cards and the metrics grid</h2>
+  <div class="mt-4">
+    {% component "metrics_grid" columns=4 %}
+      {% ui_metric_card label="Leads this month" value="1,458" delta="9% vs last period" direction="up" %}
+      {% ui_metric_card label="Ad spend" value="$24,600" delta="On budget vs last period" direction="flat" %}
+      {% ui_metric_card label="Revenue from marketing" value="$318,400" delta="14% vs last period" direction="up" href="#" %}
+      {% ui_metric_card label="Blended cost per lead" value="$21.70" delta="8% vs last period" direction="good" caption="Lower is better" %}
+    {% endcomponent %}
+  </div>
+
+  <h3 class="mt-8 t-card-title">Goal progress</h3>
+  <div class="mt-3 surface space-y-5 p-6">
+    {% ui_progress current=412 target=450 label="SEO" %}
+    {% ui_progress current=860 target=900 label="Paid ads" %}
+    {% ui_progress current=14980 target=16000 label="Social media" %}
+    {% ui_progress current=62 target=70 label="Email" %}
+  </div>
+</section>
+
+{# ----------------------------------------------------------------- forms #}
+<section>
+  <h2 class="t-section">Form controls</h2>
+  <p class="mt-1 t-meta">Bound Django fields on the left, standalone controls on the right. Both share one set of classes.</p>
+
+  <div class="mt-4 grid gap-5 lg:grid-cols-2">
+    {% component "card" title="Django form fields" %}
+      <form novalidate>
+        {% for field in demo_form %}{% ui_field field %}{% endfor %}
+        {% ui_button label="Send quote request" type="submit" full=True %}
+      </form>
+    {% endcomponent %}
+
+    {% component "card" title="Standalone controls" subtitle="For filter bars and other non-form inputs" %}
+      {% ui_input name="demo_text" label="Text input" placeholder="Northwind Supply" help_text="Help text sits under the control." %}
+      {% ui_input name="demo_error" label="With an error" value="not-an-email" error="Enter a valid email address." %}
+      {% ui_textarea name="demo_textarea" label="Textarea" rows=3 placeholder="Tell us about your business" %}
+      {% ui_select name="demo_select" label="Select" options=filter_tabs placeholder="Choose a status" %}
+      {% ui_checkbox name="demo_checkbox" label="Allow tracking cookies" checked=True %}
+      {% ui_radio_group name="demo_radio" label="Billing period" options=billing_options value="monthly" inline=True %}
+      {% ui_file_upload name="demo_file" label="Upload a creative" accept="image/*" help_text="PNG or JPG, up to 5 MB." %}
+    {% endcomponent %}
+  </div>
+
+  <h3 class="mt-8 t-card-title">Error summary</h3>
+  <div class="mt-3 max-w-2xl">{% ui_form_errors bound_form %}</div>
+</section>
+
+{# ------------------------------------------------------------ navigation #}
+<section>
+  <h2 class="t-section">Navigation</h2>
+
+  <div class="mt-4 space-y-5">
+    <div class="surface p-5">
+      <p class="t-micro mb-2">Breadcrumbs</p>
+      {% ui_breadcrumbs breadcrumb_items current="Brand search" %}
+    </div>
+
+    <div class="surface p-5">
+      <p class="t-micro mb-2">Filter tabs</p>
+      {% ui_tabs filter_tabs active="live" label="Campaign status" %}
+    </div>
+
+    <div class="surface p-5">
+      <p class="t-micro mb-2">Search box and dropdown</p>
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="min-w-56 flex-1">{% ui_search_box name="q" placeholder="Search campaigns" %}</div>
+        {% component "dropdown" label="Actions" align="left" %}
+          <a href="#" class="ui-menu-item" role="menuitem">Export CSV</a>
+          <a href="#" class="ui-menu-item" role="menuitem">Duplicate</a>
+          <button type="button" class="ui-menu-item ui-menu-item-danger" role="menuitem">Archive</button>
+        {% endcomponent %}
+      </div>
+    </div>
+
+    <div class="surface p-5">
+      <p class="t-micro mb-2">Dashboard nav items</p>
+      <div class="flex flex-wrap gap-2 rounded-[var(--radius-control)] bg-navy p-2">
+        {% ui_nav_item label="Overview" href="#" active=True count=3 %}
+        {% ui_nav_item label="Campaigns" href="#" %}
+        {% ui_nav_item label="SEO" href="#" %}
+        {% ui_nav_item label="Paid ads" href="#" %}
+      </div>
+    </div>
+
+    <div class="grid gap-5 lg:grid-cols-[18rem_1fr]">
+      <div class="surface overflow-hidden">
+        {% component "sidebar" label="Staff sections" heading="Heliograph staff" %}
+          {% component "sidebar_group" title="Delivery" %}
+            {% ui_nav_item label="Campaigns" href="#" variant="side" active=True %}
+            {% ui_nav_item label="Approvals" href="#" variant="side" count=3 %}
+            {% ui_nav_item label="Reports" href="#" variant="side" %}
+          {% endcomponent %}
+          {% component "sidebar_group" title="Clients" %}
+            {% ui_nav_item label="Organizations" href="#" variant="side" %}
+            {% ui_nav_item label="Inbox" href="#" variant="side" count=12 %}
+          {% endcomponent %}
+        {% endcomponent %}
+      </div>
+
+      <div class="surface p-5">
+        <p class="t-micro mb-2">Pagination</p>
+        {% ui_pagination demo_page querystring="status=live" %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ----------------------------------------------------------------- table #}
+<section>
+  <h2 class="t-section">Table</h2>
+  <p class="mt-1 t-meta">Below the small breakpoint each row becomes a card and every cell shows its column name. Narrow this page to see it.</p>
+
+  <div class="mt-4 surface p-2 sm:p-4">
+    {% component "table" caption="Campaigns across all services" columns=campaign_columns %}
+      {% for campaign in campaigns %}
+        <tr class="border-b border-mist last:border-0">
+          <td class="ui-td font-medium" data-label="Campaign">{{ campaign.name }}</td>
+          <td class="ui-td" data-label="Service">{{ campaign.module_label }}</td>
+          <td class="ui-td" data-label="Status">{% ui_status_badge campaign.status %}</td>
+          <td class="ui-td text-right t-numeric" data-label="Spend">{{ campaign.spend_display }}</td>
+          <td class="ui-td" data-label="Result">{{ campaign.result_summary }}</td>
+        </tr>
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+
+  <div class="mt-5">
+    {% component "filter_bar" action="#" reset_href="#" submit_label="Apply filters" %}
+      <div class="min-w-56 flex-1">{% ui_search_box name="q" placeholder="Search campaigns" %}</div>
+      {% ui_select name="status" label="Status" options=filter_tabs placeholder="Any status" %}
+      {% slot "applied" %}
+        {% ui_badge label="Status: Live" tone="gold" %}
+        {% ui_badge label="Service: SEO" tone="gold" %}
+      {% endslot %}
+    {% endcomponent %}
+  </div>
+</section>
+
+{# -------------------------------------------------------- feedback state #}
+<section>
+  <h2 class="t-section">Feedback and state</h2>
+
+  <div class="mt-4 grid gap-5 lg:grid-cols-2">
+    <div>
+      <p class="t-micro mb-2">Alerts</p>
+      {% ui_alert message="Your quote request has been received." tone="success" title="Received" %}
+      {% ui_alert message="Two campaigns are waiting for your approval." tone="info" %}
+      {% ui_alert message="This campaign is paused pending approval." tone="warning" %}
+      {% ui_alert message="We could not save that change." tone="danger" dismissible=True %}
+    </div>
+
+    <div class="space-y-5">
+      <div>
+        <p class="t-micro mb-2">Toasts</p>
+        {% ui_button label="Show a toast" variant="outline" data_ui_toast="Campaign saved" data_ui_toast_tone="success" %}
+      </div>
+      <div>
+        <p class="t-micro mb-2">Loading</p>
+        <div class="htmx-request mb-3">{% ui_spinner label="Loading campaigns" %}</div>
+        {% ui_skeleton variant="text" lines=3 %}
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5 grid gap-5 lg:grid-cols-3">
+    <div>{% ui_skeleton variant="card" %}</div>
+    <div class="lg:col-span-2">{% ui_skeleton variant="table" lines=4 %}</div>
+  </div>
+
+  <div class="mt-5 max-w-2xl">
+    {% ui_empty_state title="No campaigns yet" body="Once your services are live, every campaign and its result will appear here." action_label="Browse the catalog" action_href="#" %}
+  </div>
+</section>
+
+{# -------------------------------------------------------------- overlays #}
+<section>
+  <h2 class="t-section">Overlays</h2>
+  <p class="mt-1 t-meta">Focus is trapped while open, Escape closes, and focus returns to the control that opened it.</p>
+
+  <div class="mt-4 flex flex-wrap gap-3">
+    {% ui_button label="Open modal" variant="outline" data_ui_open="sg-modal" %}
+    {% ui_button label="Open drawer" variant="outline" data_ui_open="sg-drawer" %}
+    {% ui_button label="Confirm an action" variant="danger" data_ui_open="sg-confirm" %}
+  </div>
+
+  {% component "modal" id="sg-modal" title="Add a service to your quote" size="md" %}
+    {% slot "description" %}We confirm scope and cost before anything starts.{% endslot %}
+    {% ui_input name="modal_name" label="Your name" %}
+    {% ui_input name="modal_email" label="Work email" type="email" %}
+    {% slot "footer" %}
+      {% ui_button label="Cancel" variant="outline" data_ui_close="sg-modal" %}
+      {% ui_button label="Add to quote" variant="primary" %}
+    {% endslot %}
+  {% endcomponent %}
+
+  {% component "drawer" id="sg-drawer" title="Filters" side="right" %}
+    {% ui_select name="drawer_status" label="Status" options=filter_tabs placeholder="Any status" %}
+    {% ui_checkbox name="drawer_mine" label="Only campaigns assigned to me" %}
+    {% slot "footer" %}
+      {% ui_button label="Clear" variant="ghost" %}
+      {% ui_button label="Apply" variant="primary" %}
+    {% endslot %}
+  {% endcomponent %}
+
+  {% component "confirm_dialog" id="sg-confirm" title="Archive this campaign?" message="It will stop appearing in reports. You can restore it from the archive." action="#" confirm_label="Archive campaign" destructive=True %}{% endcomponent %}
+</section>
+
+{# ------------------------------------------------------ business: cards #}
+<section>
+  <h2 class="t-section">Business components</h2>
+
+  <h3 class="mt-4 t-card-title">ServiceCard</h3>
+  <div class="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {% for service in services %}{% ui_service_card service href="#" %}{% endfor %}
+  </div>
+
+  <h3 class="mt-8 t-card-title">ClientCard</h3>
+  <div class="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {% for client in clients %}{% ui_client_card client href="#" %}{% endfor %}
+  </div>
+
+  <h3 class="mt-8 t-card-title">CampaignCard</h3>
+  <div class="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {% for campaign in campaigns|slice:":3" %}{% ui_campaign_card campaign href="#" %}{% endfor %}
+  </div>
+
+  <h3 class="mt-8 t-card-title">LeadCard and ReportCard</h3>
+  <div class="mt-3 grid gap-5 sm:grid-cols-2">
+    {% for lead in leads %}{% ui_lead_card lead href="#" %}{% endfor %}
+    {% for report in reports %}{% ui_report_card report href="#" download_url="#" %}{% endfor %}
+  </div>
+
+  <h3 class="mt-8 t-card-title">ApprovalCard</h3>
+  <div class="mt-3 grid gap-5 lg:grid-cols-2">
+    <div>{% ui_approval_card approvals.0 approve_url="#" reject_url="#" %}</div>
+    {% component "card" title="Waiting for your approval" %}
+      {% for approval in approvals %}
+        {% ui_approval_card approval approve_url="#" compact=True %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+
+  <h3 class="mt-8 t-card-title">ActivityTimeline, NotificationItem and InboxMessageItem</h3>
+  <div class="mt-3 grid gap-5 lg:grid-cols-3">
+    {% component "card" title="Recent activity" %}
+      {% ui_activity_timeline activity %}
+    {% endcomponent %}
+
+    {% component "card" title="Notifications" class="p-0 sm:p-0" %}
+      <div class="-mx-[var(--card-padding)] -mb-[var(--card-padding)]">
+        {% for notification in notifications %}{% ui_notification_item notification href="#" %}{% endfor %}
+      </div>
+    {% endcomponent %}
+
+    {% component "card" title="Inbox" subtitle="Every enquiry lands here" %}
+      <div class="-mx-[var(--card-padding)] -mb-[var(--card-padding)]">
+        {% for message in inbox %}{% ui_inbox_message_item message href="#" selected=forloop.first %}{% endfor %}
+      </div>
+    {% endcomponent %}
+  </div>
+</section>
+
+</div>
+{% endblock %}

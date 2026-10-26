@@ -1,0 +1,32 @@
+{% load website_copy %}
+{% load ui %}
+{% editable_public_form form %}
+{% comment %}
+  The enquiry form. Three defences a person never notices: the honeypot
+  below, a signed render timestamp, and the rate limit the view applies.
+{% endcomment %}
+{% ui_form_errors form %}
+
+<fieldset><legend>{% website_copy "public.leads._form.001" %}</legend>
+{% ui_field form.name %}
+<div class="grid gap-x-5 sm:grid-cols-2">
+  {% ui_field form.email %}
+  {% ui_field form.company %}
+  {% ui_field form.phone %}
+  {% ui_field form.website %}
+</div>
+</fieldset>
+<fieldset><legend>{% website_copy "public.leads._form.002" %}</legend>
+{% if form.subject %}{% ui_field form.subject %}{% endif %}
+{% if form.objective %}
+  <div class="grid gap-x-5 sm:grid-cols-2">
+    {% ui_field form.objective %}
+    {% ui_field form.budget_range %}
+  </div>
+{% endif %}
+{% ui_field form.message %}
+</fieldset>
+
+<div class="hidden" aria-hidden="true">{{ form.website_url }}</div>
+{{ form.rendered_at }}
+<input type="hidden" name="page_url" value="{{ request.get_full_path }}">

@@ -1,0 +1,18 @@
+{% extends "errors/_error_base.html" %}
+{% block title %}Not permitted · {{ brand.name }}{% endblock %}
+{% block code %}403{% endblock %}
+{% block heading %}You do not have permission to view this page{% endblock %}
+{% block body %}
+  {% if request.user.is_authenticated %}
+    You are signed in, but this page is not open to your account. If that
+    looks wrong, ask an administrator to check your access — permissions are
+    set per role, and per client.
+  {% else %}
+    This page needs you to be signed in with an account that has access to it.
+  {% endif %}
+{% endblock %}
+{% block extra_actions %}
+  {% if not request.user.is_authenticated %}
+    <a href="/accounts/login/" class="site-btn site-btn-light">Sign in</a>
+  {% endif %}
+{% endblock %}

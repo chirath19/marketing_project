@@ -1,0 +1,88 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% comment %} Views, not filters in a dropdown: these are the four ways a
+  person actually looks at an inbox. {% endcomment %}
+  <nav class="-mx-1 overflow-x-auto" aria-label="Inbox views">
+    <ul class="flex min-w-max items-center gap-1 px-1">
+      {% for key, label in views %}
+        <li>
+          <a href="?view={{ key }}{% if search %}&q={{ search }}{% endif %}"
+             {% if key == view %}aria-current="page"{% endif %}
+             class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                    {% if key == view %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">
+            {{ label }}
+            {% if key == "unread" and unread_total %}
+              <span class="rounded-[var(--radius-pill)] px-1.5 py-0.5 text-xs t-numeric
+                           {% if key == view %}bg-white/20 text-white{% else %}bg-gold text-navy{% endif %}">{{ unread_total }}</span>
+            {% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <form method="get" class="mt-4 max-w-md">
+    {% if view %}<input type="hidden" name="view" value="{{ view }}">{% endif %}
+    {% ui_search_box name="q" value=search placeholder="Search name, company or message" %}
+  </form>
+
+  <div class="mt-5 surface p-2 sm:p-4">
+    {% component "table" caption="Inbox" columns=columns %}
+      {% for submission in submissions %}
+        <tr class="border-b border-mist last:border-0 {% if not submission.is_read %}unread-highlight{% endif %}">
+          <td class="ui-td" data-label="From">
+            <a href="{% url 'staff:inbox_detail' submission.pk %}" class="{% if not submission.is_read %}font-semibold{% else %}font-medium{% endif %} text-navy underline-offset-2 hover:underline focus-ring">
+              {% if not submission.is_read %}<span class="unread-label mr-2">New</span><span class="sr-only">Unread. </span>{% endif %}{{ submission.name }}
+            </a>
+            <span class="block t-micro">{{ submission.company|default:submission.email }}</span>
+          </td>
+          <td class="ui-td" data-label="Subject">
+            <span class="{% if not submission.is_read %}font-medium{% endif %}">{{ submission.display_subject }}</span>
+            <span class="block truncate t-micro">{{ submission.preview }}</span>
+            <span class="mt-1 inline-flex gap-1.5">
+              {% ui_badge label=submission.get_kind_display tone="neutral" %}
+              {% if submission.is_spam %}{% ui_badge label="Spam" tone="danger" %}{% endif %}
+              {% if submission.is_archived %}{% ui_badge label="Archived" tone="neutral" %}{% endif %}
+            </span>
+          </td>
+          <td class="ui-td t-micro" data-label="Received">{{ submission.created_at|date:"j M, H:i" }}</td>
+          <td class="ui-td text-right" data-label="">
+            <div class="flex items-center justify-end gap-2">
+              <form method="post" action="{% url 'staff:inbox_read' submission.pk %}" class="inline">
+                {% csrf_token %}
+                <input type="hidden" name="read" value="{% if submission.is_read %}0{% else %}1{% endif %}">
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="text-xs font-semibold text-steel underline-offset-2 hover:text-navy hover:underline focus-ring">
+                  Mark {% if submission.is_read %}unread{% else %}read{% endif %}<span class="sr-only">: {{ submission.display_subject }}</span>
+                </button>
+              </form>
+              {% if perms.permissions.leads_edit %}
+                <form method="post" action="{% url 'staff:inbox_archive' submission.pk %}" class="inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="archived" value="{% if submission.is_archived %}0{% else %}1{% endif %}">
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                  <button type="submit" class="text-xs font-semibold text-steel underline-offset-2 hover:text-navy hover:underline focus-ring">
+                    {% if submission.is_archived %}Restore{% else %}Archive{% endif %}<span class="sr-only">: {{ submission.display_subject }}</span>
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        {% if search %}
+          {% ui_table_empty colspan=4 icon="⌕" title="No matches" body="Nothing in this view matches that search. Try a shorter term, or clear the search to see everything." %}
+        {% else %}
+          {% ui_table_empty colspan=4 icon=empty_state.icon title=empty_state.title body=empty_state.body %}
+        {% endif %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    {% ui_pagination page_obj querystring=querystring label="Inbox pages" %}
+  {% endif %}
+{% endblock %}

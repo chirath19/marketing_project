@@ -1,0 +1,9 @@
+<p class="t-card-title">{{ snapshot.work_name }} · {{ snapshot.kind }}</p>
+<p class="mt-2 t-meta">Subject: {{ snapshot.subject|default:"Not set" }}</p>
+<p class="mt-2 t-meta">Audience: {{ snapshot.audience_description|default:"Not set" }} · {{ snapshot.audience_size|default_if_none:"Unknown size" }}</p>
+<p class="mt-2 t-meta">Planned date: {{ snapshot.scheduled_at|default:"Not set" }}</p>
+<p class="mt-4 whitespace-pre-line">{{ snapshot.brief }}</p>
+{% if snapshot.trigger_description %}<p class="mt-4 whitespace-pre-line">{{ snapshot.trigger_description }}</p>{% endif %}
+<p class="mt-4 t-card-title">{{ snapshot.name }}</p>
+<p class="mt-2 whitespace-pre-line">{{ snapshot.description }}</p>
+{% if snapshot.asset_url %}<a class="mt-4 inline-block underline focus-ring" href="{{ snapshot.asset_url }}" rel="noopener noreferrer">Open submitted preview</a>{% endif %}

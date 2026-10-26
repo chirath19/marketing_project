@@ -1,0 +1,19 @@
+{% load website_copy %}
+{% load ui %}
+<section id="{{ section.anchor }}" class="site-section site-clear">
+  <div class="site-shell site-contact-grid">
+    <div class="site-contact-aside">
+      {% if section.eyebrow %}<p class="site-label">{{ section.eyebrow }}</p>{% endif %}
+      <h2 class="site-display site-h2 mt-5">{{ section.heading }}</h2>
+      {% if section.subheading %}<p class="site-contact-note">{{ section.subheading }}</p>{% endif %}
+      {% if site.response_time_note %}<p class="site-contact-note">{{ site.response_time_note }}</p>{% endif %}
+      {% if site.contact_email %}<a class="site-contact-detail break-all" href="mailto:{{ site.contact_email }}">{{ site.contact_email }} ↗</a>{% endif %}
+      <div class="site-contact-stamp" aria-hidden="true">↗</div>
+    </div>
+    <form method="post" action="{% url 'public:contact_form' %}" class="site-form site-card-static p-7 sm:p-9" novalidate>
+      {% csrf_token %}{% include "public/leads/_form.html" with form=contact_form %}
+      <button type="submit" class="site-btn site-btn-primary site-btn-block site-btn-lg">{% website_copy "cms.sections.contact_form.001" %}<span aria-hidden="true">↗</span></button>
+      <p class="site-micro mt-4 text-steel-700">{% website_copy "cms.sections.contact_form.002" %}</p>
+    </form>
+  </div>
+</section>

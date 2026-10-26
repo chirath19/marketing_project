@@ -1,0 +1,77 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% if creating and not section_type %}
+    {# Step one: the type decides which fields step two shows. #}
+    <p class="t-meta">Choose the kind of section to add.</p>
+    <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {% for type in section_types %}
+        <a href="?type={{ type.key }}" class="surface block p-5 transition hover:shadow-raised focus-ring">
+          <p class="t-card-title">{{ type.label }}</p>
+          <p class="mt-1 t-meta">{{ type.description }}</p>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% if section %}<div class="mb-5 flex flex-wrap gap-3">{% include "cms/admin/section_content_links.html" %}</div>{% endif %}
+    <form method="post" enctype="multipart/form-data" class="max-w-2xl surface p-6" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="confirm" value="1">
+      {% if creating %}<input type="hidden" name="section_type" value="{{ section_type }}">{% endif %}
+      {% ui_form_errors form %}
+      {% for field in form %}{% ui_field field %}{% endfor %}
+      <div class="flex items-center gap-3">
+        {% ui_button label="Save section" type="submit" variant="primary" %}
+        <a href="{% url 'staff:cms_page' page.pk %}" class="text-sm font-medium text-steel underline-offset-2 hover:text-navy hover:underline focus-ring">Cancel</a>
+      </div>
+    </form>
+
+    {% if section and section.type_config.supports_items %}
+      <div class="mt-6 max-w-2xl">
+        {% component "card" title=section.type_config.item_label subtitle="The rows this section repeats." %}
+          <ul class="divide-y divide-mist">
+            {% for item in items %}
+              <li class="flex flex-wrap items-center justify-between gap-3 py-2.5">
+                <div class="min-w-0">
+                  <p class="truncate t-body font-medium">{{ item.label|default:item.value }}</p>
+                  {% if item.body %}<p class="truncate t-micro">{{ item.body }}</p>{% endif %}
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                {% if not item.is_visible %}<span class="t-micro">Hidden</span>{% endif %}
+                {% if perms.permissions.cms_edit %}
+                  <a href="{% url 'staff:cms_item_edit' item.pk %}" class="text-sm font-semibold underline focus-ring">Edit<span class="sr-only"> {{ item }}</span></a>
+                  <form method="post" action="{% url 'staff:cms_item_move' item.pk %}">{% csrf_token %}<input type="hidden" name="direction" value="up"><button class="focus-ring" aria-label="Move {{ item }} up">↑</button></form>
+                  <form method="post" action="{% url 'staff:cms_item_move' item.pk %}">{% csrf_token %}<input type="hidden" name="direction" value="down"><button class="focus-ring" aria-label="Move {{ item }} down">↓</button></form>
+                  <form method="post" action="{% url 'staff:cms_item_toggle' item.pk %}">{% csrf_token %}<input type="hidden" name="visible" value="{% if item.is_visible %}0{% else %}1{% endif %}"><button class="text-sm focus-ring">{% if item.is_visible %}Hide{% else %}Show{% endif %}<span class="sr-only"> {{ item }}</span></button></form>
+                {% endif %}
+                {% if perms.permissions.cms_delete %}
+                  <form method="post" action="{% url 'staff:cms_item_delete' item.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-xs font-semibold text-danger underline-offset-2 hover:underline focus-ring">Remove<span class="sr-only"> {{ item }}</span></button>
+                  </form>
+                {% endif %}
+                </div>
+              </li>
+            {% empty %}
+              <li class="py-3 t-meta">Nothing here yet.</li>
+            {% endfor %}
+          </ul>
+
+          {% if perms.permissions.cms_create %}
+            {% slot "footer" %}
+              <form method="post" action="{% url 'staff:cms_item_create' section.pk %}" novalidate>
+                {% csrf_token %}
+                <div class="grid gap-x-5 sm:grid-cols-2">
+                  {% for field in item_form %}{% ui_field field %}{% endfor %}
+                </div>
+                {% ui_button label="Add "|add:section.type_config.item_label|lower type="submit" variant="outline" size="sm" %}
+              </form>
+            {% endslot %}
+          {% endif %}
+        {% endcomponent %}
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

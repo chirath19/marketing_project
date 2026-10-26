@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}Website content · {{ brand.name }}{% endblock %}
+
+{% block page_actions %}
+  {% if perms.permissions.cms_create %}<a href="{% url 'staff:cms_page_create' %}" class="ui-btn ui-btn-primary">Create page</a>{% endif %}
+  {% url 'staff:cms_settings' as settings_url %}
+  {% ui_button label="Site details" href=settings_url variant="outline" size="sm" %}
+{% endblock %}
+
+{% block admin_content %}
+  <div class="grid gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-3">
+    {% for page in pages %}{% if page.kind == 'home' or page.kind == 'about' or page.kind == 'contact' %}
+      <a href="{% url 'staff:cms_page' page.pk %}" class="surface block p-5 focus-ring hover:shadow-raised">
+        <p class="t-card-title">Edit {{ page.get_kind_display }} page</p>
+        <p class="mt-2 t-meta">Change text, images and buttons. Add, hide or reorder sections.</p>
+      </a>
+    {% endif %}{% endfor %}
+    {% if perms.permissions.cms_edit %}
+      <a href="{% url 'staff:cms_contacts' %}" class="surface block p-5 focus-ring hover:shadow-raised"><p class="t-card-title">Contact details</p><p class="mt-2 t-meta">Edit your primary contacts or add another email, phone number or office.</p></a>
+    {% endif %}
+    <a href="{% url 'staff:cms_wording' %}" class="surface block p-5 focus-ring hover:shadow-raised"><p class="t-card-title">Website wording</p><p class="mt-2 t-meta">Edit shared labels, form instructions, buttons and footer wording.</p></a>
+    <a href="{% url 'staff:cms_collection' 'navigation' %}" class="surface block p-5 focus-ring hover:shadow-raised"><p class="t-card-title">Menus &amp; footer links</p><p class="mt-2 t-meta">Add pages to your website menus and edit link labels.</p></a>
+  </div>
+  <p class="max-w-3xl t-meta">
+    Everything the public site says is edited here. Pages are built from a
+    fixed set of section types, so new content cannot drift away from the
+    design; the lists below are shared, which is why one testimonial can
+    appear on several pages without being retyped.
+  </p>
+
+  {% component "card" title="Pages" subtitle="Each page is an ordered list of sections. Reorder or hide a section without republishing anything else." %}
+    <ul class="divide-y divide-mist">
+      {% for page in pages %}
+        <li class="flex flex-wrap items-center justify-between gap-3 py-3">
+          <div class="min-w-0">
+            <a href="{% url 'staff:cms_page' page.pk %}" class="t-body font-medium underline-offset-2 hover:underline focus-ring">{{ page.title }}</a>
+            <p class="t-micro">/{{ page.slug }}/ · {{ page.sections.count }} section{{ page.sections.count|pluralize }}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            {% ui_status_badge page.status %}
+            {% if page.is_published %}
+              <a href="{{ page.get_absolute_url }}" target="_blank" rel="noopener"
+                 class="text-xs font-semibold text-gold-600 underline-offset-2 hover:underline focus-ring">
+                View<span class="sr-only"> {{ page.title }} on the site</span>
+              </a>
+            {% endif %}
+          </div>
+        </li>
+      {% empty %}
+        <li class="py-3">
+          {% ui_empty_state icon="▤" title="No pages yet" body="Choose Create page, add your content and publish when ready." %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endcomponent %}
+
+  <h2 class="mt-8 t-section">Shared lists</h2>
+  <p class="mt-1 max-w-3xl t-meta">
+    Content that appears in more than one place. A section on any page
+    draws from these, and hides itself when the list it needs is empty.
+  </p>
+  <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {% for collection in collections %}
+      <a href="{% url 'staff:cms_collection' collection.key %}"
+         class="surface block p-5 transition hover:shadow-raised focus-ring">
+        <p class="t-card-title">{{ collection.label }}</p>
+        <p class="mt-1 t-meta">{{ collection.description }}</p>
+      </a>
+    {% endfor %}
+  </div>
+{% endblock %}

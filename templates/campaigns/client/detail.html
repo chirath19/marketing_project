@@ -1,0 +1,104 @@
+{% extends "portal/base.html" %}
+{% load ui %}
+
+{% comment %}
+  A client's view of one campaign. The history came through a selector
+  that filtered internal entries out; the template does no filtering of
+  its own on purpose.
+{% endcomment %}
+
+{% block title %}{{ campaign.name }} · {{ brand.name }}{% endblock %}
+
+{% block portal_content %}
+  <nav aria-label="Breadcrumb" class="mb-4">
+    <ol class="flex flex-wrap items-center gap-x-1.5 text-sm">
+      <li><a href="{% url 'organizations:portal_module' 'campaigns' %}" class="text-steel underline-offset-2 hover:text-navy hover:underline focus-ring">Campaigns</a></li>
+      <li><span class="text-steel-400" aria-hidden="true">/</span></li>
+      <li class="t-micro">{{ campaign.name }}</li>
+    </ol>
+  </nav>
+
+  {% component "page_header" title=campaign.name subtitle=campaign.type_label %}
+    {% if platform_label %}{% ui_status_badge "" label=platform_label %}{% endif %}
+    {% ui_status_badge campaign.status label=campaign.get_status_display %}
+  {% endcomponent %}
+
+  {% if performance is not None %}
+    <div class="mt-8">
+      {% include "campaigns/client/_performance.html" %}
+    </div>
+  {% endif %}
+
+  <div class="mt-8 grid gap-5 lg:grid-cols-3">
+    <div class="space-y-5 lg:col-span-2">
+      {% component "card" title="What this campaign is" %}
+        {% if campaign.client_summary %}
+          <p class="whitespace-pre-line t-body">{{ campaign.client_summary }}</p>
+        {% else %}
+          <p class="t-meta">
+            Your account team has not written a summary for this one yet.
+            Ask them and they will add it here.
+          </p>
+        {% endif %}
+
+        {% if campaign.objective %}
+          <div class="mt-5 rounded-[var(--radius-control)] bg-mist p-4">
+            <p class="t-micro">{{ campaign.objective_label }}</p>
+            <p class="mt-1 t-body font-medium">{{ campaign.objective }}</p>
+          </div>
+        {% endif %}
+      {% endcomponent %}
+
+      {% component "card" title="History" subtitle="What has happened with this campaign." %}
+        <ol class="divide-y divide-mist">
+          {% for event in events %}
+            <li class="flex gap-3 py-3">
+              <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" aria-hidden="true"></span>
+              <div class="min-w-0 flex-1">
+                <p class="t-body">{{ event.body }}</p>
+                <p class="t-micro">{{ event.created_at|date:"j M Y, H:i" }}</p>
+              </div>
+            </li>
+          {% empty %}
+            <li class="py-3"><p class="t-meta">Nothing recorded yet.</p></li>
+          {% endfor %}
+        </ol>
+      {% endcomponent %}
+    </div>
+
+    <aside class="space-y-5">
+      {% component "card" title="The arrangement" %}
+        <dl class="space-y-3 text-sm">
+          {% if campaign.starts_on %}
+            <div><dt class="t-micro">Started</dt><dd class="t-body">{{ campaign.starts_on|date:"j F Y" }}</dd></div>
+          {% endif %}
+          {% if campaign.ends_on %}
+            <div><dt class="t-micro">Runs until</dt><dd class="t-body">{{ campaign.ends_on|date:"j F Y" }}</dd></div>
+          {% else %}
+            <div><dt class="t-micro">Term</dt><dd class="t-body">Ongoing, with no agreed end date</dd></div>
+          {% endif %}
+          {% if campaign.budget %}
+            <div><dt class="t-micro">Budget</dt><dd class="t-body font-semibold">{{ campaign.budget_display }}</dd></div>
+          {% endif %}
+        </dl>
+      {% endcomponent %}
+
+      {% if campaign.subscription %}
+        {% component "card" title="Part of" %}
+          <a href="{% url 'organizations:service_detail' campaign.subscription.pk %}" class="t-body font-medium underline-offset-2 hover:underline focus-ring">{{ campaign.subscription.name }}</a>
+          <p class="mt-1 t-micro">The service this is delivered under.</p>
+        {% endcomponent %}
+      {% endif %}
+
+      {% component "card" title="Something to change?" %}
+        <p class="t-meta">
+          Scope, budget, timing — talk to your account team. Nothing changes
+          without your agreement.
+        </p>
+        {% slot "footer" %}
+          {% ui_button label="Contact us" href="/contact/" variant="outline" size="sm" %}
+        {% endslot %}
+      {% endcomponent %}
+    </aside>
+  </div>
+{% endblock %}

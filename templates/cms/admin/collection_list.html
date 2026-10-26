@@ -1,0 +1,63 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ collection.label }} · {{ brand.name }}{% endblock %}
+
+{% block page_actions %}
+  {% if perms.permissions.cms_create %}
+    {% url 'staff:cms_collection_create' collection.key as create_url %}
+    {% ui_button label="Add "|add:collection.singular href=create_url variant="primary" size="sm" %}
+  {% endif %}
+{% endblock %}
+
+{% block admin_content %}
+  {% if collection.key == 'contacts' %}
+    <p class="mb-5 t-meta">These contacts appear on every page with a Contact details section, alongside your primary details. {% if perms.permissions.cms_edit %}<a class="underline focus-ring" href="{% url 'staff:cms_contacts' %}">Edit primary contact details</a>.{% endif %}</p>
+  {% endif %}
+  <div class="surface p-2 sm:p-4">
+    {% component "table" caption=collection.label columns=columns %}
+      {% for row in rows %}
+        <tr class="border-b border-mist last:border-0 {% if not row.is_visible %}opacity-60{% endif %}">
+          {% for heading, attribute in collection.columns %}
+            <td class="ui-td" data-label="{{ heading }}">{{ row|get_attribute:attribute|truncatechars:70 }}</td>
+          {% endfor %}
+          <td class="ui-td" data-label="Visible">
+            {% if row.is_visible %}{% ui_badge label="Visible" tone="live" dot=True %}{% else %}{% ui_badge label="Hidden" tone="neutral" %}{% endif %}
+          </td>
+          <td class="ui-td text-right" data-label="">
+            <div class="flex items-center justify-end gap-2">
+              {% if perms.permissions.cms_edit %}
+                <form method="post" action="{% url 'staff:cms_collection_move' collection.key row.pk %}" class="inline">
+                  {% csrf_token %}<input type="hidden" name="direction" value="up">
+                  <button type="submit" class="rounded px-1.5 text-xs text-steel hover:bg-mist focus-ring" aria-label="Move up">↑</button>
+                </form>
+                <form method="post" action="{% url 'staff:cms_collection_move' collection.key row.pk %}" class="inline">
+                  {% csrf_token %}<input type="hidden" name="direction" value="down">
+                  <button type="submit" class="rounded px-1.5 text-xs text-steel hover:bg-mist focus-ring" aria-label="Move down">↓</button>
+                </form>
+                <form method="post" action="{% url 'staff:cms_collection_toggle' collection.key row.pk %}" class="inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="visible" value="{% if row.is_visible %}0{% else %}1{% endif %}">
+                  <button type="submit" class="rounded px-1.5 text-xs font-semibold text-steel hover:bg-mist focus-ring">{% if row.is_visible %}Hide{% else %}Show{% endif %}</button>
+                </form>
+                <a href="{% url 'staff:cms_collection_edit' collection.key row.pk %}" class="text-xs font-semibold text-gold-600 underline-offset-2 hover:underline focus-ring">Edit</a>
+              {% endif %}
+              {% if perms.permissions.cms_delete %}
+                <form method="post" action="{% url 'staff:cms_collection_delete' collection.key row.pk %}" class="inline">
+                  {% csrf_token %}
+                  <button type="submit" class="text-xs font-semibold text-danger underline-offset-2 hover:underline focus-ring">Delete</button>
+                </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        {% url 'staff:cms_collection_create' collection.key as add_url %}
+        {% if perms.permissions.cms_create %}
+          {% ui_table_empty colspan=9 icon="◌" title="No "|add:collection.singular|add:"s yet" body=collection.empty_hint action_label="Add the first "|add:collection.singular action_href=add_url %}
+        {% else %}
+          {% ui_table_empty colspan=9 icon="◌" title="Nothing in this list yet" body=collection.empty_hint %}
+        {% endif %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+{% endblock %}

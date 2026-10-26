@@ -1,0 +1,16 @@
+<div class="mb-4">
+  {% if label %}
+    <label for="{{ id }}" class="ui-label">
+      {{ label }}{% if required %}<span class="text-danger" aria-hidden="true"> *</span>{% endif %}
+    </label>
+  {% endif %}
+  <textarea name="{{ name }}" id="{{ id }}" rows="{{ rows }}"
+            class="ui-input ui-textarea {% if label %}mt-1.5{% endif %}"
+            {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+            {% if required %}required{% endif %}{% if disabled %} disabled{% endif %}
+            {% if described_by %}aria-describedby="{{ described_by }}"{% endif %}
+            {% if error %}aria-invalid="true"{% endif %}
+            {% for key, value in attrs.items %} {{ key }}="{{ value }}"{% endfor %}>{{ value }}</textarea>
+  {% if help_text %}<p id="{{ help_id }}" class="ui-help">{{ help_text }}</p>{% endif %}
+  {% if error %}<p id="{{ error_id }}" class="ui-error">{{ error }}</p>{% endif %}
+</div>

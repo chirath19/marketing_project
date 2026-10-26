@@ -1,0 +1,17 @@
+{% comment %}
+  The last entry is text with aria-current="page", not a link: a link to
+  the page you are already on is an extra tab stop that goes nowhere.
+{% endcomment %}
+<nav aria-label="Breadcrumb" class="min-w-0">
+  <ol class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
+    {% for item in items %}
+      <li class="flex items-center gap-1.5">
+        <a href="{{ item.href }}" class="text-steel underline-offset-2 hover:text-navy hover:underline focus-ring">{{ item.label }}</a>
+        <span class="text-steel-400" aria-hidden="true">/</span>
+      </li>
+    {% endfor %}
+    {% if current %}
+      <li><span class="font-medium text-navy" aria-current="page">{{ current }}</span></li>
+    {% endif %}
+  </ol>
+</nav>

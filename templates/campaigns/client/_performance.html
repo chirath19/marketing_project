@@ -1,0 +1,35 @@
+{% load ui %}
+{% comment %}
+  One campaign's own performance — KPIs the campaign's own objective
+  prioritizes, then the trend underneath them. Shared nowhere else:
+  the account-wide Paid Ads workspace (templates/paid_ads/_report.html)
+  covers every campaign at once and reuses the same table partial, but
+  this page's job is one promotion, not the whole account.
+{% endcomment %}
+{% component "card" title="Performance" subtitle=platform_label %}
+  <form method="get" class="flex flex-wrap items-end gap-3">
+    {% for field in date_form %}{% if field.name == "range" %}{% ui_field field %}{% endif %}{% endfor %}
+    {% if date_range.key == "custom" %}
+      {% for field in date_form %}{% if field.name == "start" or field.name == "end" %}{% ui_field field %}{% endif %}{% endfor %}
+    {% endif %}
+    {% ui_button label="Apply" type="submit" size="sm" variant="outline" %}
+  </form>
+  <p class="mt-3 t-micro">{{ date_range.start|date:"j M Y" }}–{{ date_range.end|date:"j M Y" }}{% if performance.provider_connected %} · includes synced results{% else %} · entered by your account team{% endif %}</p>
+
+  {% if performance.has_data %}
+    <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {% for kpi in performance.kpis %}
+        {% ui_metric_card label=kpi.label value=kpi.value caption=kpi.help delta=kpi.delta_text direction=kpi.direction %}
+      {% endfor %}
+    </div>
+
+    <h3 class="mt-8 t-card-title">Daily performance</h3>
+    <div class="mt-3">
+      {% include "paid_ads/_performance_table.html" with rows=performance.daily_rows group_label="Date" caption="Daily performance for this campaign" %}
+    </div>
+  {% elif performance.provider_connected %}
+    {% ui_empty_state icon="◷" title="No reporting data is available yet" body="This campaign's connection is synced, but no results have been recorded for the selected period yet. Try a longer period, or check back once the campaign has been running a little longer." %}
+  {% else %}
+    {% ui_empty_state icon="◷" title="No reporting data is available yet" body="Analytics will appear here once your account team records results for this campaign, or once a platform connection is synced for it." %}
+  {% endif %}
+{% endcomponent %}

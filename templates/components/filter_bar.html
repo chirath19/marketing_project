@@ -1,0 +1,31 @@
+{% comment %}
+  {% component "filter_bar" action="/campaigns/" %}
+    controls
+    {% slot "applied" %} chips {% endslot %}
+  {% endcomponent %}
+
+  A real <form> with a submit button, so the bar works without
+  JavaScript; HTMX attributes passed by the caller turn it into a live
+  filter when it is available.
+{% endcomment %}
+<form method="{{ method|default:'get' }}" action="{{ action }}"
+      role="search" aria-label="{{ label|default:'Filter results' }}"
+      class="surface flex flex-col gap-3 p-4 sm:flex-row sm:flex-wrap sm:items-end">
+  {{ slot }}
+
+  <div class="flex items-center gap-2 sm:ml-auto">
+    <button type="submit"
+            class="inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] bg-navy px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-600 focus-ring">
+      {{ submit_label|default:"Apply" }}
+    </button>
+    {% if reset_href %}
+      <a href="{{ reset_href }}" class="text-sm font-medium text-steel underline-offset-2 hover:text-navy hover:underline focus-ring">Clear</a>
+    {% endif %}
+  </div>
+
+  {% if slots.applied %}
+    <div class="flex w-full flex-wrap items-center gap-2 border-t border-mist pt-3">
+      <span class="t-micro">Filtered by</span>{{ slots.applied }}
+    </div>
+  {% endif %}
+</form>

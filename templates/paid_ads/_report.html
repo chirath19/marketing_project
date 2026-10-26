@@ -1,0 +1,68 @@
+{% load ui %}
+<p class="mt-4 t-meta">
+  {% if provider_connected %}
+    Figures include results synced from the connected advertising platform, plus anything staff entered or imported by hand. Missing dates mean no observation was recorded, not zero activity.
+  {% else %}
+    These figures are entered by staff or imported from reports. No advertising-platform connection has been synced for this client yet. Missing dates mean no observation was recorded, not zero activity.
+  {% endif %}
+</p>
+<form method="get" class="mt-6 surface p-5">
+  {% ui_form_errors filter_form %}
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {% for field in filter_form %}{% ui_field field %}{% endfor %}
+  </div>
+  <div class="mt-4">{% ui_button label="Apply filters" type="submit" %}</div>
+</form>
+{% if not filter_form.errors %}
+  <p class="mt-4 t-meta">{{ filter_form.cleaned_data.start }}–{{ filter_form.cleaned_data.end }}, inclusive · {{ currency }}. Campaign statuses show their current state.</p>
+  {% if has_data %}
+    <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {% for kpi in kpis %}
+        {% ui_metric_card label=kpi.label value=kpi.value caption=kpi.help delta=kpi.delta_text direction=kpi.direction %}
+      {% endfor %}
+    </div>
+    <p class="mt-3 t-micro">Ratios use totals for the selected period; “—” means the denominator is zero or not reported. Revenue and conversions use the source report's attribution. A change is only shown against a previous period that has recorded data of its own.</p>
+    <section class="mt-8 surface p-5">
+      <h2 class="t-section mb-4">Performance by platform</h2>
+      {% include "paid_ads/_performance_table.html" with rows=platform_rows group_label="Platform" caption="Platform performance in the selected period" %}
+    </section>
+    <section class="mt-8 surface p-5">
+      <h2 class="t-section mb-4">Campaign results</h2>
+      {% include "paid_ads/_performance_table.html" with rows=campaign_rows group_label="Campaign" caption="Campaign performance in the selected period" %}
+    </section>
+    <section class="mt-8 surface p-5">
+      <h2 class="t-section mb-4">Daily performance</h2>
+      {% include "paid_ads/_performance_table.html" with rows=daily_page group_label="Date" caption="Daily observations, oldest first" %}
+      {% ui_pagination daily_page querystring=querystring %}
+    </section>
+  {% else %}
+    <div class="mt-6">{% ui_empty_state title="No performance recorded for these filters" body="Your team can enter daily observations or import a report. Nothing is shown until it is real; try another period, platform, campaign or currency to find existing records." %}</div>
+  {% endif %}
+  <section class="mt-8 surface p-5">
+    <h2 class="t-section">Goals</h2>
+    <p class="mt-2 t-meta">Goals overlapping this report period are assessed across their own full date ranges. A platform or campaign filter shows goals for that exact scope. A ceiling assessment is provisional while its period is open.</p>
+    <ul class="mt-4 divide-y divide-mist">
+      {% for item in goals %}
+        <li class="py-4">
+          <h3 class="t-card-title">{{ item.goal.title }}</h3>
+          <p class="t-meta">{{ item.goal.starts_on }}–{{ item.goal.ends_on }} · {{ item.goal.get_platform_display|default:"All platforms" }} · {{ item.goal.campaign.name|default:"All campaigns" }}</p>
+          <p class="mt-2 t-body">{{ item.goal.get_metric_display }}: {{ item.current }} / {{ item.target }} · {{ item.assessment }}</p>
+        </li>
+      {% empty %}<li class="py-4 t-meta">No active goals match this scope and period.</li>{% endfor %}
+    </ul>
+  </section>
+  <section class="mt-8 surface p-5">
+    <h2 class="t-section">Campaign status</h2>
+    <p class="mt-2 t-meta">Paid Ads campaigns, including those without recorded results. Status describes the agency's work and does not control an external ad platform.</p>
+    <ul class="mt-4 divide-y divide-mist">
+      {% for campaign in campaigns %}
+        <li class="flex flex-wrap items-center justify-between gap-3 py-4">
+          <div><span class="t-body font-medium">{{ campaign.name }}</span><span class="ml-2 t-micro">#{{ campaign.pk }}</span>
+            {% if is_staff_workspace and perms.permissions.campaigns_view %}<a class="ml-3 underline focus-ring" href="{% url 'staff:campaign_detail' campaign.pk %}">Manage campaign</a>{% endif %}
+          </div>
+          {% ui_status_badge campaign.status label=campaign.get_status_display %}
+        </li>
+      {% empty %}<li class="py-4 t-meta">No Paid Ads campaigns yet. Your account team can create one before recording results.</li>{% endfor %}
+    </ul>
+  </section>
+{% endif %}

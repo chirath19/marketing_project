@@ -1,0 +1,6 @@
+<section id="{{ section.anchor }}" class="site-section {% if section.tone == 'navy' %}site-dark-soft{% else %}site-band{% endif %}">
+  <div class="site-shell site-faq-layout">
+    <header><p class="site-label {% if section.tone == 'navy' %}site-label-invert{% endif %}">{{ section.eyebrow }}</p><h2 class="site-display site-h2 mt-5">{{ section.heading }}</h2>{% if section.subheading %}<p class="site-body mt-5">{{ section.subheading }}</p>{% endif %}</header>
+    <div>{% for faq in collections.faqs %}<details class="site-faq {% if section.tone == 'navy' %}site-faq-invert{% endif %}"><summary class="focus-ring">{{ faq.question }}<span class="site-faq-sign" aria-hidden="true"></span></summary><div class="site-faq-body site-prose {% if section.tone == 'navy' %}site-prose-invert{% endif %}">{{ faq.answer|linebreaks }}</div></details>{% endfor %}</div>
+  </div>
+</section>

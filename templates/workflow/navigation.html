@@ -1,0 +1,6 @@
+<nav aria-label="{% if staff %}Dashboard sections{% else %}Your workspace{% endif %}" class="journey-nav">
+  {% for item in links %}<a href="{{ item.href }}" {% if item.active %}aria-current="page"{% endif %} {% if item.badge %}data-unread-kind="{{ item.badge }}"{% endif %}>
+    <span class="journey-nav-mark" aria-hidden="true">{% if item.key == 'dashboard' or item.key == 'overview' %}◫{% elif item.key == 'messages' %}◌{% elif item.key == 'payments' %}▤{% elif item.key == 'projects' %}▦{% elif item.key == 'requests' %}≡{% else %}◇{% endif %}</span><span>{{ item.label }}</span>
+    {% if item.badge == 'messages' %}<span class="unread-count" data-unread-count {% if not activity.messages %}hidden{% endif %}>{{ activity.messages }}</span>{% elif item.badge == 'quotes' %}<span class="unread-count" data-unread-count {% if not activity.quotes %}hidden{% endif %}>{{ activity.quotes }}</span>{% elif item.badge == 'enquiries' %}<span class="unread-count" data-unread-count {% if not activity.enquiries %}hidden{% endif %}>{{ activity.enquiries }}</span>{% endif %}
+  </a>{% endfor %}
+</nav>

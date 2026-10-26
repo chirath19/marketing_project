@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block admin_content %}
+  {% component "page_header" title=page_title subtitle="Advertising performance for this client." %}
+    
+      {% if can_create %}
+        <a class="ui-menu-item" href="{% url 'staff:paid_ads_record' organization.slug %}">Record a day</a>
+        <a class="ui-menu-item" href="{% url 'staff:paid_ads_import' organization.slug %}">Import CSV</a>
+      {% endif %}
+      <a class="ui-menu-item" href="{{ goals_url }}">Manage goals</a>
+      {% if perms.permissions.campaigns_create %}<a class="ui-menu-item" href="{% url 'staff:campaign_create' organization.slug %}?service_type=paid_ads">Create campaign</a>{% endif %}
+    
+  {% endcomponent %}
+  {% include "paid_ads/_report.html" %}
+{% endblock %}

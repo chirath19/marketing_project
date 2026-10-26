@@ -1,0 +1,30 @@
+{% comment %}
+  An error summary at the top of a form.
+
+  Each entry links to the field it concerns, so a keyboard or screen
+  reader user can jump straight to the input that needs fixing instead of
+  hunting down the page for it. Focused on render via tabindex so the
+  message is announced after a failed submit.
+{% endcomment %}
+{% if non_field_errors or entries %}
+<div class="mb-5 rounded-[var(--radius-control)] border border-danger bg-danger-soft px-4 py-3"
+     role="alert" tabindex="-1" id="form-errors">
+  <p class="text-sm font-semibold text-danger">{{ title }}</p>
+
+  {% for error in non_field_errors %}
+    <p class="mt-1 text-sm text-danger">{{ error }}</p>
+  {% endfor %}
+
+  {% if entries %}
+    <ul class="mt-2 space-y-1">
+      {% for entry in entries %}
+        <li class="text-sm">
+          <a href="#{{ entry.target }}" class="text-danger underline underline-offset-2 focus-ring">
+            {{ entry.label }}: {{ entry.message }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+{% endif %}

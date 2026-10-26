@@ -1,0 +1,53 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}Add-ons · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <div class="surface p-2 sm:p-4">
+    {% component "table" caption="Add-ons" columns=columns %}
+      {% for addon in addons %}
+        <tr class="border-b border-mist last:border-0 {% if not addon.is_live %}opacity-60{% endif %}">
+          <td class="ui-td" data-label="Add-on">
+            <span class="font-medium">{{ addon.name }}</span>
+            {% if addon.short_description %}<span class="block t-micro">{{ addon.short_description }}</span>{% endif %}
+          </td>
+          <td class="ui-td" data-label="Applies to">{{ addon.service.name|default:"Anything" }}</td>
+          <td class="ui-td text-right t-numeric" data-label="Price">{{ addon.price_display }}</td>
+          <td class="ui-td" data-label="Status">
+            {% if addon.is_live %}{% ui_badge label="Live" tone="live" dot=True %}{% else %}{% ui_badge label="Hidden" tone="neutral" %}{% endif %}
+          </td>
+          <td class="ui-td text-right" data-label="">
+            {% if perms.permissions.catalog_delete %}
+              <form method="post" action="{% url 'staff:catalog_addon_delete' addon.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="text-xs font-semibold text-danger underline-offset-2 hover:underline focus-ring">Delete<span class="sr-only"> {{ addon.name }}</span></button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        {% ui_table_empty colspan=5 icon="+" title="No add-ons yet" body="An add-on is something sold alongside a service rather than on its own — an extra landing page, a monthly strategy call. Attach one to a service, or leave it global to offer it with anything." action_label="Add an add-on" action_href="/staff/services/addons/new/" %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+
+  {% if perms.permissions.catalog_create %}
+    <div class="mt-6 max-w-2xl">
+      {% component "card" title="Add an add-on" %}
+        <form method="post" action="{% url 'staff:catalog_addon_create' %}" novalidate>
+          {% csrf_token %}
+          {% ui_form_errors form %}
+          {% ui_field form.name %}
+          {% ui_field form.service %}
+          {% ui_field form.short_description %}
+          <div class="grid gap-x-5 sm:grid-cols-3">
+            {% ui_field form.price_visibility %}{% ui_field form.price %}
+            {% ui_field form.currency %}
+            {% ui_field form.billing_type %}
+          </div>
+          {% ui_button label="Create add-on" type="submit" variant="primary" %}
+        </form>
+      {% endcomponent %}
+    </div>
+  {% endif %}
+{% endblock %}

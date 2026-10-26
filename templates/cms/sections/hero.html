@@ -1,0 +1,31 @@
+{% load media_tags %}
+{% comment %}
+  The home page's hero has a treatment of its own — a dark glass stage
+  with a moving light field — and lives in `public/_hero_home.html`.
+  Branching here rather than inside one template keeps this one legible:
+  the two layouts share their fields, not their markup.
+{% endcomment %}
+{% if is_home %}{% include "public/_hero_home.html" with section=section %}{% else %}
+<section id="{{ section.anchor }}" class="site-hero site-hero-inner site-hero-{{ page.kind|default:'services' }} {% if section.tone == 'navy' %}site-dark{% endif %}">
+  <div class="site-shell site-hero-grid">
+    <div class="site-hero-copy">
+      {% if section.eyebrow %}<p class="site-label {% if section.tone == 'navy' %}site-label-invert{% endif %}">{{ section.eyebrow }}</p>{% endif %}
+      <h1 class="site-display site-h1">{{ section.heading }}</h1>
+      {% if section.subheading %}<p class="site-lead {% if section.tone == 'navy' %}text-white/75{% else %}text-steel-700{% endif %}">{{ section.subheading }}</p>{% endif %}
+      {% if section.cta_label or section.secondary_cta_label %}
+      <div id="hero-actions" class="site-hero-actions">
+        {% if section.cta_label and section.cta_url %}<a href="{{ section.cta_url }}" class="site-btn site-btn-primary site-btn-lg">{{ section.cta_label }}<span class="site-btn-arrow" aria-hidden="true">↗</span></a>{% endif %}
+        {% if section.secondary_cta_label and section.secondary_cta_url %}<a href="{{ section.secondary_cta_url }}" class="site-btn {% if section.tone == 'navy' %}site-btn-light{% else %}site-btn-outline{% endif %} site-btn-lg">{{ section.secondary_cta_label }}<span aria-hidden="true">→</span></a>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% if section.image %}
+      <div class="site-hero-art site-frame">{% media_img section.image alt=section.image_alt preset="wide" css_class="w-full" loading="eager" fetchpriority="high" sizes="(min-width: 1024px) 42vw, 100vw" %}</div>
+    {% elif page.kind == 'about' %}
+      <div class="site-hero-art">{% include "public/_sculpture.html" with sculpture_id=section.pk %}</div>
+    {% else %}
+      <div class="site-hero-linework" aria-hidden="true"><span></span><span></span><span></span><i>↗</i></div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}

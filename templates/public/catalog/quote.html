@@ -1,0 +1,25 @@
+{% extends "public/base_site.html" %}
+{% load website_copy ui pricing %}
+{% block title %}{% website_copy 'refinement.quote.title' %} · {{ site.site_name }}{% endblock %}
+{% block head_extra %}{{ block.super }}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block content %}
+<section class="site-section site-clear"><div class="site-shell">
+  <p class="site-label">{% website_copy 'refinement.quote.1' %}</p>
+  <h1 class="site-display site-h2 mt-5">{% website_copy 'refinement.quote.2' %}</h1>
+  <p class="site-lead mt-6 max-w-2xl">{% website_copy 'refinement.quote.3' %}</p>
+  <div class="grid gap-8 mt-10 lg:grid-cols-12">
+    <aside class="lg:col-span-4 space-y-6">
+      <div class="site-card-static p-6"><p class="site-index">{% website_copy 'refinement.quote.4' %}</p><h2 class="site-display text-2xl mt-3">{% website_copy 'refinement.quote.5' %}</h2>
+        <ul class="divide-y divide-navy/10 mt-4">{% for line in lines %}<li class="py-4"><a class="font-semibold text-navy" href="{{ line.service.get_absolute_url }}">{{ line.name }}</a>{% if line.priced|public_price:operating %}<p class="site-micro mt-2">{{ line.priced.price_display }} {{ line.priced.billing_display }}</p>{% endif %}<form method="post" action="{% url 'public:quote_remove' %}" class="mt-2">{% csrf_token %}<input type="hidden" name="key" value="{{ line.key }}"><button class="site-link text-xs">{% website_copy 'refinement.quote.6' %}<span class="sr-only"> {{ line.name }}</span></button></form></li>{% empty %}<li class="py-4 site-body">{% website_copy 'refinement.quote.7' %}</li>{% endfor %}</ul>
+        {% if show_quote_totals %}<div class="border-t border-navy/10 mt-4 pt-4"><p class="site-index">{% website_copy 'public.catalog.quote.012' %}</p>{% if totals.monthly %}<p class="site-body mt-3">{{ totals.currency }} {{ totals.monthly }} / month</p>{% endif %}{% if totals.one_time %}<p class="site-body mt-2">{{ totals.currency }} {{ totals.one_time }} one time</p>{% endif %}{% if totals.has_custom %}<p class="site-micro mt-3">{% website_copy 'public.catalog.quote.015' %}</p>{% endif %}<p class="site-micro mt-3">{% website_copy 'public.catalog.quote.016' %}</p></div>{% endif %}
+        <a class="site-btn site-btn-light mt-5" href="{% url 'public:services' %}">{% website_copy 'refinement.quote.8' %}</a>
+      </div>
+      <div class="site-card-static p-6"><h2 class="site-display text-xl">{% website_copy 'refinement.quote.9' %}</h2><p class="site-micro mt-3">{% website_copy 'refinement.quote.10' %}</p><a class="site-btn site-btn-primary mt-5" href="{% url 'organizations:quote_create' %}">{% website_copy 'refinement.quote.11' %}</a></div>
+      <p class="site-micro">{% website_copy 'refinement.quote.12' %}</p><div class="flex flex-wrap gap-5">{% if mailto %}<a class="site-link text-sm" href="{{ mailto }}">{% website_copy 'public.catalog.quote.022' %}</a>{% endif %}{% if whatsapp %}<a class="site-link text-sm" href="{{ whatsapp }}">{% website_copy 'public.catalog.quote.024' %}</a>{% endif %}</div>
+    </aside>
+    <div class="lg:col-span-8 site-card-static site-form p-6 sm:p-9"><p class="site-index">{% website_copy 'refinement.quote.13' %}</p><h2 class="site-display text-3xl mt-3">{% website_copy 'refinement.quote.14' %}</h2><p class="site-micro mt-3">{% website_copy 'refinement.quote.15' %}</p>
+      <form method="post" action="{% url 'public:quote_submit' %}?guest=1" class="mt-7" novalidate>{% csrf_token %}{% include "public/leads/_form.html" with form=quote_form %}<button class="site-btn site-btn-primary site-btn-block site-btn-lg" type="submit">{% website_copy 'refinement.quote.16' %}<span aria-hidden="true">→</span></button></form>
+    </div>
+  </div>
+</div></section>
+{% endblock %}

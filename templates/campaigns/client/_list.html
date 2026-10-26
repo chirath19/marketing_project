@@ -1,0 +1,67 @@
+{% load ui %}
+{% comment %}
+  A client's campaigns, grouped. Shared by the combined campaigns area
+  and by each service area's own page — one partial, because the two show
+  the same thing filtered differently and a second copy would drift.
+{% endcomment %}
+
+{% if campaigns.running %}
+  <h2 class="t-section">Running now</h2>
+  <div class="mt-4 space-y-3">
+    {% for campaign in campaigns.running %}
+      <a href="{% url 'organizations:campaign_detail' campaign.pk %}"
+         class="surface block p-5 transition hover:shadow-raised focus-ring">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="t-card-title">{{ campaign.name }}</p>
+            <p class="mt-1 t-micro">
+              {{ campaign.type_label }}
+              {% if campaign.starts_on %}· since {{ campaign.starts_on|date:"j M Y" }}{% endif %}
+            </p>
+            {% if campaign.client_summary %}
+              <p class="mt-2 t-meta">{{ campaign.client_summary|truncatewords:30 }}</p>
+            {% endif %}
+          </div>
+          {% ui_status_badge campaign.status label=campaign.get_status_display %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% if campaigns.upcoming %}
+  <h2 class="{% if campaigns.running %}mt-10 {% endif %}t-section">Planned and paused</h2>
+  <div class="mt-4 space-y-3">
+    {% for campaign in campaigns.upcoming %}
+      <a href="{% url 'organizations:campaign_detail' campaign.pk %}"
+         class="surface flex flex-wrap items-center justify-between gap-3 p-4 transition hover:shadow-raised focus-ring">
+        <div class="min-w-0">
+          <p class="t-body font-medium">{{ campaign.name }}</p>
+          <p class="t-micro">{{ campaign.type_label }}</p>
+        </div>
+        {% ui_status_badge campaign.status label=campaign.get_status_display %}
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% if campaigns.finished %}
+  <h2 class="mt-10 t-section">Finished</h2>
+  <p class="mt-1 t-meta">Kept for your records.</p>
+  <div class="mt-4 space-y-3">
+    {% for campaign in campaigns.finished %}
+      <a href="{% url 'organizations:campaign_detail' campaign.pk %}"
+         class="surface flex flex-wrap items-center justify-between gap-3 p-4 opacity-80 transition hover:opacity-100 hover:shadow-raised focus-ring">
+        <div class="min-w-0">
+          <p class="t-body font-medium">{{ campaign.name }}</p>
+          <p class="t-micro">
+            {{ campaign.type_label }}
+            {% if campaign.starts_on %}· {{ campaign.starts_on|date:"M Y" }}{% endif %}
+            {% if campaign.ends_on %}&ndash; {{ campaign.ends_on|date:"M Y" }}{% endif %}
+          </p>
+        </div>
+        {% ui_status_badge campaign.status label=campaign.get_status_display %}
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}

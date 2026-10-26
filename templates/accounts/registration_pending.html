@@ -1,0 +1,35 @@
+{% extends "public/base_site.html" %}
+{% load ui %}
+
+{% comment %}
+  Shown once, immediately after registering. It deliberately does not
+  promise an email: none is sent, and telling someone to watch their inbox
+  would leave them waiting for something that will never arrive.
+{% endcomment %}
+
+{% block title %}Account created · {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="site-result relative overflow-hidden">
+  <div class="site-beam" aria-hidden="true"></div>
+  <div class="site-shell relative py-24 text-center sm:py-32">
+    <p class="site-label site-label-invert justify-center">Registration received</p>
+    <h1 class="site-display mt-6 text-4xl sm:text-5xl">Your account is waiting for approval</h1>
+    <p class="site-lead mx-auto mt-6 max-w-lg text-steel-700">
+      A member of our team reviews every new account. Once yours is approved
+      you can sign in with the email address and password you just chose —
+      there is nothing else for you to do, and no confirmation email is sent.
+    </p>
+
+    <div class="mt-10 flex flex-wrap justify-center gap-3">
+      <a href="/" class="site-btn site-btn-primary">Back to home<span class="site-btn-arrow" aria-hidden="true">&rarr;</span></a>
+      <a href="{% url 'accounts:login' %}" class="site-btn site-btn-light">Go to sign in</a>
+    </div>
+
+    <p class="site-micro mt-10 text-steel-700">
+      Need it sooner? Email
+      <a href="mailto:{{ brand.contact_email }}" class="site-link site-link-invert text-xs focus-ring">{{ brand.contact_email }}</a>.
+    </p>
+  </div>
+</div>
+{% endblock %}

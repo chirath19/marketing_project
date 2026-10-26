@@ -1,0 +1,101 @@
+{% load website_copy %}
+{% load media_tags site %}
+{% comment %}
+  The home hero.
+
+  Its own template rather than a branch inside `cms/sections/hero.html`,
+  because it is the one place on the site that gets a treatment nothing
+  else shares: a dark glass stage with a drifting light field behind it,
+  the photograph raised off that stage on a glass frame, and two glass
+  cards overlapping the frame's edge.
+
+  Every word still comes from the CMS — heading, standfirst, both
+  buttons, the picture and its description are the same section fields
+  any other hero reads. An editor who changes the heading changes this.
+
+  The strip under the buttons counts the live catalogue rather than
+  stating figures of its own, so it cannot claim more services than the
+  services page will actually show. The two glass cards name what the
+  platform reports; neither invents a result.
+{% endcomment %}
+{% catalogue_totals as totals %}
+<section id="{{ section.anchor }}" class="site-hero site-hero-home site-hero-stage">
+  {% include "public/_aura.html" %}
+
+  <div class="site-shell site-hero-grid">
+    <div class="site-hero-copy">
+      {% if section.eyebrow %}
+        <p class="site-label site-label-invert" data-reveal="fade">{{ section.eyebrow }}</p>
+      {% endif %}
+
+      <h1 class="site-display site-h1 site-hero-title" data-reveal>{{ section.heading }}</h1>
+
+      {% if section.subheading %}
+        <p class="site-lead site-hero-lead" data-reveal style="--reveal-step: 1">{{ section.subheading }}</p>
+      {% endif %}
+
+      {% if section.cta_label or section.secondary_cta_label %}
+        <div id="hero-actions" class="site-hero-actions" data-reveal style="--reveal-step: 2">
+          {% if section.cta_label and section.cta_url %}
+            <a href="{{ section.cta_url }}" class="site-btn site-btn-primary site-btn-lg">{{ section.cta_label }}<span class="site-btn-arrow" aria-hidden="true">↗</span></a>
+          {% endif %}
+          {% if section.secondary_cta_label and section.secondary_cta_url %}
+            <a href="{{ section.secondary_cta_url }}" class="site-btn site-btn-light site-btn-lg">{{ section.secondary_cta_label }}<span class="site-btn-arrow" aria-hidden="true">→</span></a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if totals.services %}
+        <dl class="site-hero-proof" data-reveal style="--reveal-step: 3">
+          <div>
+            <dt>{% website_copy "public._hero_home.001" %}</dt>
+            <dd class="site-numeric" data-count-to="{{ totals.services }}">{{ totals.services }}</dd>
+          </div>
+          <div>
+            <dt>{% website_copy "public._hero_home.002" %}</dt>
+            <dd class="site-numeric" data-count-to="{{ totals.disciplines }}">{{ totals.disciplines }}</dd>
+          </div>
+          <div>
+            <dt>{% website_copy "public._hero_home.003" %}</dt>
+            <dd class="site-numeric" data-count-to="1">1</dd>
+          </div>
+        </dl>
+      {% endif %}
+    </div>
+
+    <div class="site-hero-art" data-reveal="mask" style="--reveal-step: 1">
+      <div class="site-hero-stack" data-parallax>
+        {% if section.image %}
+          <figure class="site-glass site-hero-shot">
+            {% media_img section.image alt=section.image_alt preset="hero" css_class="w-full" loading="eager" fetchpriority="high" sizes="(min-width: 1024px) 46vw, 100vw" %}
+          </figure>
+        {% else %}
+          <div class="site-glass site-hero-shot site-hero-shot-empty">{% include "public/_sculpture.html" with tone='navy' %}</div>
+        {% endif %}
+
+        {% comment %}
+          The two cards name what the client's own workspace reports.
+          They carry no figures: a number invented for a hero is a
+          claim, and this agency has not made it.
+        {% endcomment %}
+        <div class="site-glass site-hero-chip site-hero-chip-a" data-float aria-hidden="true">
+          <span class="site-hero-chip-mark">{% include "public/_motif.html" with motif=6 %}</span>
+          <span>
+            <strong>{% website_copy "public._hero_home.004" %}</strong>
+            <em>{% website_copy "public._hero_home.005" %}</em>
+          </span>
+        </div>
+
+        <div class="site-glass site-hero-chip site-hero-chip-b" data-float aria-hidden="true">
+          <span class="site-hero-chip-mark">{% include "public/_motif.html" with motif=2 %}</span>
+          <span>
+            <strong>{% website_copy "public._hero_home.006" %}</strong>
+            <em>{% website_copy "public._hero_home.007" %}</em>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "public/_ticker.html" with tone='navy' %}
+</section>

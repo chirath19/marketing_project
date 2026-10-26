@@ -1,0 +1,93 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% if expiring %}
+    {% comment %}
+      An end date that passes unnoticed is either work stopping without
+      anyone telling the client, or work continuing without anyone
+      billing for it.
+    {% endcomment %}
+    <div class="mb-5">
+      {% component "card" title="Ending soon" subtitle="Within the next 30 days. Renew, extend or let them close — but decide." %}
+        <ul class="divide-y divide-mist">
+          {% for subscription in expiring %}
+            <li class="flex flex-wrap items-center justify-between gap-3 py-2.5">
+              <a href="{% url 'staff:subscription_detail' subscription.pk %}" class="t-body font-medium underline-offset-2 hover:underline focus-ring">
+                {{ subscription.organization.label }} · {{ subscription.name }}
+              </a>
+              <span class="t-micro">ends {{ subscription.ends_on|date:"j M Y" }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endcomponent %}
+    </div>
+  {% endif %}
+
+  <nav class="-mx-1 overflow-x-auto" aria-label="Service statuses">
+    <ul class="flex min-w-max items-center gap-1 px-1">
+      <li>
+        <a href="?" {% if not status %}aria-current="page"{% endif %}
+           class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                  {% if not status %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">All</a>
+      </li>
+      {% for stage in stages %}
+        <li>
+          <a href="?status={{ stage.value }}" {% if stage.value == status %}aria-current="page"{% endif %}
+             class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                    {% if stage.value == status %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">
+            {{ stage.label }}
+            <span class="rounded-[var(--radius-pill)] px-1.5 py-0.5 text-xs t-numeric
+                         {% if stage.value == status %}bg-white/20 text-white{% else %}bg-mist text-steel{% endif %}">{{ stage.count }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <form method="get" class="mt-4 max-w-md">
+    {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+    {% ui_search_box name="q" value=search placeholder="Search client or service" %}
+  </form>
+
+  <div class="mt-5 surface p-2 sm:p-4">
+    {% component "table" caption="Client services" columns=columns %}
+      {% for subscription in subscriptions %}
+        <tr class="border-b border-mist last:border-0">
+          <td class="ui-td" data-label="Client">
+            <a href="{% url 'staff:client_detail' subscription.organization.slug %}" class="t-body font-medium text-navy underline-offset-2 hover:underline focus-ring">{{ subscription.organization.label }}</a>
+          </td>
+          <td class="ui-td" data-label="Service">
+            <a href="{% url 'staff:subscription_detail' subscription.pk %}" class="t-body font-medium underline-offset-2 hover:underline focus-ring">{{ subscription.name }}</a>
+            <span class="block t-micro">{{ subscription.service.category.name }}</span>
+          </td>
+          <td class="ui-td" data-label="Status">
+            {% ui_status_badge subscription.status label=subscription.get_status_display %}
+            {% if subscription.is_past_end %}
+              <span class="mt-1 block t-micro font-medium text-danger">End date has passed</span>
+            {% endif %}
+          </td>
+          <td class="ui-td t-micro" data-label="Price">
+            {{ subscription.price_display }}
+            {% if subscription.billing_display %}<span class="block">{{ subscription.billing_display }}</span>{% endif %}
+          </td>
+          <td class="ui-td t-micro" data-label="Period">
+            {% if subscription.starts_on %}{{ subscription.starts_on|date:"j M Y" }}{% else %}&mdash;{% endif %}
+            {% if subscription.ends_on %}<span class="block">to {{ subscription.ends_on|date:"j M Y" }}</span>{% else %}<span class="block">ongoing</span>{% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        {% if is_filtered %}
+          {% ui_table_empty colspan=5 icon="⌕" title="Nothing matches these filters" body="No client service fits what you have selected." action_label="Show all services" action_href="?" %}
+        {% else %}
+          {% ui_table_empty colspan=5 icon="◱" title="No client services yet" body="A service is attached to a client either from an accepted quote or by hand from that client's page. Once one is active, it opens the matching area in their workspace." action_label="Go to clients" action_href="/staff/clients/" %}
+        {% endif %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    {% ui_pagination page_obj querystring=querystring label="Service pages" %}
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,58 @@
+{% comment %}
+  A bound Django form field.
+
+  `kind` decides the layout, because the shape genuinely differs: a
+  checkbox puts its label after the control, a radio group needs a
+  fieldset and legend so the choice is announced as one question rather
+  than a run of unrelated options.
+
+  The control's own aria-describedby / aria-invalid attributes are set in
+  apps.core.forms.StyledFormMixin, so they are right no matter which
+  template renders the field.
+{% endcomment %}
+
+{% if kind == "checkbox" %}
+  <div class="mb-4">
+    <div class="flex items-start gap-2.5">
+      {{ field }}
+      <label for="{{ field.id_for_label }}" class="ui-label font-normal">
+        {{ label }}{% if required %}<span class="text-danger" aria-hidden="true"> *</span>{% endif %}
+      </label>
+    </div>
+    {% if help_text %}<p id="{{ help_id }}" class="ui-help">{{ help_text }}</p>{% endif %}
+    {% if field.errors %}
+      <p id="{{ error_id }}" class="ui-error">{% for error in field.errors %}{{ error }} {% endfor %}</p>
+    {% endif %}
+  </div>
+
+{% elif kind == "radio_group" or kind == "checkbox_group" %}
+  <fieldset class="mb-4">
+    <legend class="ui-label">
+      {{ label }}{% if required %}<span class="text-danger" aria-hidden="true"> *</span>{% endif %}
+    </legend>
+    {% if help_text %}<p id="{{ help_id }}" class="ui-help mb-2">{{ help_text }}</p>{% endif %}
+    <div class="mt-2 space-y-2">
+      {% for option in field %}
+        <div class="flex items-start gap-2.5">
+          {{ option.tag }}
+          <label for="{{ option.id_for_label }}" class="ui-label font-normal">{{ option.choice_label }}</label>
+        </div>
+      {% endfor %}
+    </div>
+    {% if field.errors %}
+      <p id="{{ error_id }}" class="ui-error">{% for error in field.errors %}{{ error }} {% endfor %}</p>
+    {% endif %}
+  </fieldset>
+
+{% else %}
+  <div class="mb-4">
+    <label for="{{ field.id_for_label }}" class="ui-label">
+      {{ label }}{% if required %}<span class="text-danger" aria-hidden="true"> *</span>{% endif %}
+    </label>
+    <div class="mt-1.5">{{ field }}</div>
+    {% if help_text %}<p id="{{ help_id }}" class="ui-help">{{ help_text }}</p>{% endif %}
+    {% if field.errors %}
+      <p id="{{ error_id }}" class="ui-error">{% for error in field.errors %}{{ error }} {% endfor %}</p>
+    {% endif %}
+  </div>
+{% endif %}

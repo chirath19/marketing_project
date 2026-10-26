@@ -1,0 +1,32 @@
+{% comment %}
+  A menu button.
+
+  {% component "dropdown" label="Actions" align="right" %}
+    <a href="#" class="ui-menu-item" role="menuitem">Edit</a>
+  {% endcomponent %}
+
+  Down-arrow from the trigger moves into the menu, Escape closes and
+  returns focus to the trigger, and aria-expanded always reflects state.
+{% endcomment %}
+<div x-data="uiDisclosure()" @keydown.escape="close()" class="relative inline-block">
+  <button type="button" x-ref="trigger" @click="toggle()" @keydown.down.prevent="first()"
+          :aria-expanded="open ? 'true' : 'false'" aria-haspopup="true"
+          class="{{ trigger_css|default:'inline-flex items-center gap-2 rounded-[var(--radius-control)] border border-steel-200 bg-white px-3 py-2 text-sm font-medium text-navy transition hover:bg-mist focus-ring' }}">
+    {# Truncates rather than pushing the chevron off a narrow screen. #}
+    <span class="min-w-0 truncate">{{ label }}</span>
+    <svg class="h-4 w-4 shrink-0 text-steel" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+         stroke-width="1.6" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5.5 7.5 10 12l4.5-4.5"/>
+    </svg>
+  </button>
+
+  <div x-ref="menu" x-show="open" x-cloak @click.outside="close()"
+       role="menu" aria-label="{{ label }}"
+       class="absolute z-[var(--z-dropdown)] mt-2 w-56 rounded-[var(--radius-card)] border border-mist bg-white p-1 shadow-raised
+              {% if align == 'left' %}left-0{% else %}right-0{% endif %}"
+       x-transition:enter="transition ease-[var(--ease-soft)] duration-150"
+       x-transition:enter-start="opacity-0 -translate-y-1"
+       x-transition:enter-end="opacity-100 translate-y-0">
+    {{ slot }}
+  </div>
+</div>

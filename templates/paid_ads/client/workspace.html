@@ -1,0 +1,6 @@
+{% extends "portal/base.html" %}
+{% load ui %}
+{% block portal_content %}
+  {% component "page_header" title="Paid advertising" subtitle=organization.label %}{% endcomponent %}
+  {% include "paid_ads/_report.html" %}
+{% endblock %}

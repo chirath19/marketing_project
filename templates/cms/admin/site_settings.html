@@ -1,0 +1,12 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}Site details · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <form method="post" enctype="multipart/form-data" class="max-w-2xl surface p-6" novalidate>
+    {% csrf_token %}
+    {% ui_form_errors form %}
+    {% for field in form %}{% ui_field field %}{% endfor %}
+    {% ui_button label="Save site details" type="submit" variant="primary" %}
+  </form>
+{% endblock %}

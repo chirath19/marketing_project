@@ -1,0 +1,97 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ lead.name }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <div class="flex flex-wrap items-center gap-3">
+    {% ui_status_badge lead.status %}
+    {% if lead.assigned_to %}
+      <span class="t-meta">Owned by {{ lead.assigned_to.get_full_name }}</span>
+    {% else %}
+      {% ui_badge label="Unassigned" tone="paused" dot=True %}
+    {% endif %}
+    <span class="t-micro">{{ lead.get_source_display }}</span>
+  </div>
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-3">
+    <div class="lg:col-span-2 space-y-5">
+      {% component "card" title="Timeline" subtitle="Everything that has happened, newest first" %}
+        <ol class="relative space-y-4">
+          {% for activity in activities %}
+            <li class="relative flex gap-3 pl-6">
+              <span class="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-gold" aria-hidden="true"></span>
+              {% if not forloop.last %}<span class="absolute left-[3px] top-4 h-full w-px bg-mist" aria-hidden="true"></span>{% endif %}
+              <div class="min-w-0 flex-1 pb-1">
+                <p class="t-body {% if activity.kind == 'note' %}whitespace-pre-line{% endif %}">{{ activity.body }}</p>
+                <p class="t-micro">
+                  {{ activity.get_kind_display }}
+                  {% if activity.actor %} · {{ activity.actor.get_full_name }}{% endif %}
+                  · <time datetime="{{ activity.created_at|date:'c' }}">{{ activity.created_at|date:"j M Y, H:i" }}</time>
+                </p>
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+
+        {% if can_edit %}
+          {% slot "footer" %}
+            <form method="post" action="{% url 'staff:lead_note' lead.pk %}" novalidate>
+              {% csrf_token %}
+              {% ui_field note_form.body %}
+              {% ui_button label="Add note" type="submit" variant="primary" size="sm" %}
+            </form>
+          {% endslot %}
+        {% endif %}
+      {% endcomponent %}
+
+      {% component "card" title="Enquiries" subtitle="What they actually sent, unedited" %}
+        <ul class="divide-y divide-mist">
+          {% for submission in submissions %}
+            <li class="py-2.5">
+              <a href="{% url 'staff:inbox_detail' submission.pk %}" class="t-body font-medium underline-offset-2 hover:underline focus-ring">{{ submission.display_subject }}</a>
+              <p class="truncate t-micro">{{ submission.preview }}</p>
+              <p class="t-micro">{{ submission.created_at|date:"j M Y, H:i" }}</p>
+            </li>
+          {% empty %}
+            <li class="py-3 t-meta">No submissions on file.</li>
+          {% endfor %}
+        </ul>
+      {% endcomponent %}
+    </div>
+
+    <div class="space-y-5">
+      {% if can_edit %}
+        {% component "card" title="Status" %}
+          <form method="post" action="{% url 'staff:lead_status' lead.pk %}" novalidate>
+            {% csrf_token %}
+            {% ui_field status_form.status %}
+            {% ui_field status_form.note %}
+            {% ui_button label="Update status" type="submit" variant="primary" size="sm" full=True %}
+          </form>
+        {% endcomponent %}
+      {% endif %}
+
+      {% if can_assign %}
+        {% component "card" title="Owner" %}
+          <form method="post" action="{% url 'staff:lead_assign' lead.pk %}" novalidate>
+            {% csrf_token %}
+            {% ui_field assign_form.assignee %}
+            {% ui_button label="Assign" type="submit" variant="outline" size="sm" full=True %}
+          </form>
+        {% endcomponent %}
+      {% endif %}
+
+      {% component "card" title="Details" subtitle="The agency's working copy" %}
+        <form method="post" action="{% url 'staff:lead_details' lead.pk %}" novalidate>
+          {% csrf_token %}
+          {% for field in details_form %}{% ui_field field %}{% endfor %}
+          {% if can_edit %}{% ui_button label="Save details" type="submit" variant="outline" size="sm" full=True %}{% endif %}
+        </form>
+        <p class="mt-3 t-micro">
+          Email is fixed: it is how enquiries are matched to this lead.
+          <span class="block">{{ lead.email }}</span>
+        </p>
+      {% endcomponent %}
+    </div>
+  </div>
+{% endblock %}

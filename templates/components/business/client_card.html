@@ -1,0 +1,30 @@
+{% load ui %}
+<article class="surface relative flex h-full flex-col gap-3 p-5 transition hover:shadow-raised">
+  <div class="flex items-start gap-3">
+    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--radius-control)] bg-navy text-sm font-semibold text-white"
+          aria-hidden="true">{{ client.name|slice:":1"|upper }}</span>
+    <div class="min-w-0 flex-1">
+      <h3 class="t-card-title truncate">
+        {% if href %}<a href="{{ href }}" class="focus-ring after:absolute after:inset-0">{{ client.name }}</a>
+        {% else %}{{ client.name }}{% endif %}
+      </h3>
+      {% if client.industry %}<p class="t-micro truncate">{{ client.industry }}</p>{% endif %}
+    </div>
+    {% if client.status %}{% ui_status_badge client.status %}{% endif %}
+  </div>
+
+  <dl class="grid grid-cols-2 gap-3 border-t border-mist pt-3">
+    <div>
+      <dt class="t-micro">Active services</dt>
+      <dd class="text-sm font-semibold text-navy t-numeric">{{ client.active_services|default:"0" }}</dd>
+    </div>
+    <div>
+      <dt class="t-micro">Monthly value</dt>
+      <dd class="text-sm font-semibold text-navy t-numeric">{{ client.monthly_value|default:"—" }}</dd>
+    </div>
+  </dl>
+
+  {% if client.owner %}
+    <p class="t-micro">Account manager: <span class="font-medium text-navy">{{ client.owner }}</span></p>
+  {% endif %}
+</article>

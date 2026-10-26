@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}Blog · {{ brand.name }}{% endblock %}
+
+{% block page_actions %}
+  {% if perms.permissions.blog_create %}
+    {% url 'staff:blog_create' as create_url %}
+    {% ui_button label="New post" href=create_url variant="primary" size="sm" %}
+  {% endif %}
+{% endblock %}
+
+{% block admin_content %}
+  {% component "filter_bar" action="/staff/blog/" reset_href="/staff/blog/" submit_label="Filter" %}
+    <div class="min-w-56 flex-1">{% ui_search_box name="q" value=search placeholder="Search titles" %}</div>
+    {% ui_select name="status" label="Status" options=statuses value=status placeholder="Any status" %}
+  {% endcomponent %}
+
+  <div class="mt-5 surface p-2 sm:p-4">
+    {% component "table" caption="Blog posts" columns=columns %}
+      {% for post in posts %}
+        <tr class="border-b border-mist last:border-0">
+          <td class="ui-td" data-label="Post">
+            <a href="{% url 'staff:blog_edit' post.pk %}" class="font-medium text-navy underline-offset-2 hover:underline focus-ring">{{ post.title }}</a>
+            <span class="block t-micro">{{ post.byline|default:"No author" }} · {{ post.reading_minutes }} min read</span>
+          </td>
+          <td class="ui-td" data-label="Category">{{ post.category.name|default:"—" }}</td>
+          <td class="ui-td" data-label="Status">
+            {% if post.is_scheduled %}
+              {% ui_badge label="Scheduled" tone="planned" dot=True %}
+            {% else %}
+              {% ui_status_badge post.status %}
+            {% endif %}
+          </td>
+          <td class="ui-td t-micro" data-label="Published">
+            {% if post.published_at %}{{ post.published_at|date:"j M Y" }}{% else %}—{% endif %}
+          </td>
+          <td class="ui-td text-right" data-label="">
+            {% if post.is_published %}
+              <a href="{{ post.get_absolute_url }}" target="_blank" rel="noopener"
+                 class="text-xs font-semibold text-gold-600 underline-offset-2 hover:underline focus-ring">
+                View<span class="sr-only"> {{ post.title }} on the site</span>
+              </a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        {% if search or status %}
+          {% ui_table_empty colspan=5 icon="⌕" title="No posts match these filters" body="Try a different search term, or clear the filters to see every post." action_label="Show all posts" action_href="/staff/blog/" %}
+        {% else %}
+          {% ui_table_empty colspan=5 icon="✎" title="No articles yet" body="Articles published here appear on the public blog, in its feed and in the sitemap. Drafts stay private until you publish them." action_label="Write the first article" action_href="/staff/blog/new/" %}
+        {% endif %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    {% ui_pagination page_obj querystring=querystring label="Post pages" %}
+  {% endif %}
+{% endblock %}

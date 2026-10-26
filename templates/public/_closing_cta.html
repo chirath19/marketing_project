@@ -1,0 +1,29 @@
+{% load website_copy %}
+{% comment %}
+  The closing ask on pages that are not built from CMS sections — the
+  catalogue, a service, the blog. Pages that *are* built from sections
+  get the editor's own `cta_band` instead, so this is deliberately the
+  same shape: a dark field, a serif heading, two actions.
+
+  Caller supplies: heading, body, primary_label/href, and optionally
+  secondary_label/href.
+{% endcomment %}
+<div class="site-cta-wrap"><section class="site-dark relative overflow-hidden">
+  <div class="site-beam" aria-hidden="true"></div>
+  <div class="site-shell relative flex flex-col gap-10 py-20 sm:py-24 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+    <div class="max-w-2xl">
+      <h2 class="site-display site-h2" data-reveal>{{ heading }}</h2>
+      {% if body %}
+        <p class="site-body mt-5 max-w-xl text-white/60" data-reveal style="--reveal-step: 1">{{ body }}</p>
+      {% endif %}
+    </div>
+    <div class="flex shrink-0 flex-wrap items-center gap-3" data-reveal style="--reveal-step: 2">
+      <a href="{{ primary_href }}" class="site-btn site-btn-primary site-btn-lg">
+        {{ primary_label }}<span class="site-btn-arrow" aria-hidden="true">{% website_copy "public._closing_cta.001" %}</span>
+      </a>
+      {% if secondary_label and secondary_href %}
+        <a href="{{ secondary_href }}" class="site-btn site-btn-light site-btn-lg">{{ secondary_label }}</a>
+      {% endif %}
+    </div>
+  </div>
+</section></div>

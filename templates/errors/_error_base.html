@@ -1,0 +1,25 @@
+{% extends "public/base_site.html" %}
+
+{% comment %}
+  Error pages wear the marketing shell, not the workspace one: whoever
+  is reading this followed a link from outside and should still be
+  somewhere that looks like the site they were trying to reach.
+{% endcomment %}
+
+{% block main_class %}site-result relative overflow-hidden{% endblock %}
+
+{% block content %}
+  <div class="site-beam" aria-hidden="true"></div>
+  <div class="site-shell relative py-24 text-center sm:py-32">
+    <p class="site-display site-numeric text-7xl text-gold-700 sm:text-8xl">{% block code %}{% endblock %}</p>
+    <h1 class="site-display mt-6 text-4xl sm:text-5xl">{% block heading %}{% endblock %}</h1>
+    <p class="site-lead mx-auto mt-5 max-w-lg text-steel-700">{% block body %}{% endblock %}</p>
+
+    <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+      <a href="{% url 'public:home' %}" class="site-btn site-btn-primary">
+        Back to home<span class="site-btn-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      {% block extra_actions %}{% endblock %}
+    </div>
+  </div>
+{% endblock %}

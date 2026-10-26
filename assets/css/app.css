@@ -1,0 +1,322 @@
+@import "tailwindcss";
+@import "./public.css";
+
+/* Scan every surface that can contain a class name. */
+@source "../../templates";
+@source "../../apps";
+
+/* ---------------------------------------------------------------------------
+   Brand tokens.
+
+   These six values are the whole palette. Templates reference them by name
+   (bg-navy, text-gold); no raw hex appears outside this file. The numbered
+   steps are tints and shades derived from the six, used for hover states,
+   borders and surfaces — they keep interaction states on-brand instead of
+   each component inventing its own grey.
+--------------------------------------------------------------------------- */
+
+@theme {
+  --color-navy: #111C38;
+  --color-navy-600: #1a2745;
+  --color-navy-400: #2c3c62;
+
+  --color-midnight: #233457;
+  --color-midnight-700: #1b2843;
+  --color-midnight-400: #3a4e78;
+
+  --color-gold: #E4A33C;
+  --color-gold-600: #c9892a;
+  --color-gold-200: #f5dcae;
+  --color-gold-50: #fdf6e9;
+
+  --color-steel: #6E7B96;
+  --color-steel-400: #8c97ad;
+  --color-steel-200: #c3cad8;
+
+  --color-mist: #EEF1F6;
+  --color-mist-200: #f7f9fc;
+
+  /* Status tones for campaign state. Derived from the brand, not bolted on. */
+  --color-live: #2f8f6b;
+  --color-live-soft: #e6f4ee;
+  --color-paused: #c9892a;
+  --color-paused-soft: #fdf3e2;
+  --color-planned: #6E7B96;
+  --color-planned-soft: #eef1f6;
+  --color-done: #233457;
+  --color-done-soft: #e7ebf3;
+  --color-danger: #b4452f;
+  --color-danger-soft: #fbeae6;
+
+  /* A system stack: no webfont request, so nothing to gate behind consent
+     and nothing blocking first paint. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+
+  --radius-control: 0.5rem;
+  --radius-card: 0.875rem;
+  --radius-pill: 9999px;
+
+  --shadow-card: 0 1px 2px rgb(17 28 56 / 0.06), 0 8px 24px rgb(17 28 56 / 0.06);
+  --shadow-raised: 0 2px 4px rgb(17 28 56 / 0.08), 0 16px 40px rgb(17 28 56 / 0.10);
+  --shadow-overlay: 0 24px 64px rgb(17 28 56 / 0.24);
+
+  /* Stacking order, named once. Overlays are the classic source of
+     z-index arms races; every layered component reads from here. */
+  --z-sticky: 40;
+  --z-dropdown: 50;
+  --z-drawer: 60;
+  --z-modal: 70;
+  --z-toast: 80;
+
+  /* Rhythm. Page gutters and the vertical space between stacked blocks
+     are decisions, not per-page guesses. */
+  --gutter: 1rem;
+  --gutter-lg: 2rem;
+  --stack: 1.5rem;
+  --card-padding: 1.25rem;
+  --card-padding-lg: 1.5rem;
+
+  --ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+}
+
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    background-color: var(--color-mist);
+    color: var(--color-navy);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* One visible focus treatment everywhere, so keyboard users are never
+     guessing where they are. */
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  [x-cloak] { display: none !important; }
+}
+
+/* ---------------------------------------------------------------------------
+   Small composites that would otherwise be repeated verbatim in markup.
+   Anything with variants stays a component template, not a CSS class.
+--------------------------------------------------------------------------- */
+
+@layer components {
+
+  /* -------------------------------------------------------------------------
+     Shared primitives.
+
+     These exist so a class string is written once rather than repeated in
+     every template and again in the Python widget attributes. Anything with
+     variants stays a component template; only the invariant base lives here.
+  ------------------------------------------------------------------------- */
+
+  .surface {
+    @apply rounded-[var(--radius-card)] bg-white shadow-card;
+  }
+
+  .surface-bordered {
+    @apply rounded-[var(--radius-card)] border border-steel-200 bg-white;
+  }
+
+  .skip-link {
+    @apply sr-only;
+  }
+  .skip-link:focus {
+    @apply not-sr-only fixed left-4 top-4 z-[var(--z-toast)] rounded-md bg-navy
+           px-4 py-2 text-white shadow-raised;
+  }
+
+  /* --- typography ------------------------------------------------------- */
+
+  .t-eyebrow    { @apply text-xs font-semibold uppercase tracking-wide text-gold; }
+  .t-page-title { @apply text-2xl font-semibold tracking-tight text-navy sm:text-3xl; }
+  .t-section    { @apply text-lg font-semibold tracking-tight text-navy; }
+  .t-card-title { @apply text-base font-semibold text-navy; }
+  .t-body       { @apply text-sm text-navy; }
+  .t-meta       { @apply text-sm text-steel; }
+  .t-micro      { @apply text-xs text-steel; }
+  .t-numeric    { @apply tabular-nums; }
+
+  /* --- formatted body text ---------------------------------------------- */
+
+  /* Body text produced by `apps/cms/richtext.py` carries colours chosen
+     for a light background, because that is where most of it appears.
+     On a navy section those colours are unreadable, so the tone the
+     editor picked overrides the colour the formatter baked in. Scoped
+     with :where() so it adds no specificity of its own. */
+  .cms-prose-invert :where(p, li) { @apply text-steel-200; }
+  .cms-prose-invert :where(h2, h3) { @apply text-white; }
+  .cms-prose-invert :where(a) { @apply text-gold; }
+
+  /* --- form controls ---------------------------------------------------- */
+
+  .ui-label {
+    @apply block text-sm font-medium text-navy;
+  }
+
+  .ui-input {
+    @apply block w-full rounded-[var(--radius-control)] border border-steel-200
+           bg-white px-3 py-2 text-sm text-navy transition
+           placeholder:text-steel-400
+           focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30
+           disabled:cursor-not-allowed disabled:bg-mist disabled:text-steel;
+  }
+
+  /* Textarea and select are the same control with a modifier, composed at
+     the call site (`class="ui-input ui-select"`). Tailwind v4 cannot
+     @apply a custom class, and repeating the base here would be the
+     duplication this layer exists to avoid. */
+
+  .ui-select {
+    @apply appearance-none bg-no-repeat pr-9;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236E7B96' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 7.5 10 12l4.5-4.5'/%3E%3C/svg%3E");
+    background-position: right 0.65rem center;
+    background-size: 1.1rem;
+  }
+
+  .ui-textarea {
+    @apply resize-y;
+    min-height: 6rem;
+  }
+
+  .ui-checkbox, .ui-choice-group input[type="checkbox"] {
+    @apply h-4 w-4 shrink-0 rounded border-steel-200 text-gold
+           focus:ring-2 focus:ring-gold/40;
+  }
+
+  .ui-radio, .ui-choice-group input[type="radio"] {
+    @apply h-4 w-4 shrink-0 border-steel-200 text-gold
+           focus:ring-2 focus:ring-gold/40;
+  }
+
+  div.ui-choice-group { display: grid; gap: .65rem; }
+
+  /* Invalid state is driven by aria-invalid, so the styling can never
+     disagree with what assistive technology is told. */
+  .ui-input[aria-invalid="true"],
+  .ui-select[aria-invalid="true"],
+  .ui-textarea[aria-invalid="true"] {
+    @apply border-danger focus:border-danger focus:ring-danger/25;
+  }
+
+  .ui-help  { @apply mt-1 text-xs text-steel; }
+  .ui-error { @apply mt-1 text-xs font-medium text-danger; }
+
+  /* --- overlays --------------------------------------------------------- */
+
+  .ui-backdrop {
+    @apply fixed inset-0 bg-navy/60 backdrop-blur-[2px];
+  }
+
+  .ui-panel {
+    @apply rounded-[var(--radius-card)] bg-white shadow-overlay;
+  }
+
+  .ui-menu-item {
+    @apply flex w-full items-center gap-2 rounded-[var(--radius-control)] px-3 py-2
+           text-left text-sm text-navy transition hover:bg-mist focus-ring;
+  }
+
+  .ui-menu-item-danger { @apply text-danger hover:bg-danger-soft; }
+
+  /* --- table ------------------------------------------------------------ */
+
+  .ui-th {
+    @apply whitespace-nowrap px-4 py-3 text-left text-xs font-semibold
+           uppercase tracking-wide text-steel;
+  }
+
+  .ui-td {
+    @apply px-4 py-3 text-sm text-navy align-middle;
+  }
+
+
+  /* --- motion ----------------------------------------------------------- */
+
+  .htmx-indicator { opacity: 0; transition: opacity var(--duration-fast) ease-in; }
+  .htmx-request .htmx-indicator,
+  .htmx-request.htmx-indicator { opacity: 1; }
+
+  .ui-skeleton {
+    @apply block rounded bg-mist;
+    animation: ui-pulse 1.6s var(--ease-soft) infinite;
+  }
+
+  @keyframes ui-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.45; }
+  }
+
+  /* -------------------------------------------------------------------------
+     Responsive table.
+
+     Below `sm` each row becomes a stacked card and each cell shows its
+     column name from `data-label`. The alternative — a horizontally
+     scrolling table on a phone — hides the columns that matter most.
+  ------------------------------------------------------------------------- */
+
+  @media (max-width: 639px) {
+    .ui-table-stack thead { @apply sr-only; }
+
+    .ui-table-stack tbody tr {
+      @apply block rounded-[var(--radius-card)] border border-steel-200 bg-white
+             p-3 mb-3;
+    }
+
+    .ui-table-stack tbody td {
+      @apply flex items-baseline justify-between gap-4 border-0 px-0 py-1.5;
+    }
+
+    .ui-table-stack tbody td::before {
+      content: attr(data-label);
+      @apply text-xs font-semibold uppercase tracking-wide text-steel shrink-0;
+    }
+
+    .ui-table-stack tbody td[data-label=""]::before { content: none; }
+  }
+}
+
+
+@import "./workspace.css";
+@import "./chat.css";
+
+/* Client quotation choices remain readable and easy to tap on narrow screens. */
+.quote-service-options > div { display: grid; gap: .65rem; }
+.quote-service-options label { display: flex; align-items: center; gap: .75rem; padding: 1rem; border: 1px solid var(--color-mist, #e5eaf0); border-radius: .75rem; cursor: pointer; }
+.quote-service-options label:has(input:checked) { background: #f6f4eb; border-color: #a98332; }
+.quote-service-options input { flex: 0 0 auto; }
+.quote-service-options { max-height: 24rem; overflow-y: auto; overscroll-behavior: contain; padding: .25rem; }
+@media (min-width: 640px) { .quote-service-options > div { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+@import "./billing.css";

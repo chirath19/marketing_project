@@ -1,0 +1,58 @@
+[project]
+name = "heliograph-platform"
+version = "0.1.0"
+description = "Digital marketing agency platform — public site, service catalogue, client portal and staff back office."
+requires-python = ">=3.12"
+
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py", "tests.py"]
+testpaths = ["apps", "tests"]
+addopts = "--strict-markers --strict-config -ra"
+markers = [
+  "permissions: asserts an authorisation or tenant-isolation rule",
+  "queries: asserts a query count, guarding against N+1 regressions",
+]
+filterwarnings = ["error::DeprecationWarning:apps.*"]
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/migrations/*", "*/tests/*"]
+
+# ---------------------------------------------------------------------------
+# Lint
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["migrations", "venv", "node_modules"]
+
+[tool.ruff.lint]
+select = [
+  "E", "W",    # pycodestyle
+  "F",         # pyflakes
+  "I",         # import sorting
+  "UP",        # pyupgrade
+  "B",         # bugbear
+  "C4",        # comprehensions
+  "DJ",        # Django-specific
+  "S",         # security (bandit)
+  "T20",       # no stray print()
+  "RET", "SIM",
+]
+ignore = [
+  "S101",   # assert is how tests are written
+  "RET504", # a named return value is often clearer
+]
+
+[tool.ruff.lint.per-file-ignores]
+"*/tests/*" = ["S105", "S106"]          # test credentials are not secrets
+"config/settings/*" = ["F403", "F405"]  # settings compose by star-import
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]

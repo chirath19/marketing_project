@@ -1,0 +1,73 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}Leads · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <nav class="-mx-1 overflow-x-auto" aria-label="Pipeline">
+    <ul class="flex min-w-max items-center gap-1 px-1">
+      <li>
+        <a href="?" {% if not status and not owner %}aria-current="page"{% endif %}
+           class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                  {% if not status and not owner %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">All</a>
+      </li>
+      {% for stage in pipeline %}
+        <li>
+          <a href="?status={{ stage.value }}" {% if stage.value == status %}aria-current="page"{% endif %}
+             class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                    {% if stage.value == status %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">
+            {{ stage.label }}
+            <span class="rounded-[var(--radius-pill)] px-1.5 py-0.5 text-xs t-numeric
+                         {% if stage.value == status %}bg-white/20 text-white{% else %}bg-mist text-steel{% endif %}">{{ stage.count }}</span>
+          </a>
+        </li>
+      {% endfor %}
+      <li>
+        <a href="?owner=unassigned" {% if owner == "unassigned" %}aria-current="page"{% endif %}
+           class="inline-flex items-center whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                  {% if owner == 'unassigned' %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Unassigned</a>
+      </li>
+      <li>
+        <a href="?owner=mine" {% if owner == "mine" %}aria-current="page"{% endif %}
+           class="inline-flex items-center whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                  {% if owner == 'mine' %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Mine</a>
+      </li>
+    </ul>
+  </nav>
+
+  <form method="get" class="mt-4 max-w-md">
+    {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+    {% ui_search_box name="q" value=search placeholder="Search name, company or email" %}
+  </form>
+
+  <div class="mt-5 surface p-2 sm:p-4">
+    {% component "table" caption="Leads" columns=columns %}
+      {% for lead in leads %}
+        <tr class="border-b border-mist last:border-0">
+          <td class="ui-td" data-label="Lead">
+            <a href="{% url 'staff:lead_detail' lead.pk %}" class="font-medium text-navy underline-offset-2 hover:underline focus-ring">{{ lead.name }}</a>
+            <span class="block t-micro">{{ lead.company|default:lead.email }}</span>
+          </td>
+          <td class="ui-td" data-label="Status">{% ui_status_badge lead.status %}</td>
+          <td class="ui-td" data-label="Owner">
+            {% if lead.assigned_to %}{{ lead.assigned_to.get_full_name }}
+            {% else %}{% ui_badge label="Unassigned" tone="paused" %}{% endif %}
+          </td>
+          <td class="ui-td t-micro" data-label="Last activity">{{ lead.last_activity_at|date:"j M, H:i" }}</td>
+          <td class="ui-td text-right" data-label="">
+            <a href="{% url 'staff:lead_detail' lead.pk %}" class="text-xs font-semibold text-gold-600 underline-offset-2 hover:underline focus-ring">Open<span class="sr-only"> {{ lead.name }}</span></a>
+          </td>
+        </tr>
+      {% empty %}
+        {% if search or status or owner %}
+          {% ui_table_empty colspan=5 icon="⌕" title="No leads match these filters" body="Nothing in the pipeline fits what you have selected. Clear the filters to see every lead." action_label="Show all leads" action_href="?" %}
+        {% else %}
+          {% ui_table_empty colspan=5 icon="◎" title="No leads yet" body="A lead is created the first time somebody submits an enquiry or a quote request. They will appear here with a status you can work through." action_label="Open the inbox" action_href="/staff/inbox/" %}
+        {% endif %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    {% ui_pagination page_obj querystring=querystring label="Lead pages" %}
+  {% endif %}
+{% endblock %}

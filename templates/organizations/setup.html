@@ -1,0 +1,22 @@
+{% extends "base/public.html" %}
+{% load ui %}
+
+{% block title %}Set up your company · {{ brand.name }}{% endblock %}
+{% block main_class %}mx-auto w-full max-w-xl px-[var(--gutter)] py-16 sm:px-6{% endblock %}
+
+{% block content %}
+  {% component "page_header" title="Set up your company" subtitle="This is the workspace your campaigns, reports and approvals will live in." eyebrow="One more step" %}{% endcomponent %}
+
+  <form method="post" class="mt-6 surface p-6" novalidate>
+    {% csrf_token %}
+    {% ui_form_errors form %}
+    {% ui_field form.name %}
+    {% ui_field form.website %}
+    <div class="grid gap-x-5 sm:grid-cols-2">
+      {% ui_field form.phone %}
+      {% ui_field form.country %}
+    </div>
+    {% ui_button label="Create workspace" type="submit" variant="primary" full=True %}
+    <p class="mt-4 t-micro">You can add the rest of your details later.</p>
+  </form>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+{% block admin_content %}
+<section class="chat-inbox" aria-labelledby="conversation-list-title">
+  <header class="chat-inbox-head"><h2 id="conversation-list-title">Your conversations</h2><p>One place to keep every client conversation moving. Unread conversations appear first.</p>
+    <label class="chat-search">{% include "messaging/_icon.html" with icon="search" %}<span class="sr-only">Find a client</span><input type="search" data-chat-contact-search placeholder="Search by name, company or email"></label>
+  </header>
+  <div data-chat-contacts>
+    {% for member in recipients %}
+      <a class="chat-contact {% if member.unread_messages %}unread-highlight{% endif %}" data-chat-contact data-message-thread="{% url 'staff:client_desk' member.organization.slug member.user_id %}" href="{% url 'staff:client_desk' member.organization.slug member.user_id %}">
+        <span class="chat-avatar" aria-hidden="true">{{ member.user.get_full_name|default:member.user.email|slice:":1"|upper }}</span>
+        <div class="chat-contact-detail"><strong>{{ member.user.get_full_name|default:member.user.email }}</strong><span>{{ member.organization.label }}</span><span>{{ member.user.email }}</span></div>
+        <div class="chat-contact-meta"><span class="unread-label" data-thread-label {% if not member.unread_messages %}hidden{% endif %}>New messages <span data-thread-count>{{ member.unread_messages }}</span></span><span aria-hidden="true">↗</span></div>
+      </a>
+    {% empty %}<div class="chat-empty"><p class="chat-empty-title">Your conversations will appear here</p><p class="chat-empty-body">Once a client is assigned to you, open their conversation to get started.</p></div>{% endfor %}
+  </div>
+  <p class="chat-search-status" data-chat-contact-status role="status"></p>
+</section>
+{% endblock %}

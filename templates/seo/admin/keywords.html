@@ -1,0 +1,88 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% include "seo/admin/_nav.html" %}
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <form method="get" class="max-w-md">
+        {% if show_all %}<input type="hidden" name="all" value="1">{% endif %}
+        {% ui_search_box name="q" value=search placeholder="Search terms" %}
+      </form>
+
+      <p class="mt-3 t-micro">
+        <a href="?{% if search %}q={{ search }}{% endif %}" class="{% if not show_all %}font-semibold text-navy{% else %}text-steel hover:text-navy{% endif %} underline-offset-2 hover:underline focus-ring">Tracked</a>
+        ·
+        <a href="?all=1{% if search %}&q={{ search }}{% endif %}" class="{% if show_all %}font-semibold text-navy{% else %}text-steel hover:text-navy{% endif %} underline-offset-2 hover:underline focus-ring">Including untracked</a>
+      </p>
+
+      <div class="mt-4 surface p-2 sm:p-4">
+        {% component "table" caption="Keywords" columns=keyword_columns %}
+          {% for keyword in keywords %}
+            <tr class="border-b border-mist last:border-0 {% if not keyword.is_tracked %}opacity-60{% endif %}">
+              <td class="ui-td" data-label="Term">
+                <a href="{% url 'staff:seo_keyword_detail' keyword.pk %}" class="t-body font-medium text-navy underline-offset-2 hover:underline focus-ring">{{ keyword.term }}</a>
+                {% if keyword.target_url %}<span class="block truncate t-micro">{{ keyword.target_url }}</span>{% endif %}
+              </td>
+              <td class="ui-td text-right t-numeric" data-label="Position">
+                {% if keyword.latest_position %}
+                  <span class="t-body font-semibold">{{ keyword.latest_position }}</span>
+                  <span class="block t-micro">{{ keyword.latest_recorded_on|date:"j M Y" }}</span>
+                {% else %}
+                  <span class="t-meta">No reading</span>
+                {% endif %}
+              </td>
+              <td class="ui-td text-right t-numeric" data-label="Volume">
+                {% if keyword.search_volume %}{{ keyword.search_volume }}{% else %}&mdash;{% endif %}
+              </td>
+              <td class="ui-td text-right t-numeric" data-label="Priority">{{ keyword.priority }}</td>
+            </tr>
+          {% empty %}
+            {% if search %}
+              {% ui_table_empty colspan=4 icon="⌕" title="No terms match that" body="Try a shorter search, or clear it to see everything tracked." action_label="Clear the search" action_href="?" %}
+            {% else %}
+              {% ui_table_empty colspan=4 icon="⌕" title="No keywords tracked yet" body="Add the terms you are working on, then record positions by hand or import a CSV your rank tracker exported. Nothing here is fetched from a search engine." %}
+            {% endif %}
+          {% endfor %}
+        {% endcomponent %}
+      </div>
+    </div>
+
+    {% if can_create %}
+      <aside class="space-y-5">
+        {% component "card" title="Add a keyword" %}
+          <form method="post" action="{% url 'staff:seo_keyword_create' organization.slug %}" novalidate>
+            {% csrf_token %}
+            {% ui_field form.term %}
+            {% ui_field form.target_url %}
+            <div class="grid gap-x-5 sm:grid-cols-2">
+              {% ui_field form.search_volume %}
+              {% ui_field form.difficulty %}
+            </div>
+            {% ui_field form.priority %}
+            {% ui_button label="Add keyword" type="submit" variant="primary" size="sm" full=True %}
+          </form>
+        {% endcomponent %}
+
+        {% component "card" title="Import positions" subtitle="A CSV from whichever rank tracker you use." %}
+          <form method="post" action="{% url 'staff:seo_keyword_import' organization.slug %}" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {% ui_field import_form.file %}
+            {% ui_field import_form.recorded_on %}
+            {% ui_field import_form.source %}
+            {% ui_button label="Import" type="submit" variant="outline" size="sm" full=True %}
+          </form>
+          {% slot "footer" %}
+            <p class="t-micro">
+              Keywords in the file that are not tracked yet are added. Rows
+              that cannot be read are skipped and reported rather than
+              guessed at.
+            </p>
+          {% endslot %}
+        {% endcomponent %}
+      </aside>
+    {% endif %}
+  </div>
+{% endblock %}

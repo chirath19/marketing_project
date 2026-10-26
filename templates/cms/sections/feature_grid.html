@@ -1,0 +1,24 @@
+{% load website_copy %}
+{% load ui site %}
+{% if section.items.all.0.label|is_numbered %}
+<section id="{{ section.anchor }}" class="site-section site-process {% if section.tone == 'navy' %}site-dark-soft{% else %}site-band{% endif %}">
+  <div class="site-shell site-editorial-grid">
+    <header class="site-editorial-heading">
+      {% if section.eyebrow %}<p class="site-label {% if section.tone == 'navy' %}site-label-invert{% endif %}">{{ section.eyebrow }}</p>{% endif %}
+      <h2 class="site-display site-h2 mt-5">{{ section.heading }}</h2>
+      {% if section.subheading %}<p class="site-body mt-6">{{ section.subheading }}</p>{% endif %}
+      {% if section.cta_label and section.cta_url %}<a href="{{ section.cta_url }}" class="site-btn {% if section.tone == 'navy' %}site-btn-light{% else %}site-btn-dark{% endif %} mt-8">{{ section.cta_label }}<span aria-hidden="true">↗</span></a>{% endif %}
+    </header>
+    <ol class="site-process-list">
+      {% for item in section.items.all %}<li class="site-step" data-reveal><h3>{{ item.label }}</h3>{% if item.body %}<p>{{ item.body }}</p>{% endif %}</li>{% endfor %}
+    </ol>
+  </div>
+</section>
+{% else %}
+{% component "cms_section" section=section %}
+  <div class="site-feature-grid site-feature-columns-{{ section.columns }}">
+    {% for item in section.items.all %}{% include "cms/sections/_bento_cell.html" with index=forloop.counter step=forloop.counter0 %}{% endfor %}
+  </div>
+  {% if section.cta_label and section.cta_url %}<a href="{{ section.cta_url }}" class="site-btn site-btn-dark mt-8">{{ section.cta_label }}<span aria-hidden="true">↗</span></a>{% elif is_home and section.order == 20 %}<a href="{% url 'public:services' %}" class="site-btn site-btn-dark mt-8">{% website_copy "cms.sections.feature_grid.001" %}<span aria-hidden="true">↗</span></a>{% endif %}
+{% endcomponent %}
+{% endif %}

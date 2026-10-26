@@ -1,0 +1,37 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}Staff · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% url 'staff:create' as create_url %}
+  
+
+  <div class="mt-8 surface p-2 sm:p-4">
+    {% component "table" caption="Staff members" columns=columns %}
+      {% for profile in staff_members %}
+        <tr class="border-b border-mist last:border-0">
+          <td class="ui-td" data-label="Name">
+            <a href="{% url 'staff:detail' profile.pk %}" class="font-medium text-navy underline-offset-2 hover:underline focus-ring">{{ profile.user.get_full_name }}</a>
+            <span class="block t-micro">{{ profile.user.email }}</span>
+          </td>
+          <td class="ui-td" data-label="Roles">
+            {% for role in profile.roles.all %}{% ui_badge label=role.name tone="neutral" %} {% empty %}<span class="t-micro">None</span>{% endfor %}
+          </td>
+          <td class="ui-td text-right t-numeric" data-label="Clients">
+            {% if profile.has_all_client_access %}All{% else %}{{ profile.client_count }}{% endif %}
+          </td>
+          <td class="ui-td" data-label="Status">{% ui_status_badge profile.user.status %}</td>
+          <td class="ui-td text-right" data-label="">
+            <a href="{% url 'staff:detail' profile.pk %}" class="text-xs font-semibold text-gold-600 underline-offset-2 hover:underline focus-ring">Open<span class="sr-only"> {{ profile.user.email }}</span></a>
+          </td>
+        </tr>
+      {% empty %}
+        {% if perms.permissions.staff_manage %}
+          {% ui_table_empty colspan=5 icon="◆" title="No staff accounts yet" body="Staff members get a role, which decides what they can reach, and client assignments, which decide whose work they can see." action_label="Add a staff member" action_href="/staff/new/" %}
+        {% else %}
+          {% ui_table_empty colspan=5 icon="◆" title="No staff accounts yet" body="Staff members appear here once an administrator creates them." %}
+        {% endif %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+{% endblock %}

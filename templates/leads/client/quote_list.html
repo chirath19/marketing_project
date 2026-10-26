@@ -1,0 +1,71 @@
+{% extends "portal/base.html" %}
+{% load ui %}
+
+{% block title %}Quotes · {{ brand.name }}{% endblock %}
+
+{% block portal_content %}
+<a href="{% url 'organizations:quote_create' %}" class="ui-btn ui-btn-primary mb-5">Request a quotation</a>
+  {% component "page_header" title="Requests & quotes" subtitle="Requests you have sent us, and where each one has got to." eyebrow="Your workspace" %}{% endcomponent %}
+
+
+  {% if awaiting_decision %}
+    <div class="mt-6">
+      {% ui_alert tone="warning" title="Waiting on you" message="One or more quotes are ready for your decision. Open one to see what we are proposing." %}
+    </div>
+  {% endif %}
+
+  {% if active_quotes %}
+    <section class="mt-8" aria-labelledby="active-work">
+      <h2 id="active-work" class="t-section flex items-center gap-2"><span class="quote-active-dot" aria-hidden="true"></span>Active work</h2>
+      <p class="mt-1 t-meta">Quotes you accepted. Your team is delivering these now.</p>
+      <div class="mt-4 space-y-4">
+        {% for quote in active_quotes %}
+          <a href="{% url 'organizations:quote_detail' quote.pk %}" class="quote-active block p-5 transition hover:shadow-raised focus-ring">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="t-micro">{{ quote.reference }}</p>
+                <p class="mt-0.5 t-card-title">{{ quote.items.count }} service{{ quote.items.count|pluralize }}{% if quote.objective %} · {{ quote.objective }}{% endif %}</p>
+                <p class="mt-1 t-micro">Accepted {{ quote.decided_at|date:"j M Y" }}</p>
+              </div>
+              {% ui_status_badge quote.status label=quote.get_status_display %}
+            </div>
+            <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+              {% for item in quote.items.all|slice:":4" %}{% if item.is_included %}<li class="t-micro">{{ item.name }}</li>{% endif %}{% endfor %}
+            </ul>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% if other_quotes %}<h2 class="t-section mt-10">All other quotes</h2>{% endif %}
+  {% endif %}
+
+  <div class="{% if active_quotes %}mt-4{% else %}mt-8{% endif %} space-y-4">
+    {% for quote in other_quotes %}
+      <a href="{% url 'organizations:quote_detail' quote.pk %}"
+         class="surface block p-5 transition hover:shadow-raised focus-ring">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="t-micro">{{ quote.reference }}</p>
+            <p class="mt-0.5 t-card-title">
+              {{ quote.items.count }} service{{ quote.items.count|pluralize }}
+              {% if quote.objective %}· {{ quote.objective }}{% endif %}
+            </p>
+            <p class="mt-1 t-micro">Sent {{ quote.created_at|date:"j M Y" }}</p>
+          </div>
+          {% ui_status_badge quote.status label=quote.get_status_display %}
+        </div>
+
+        <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+          {% for item in quote.items.all|slice:":4" %}
+            <li class="t-micro">{{ item.name }}</li>
+          {% endfor %}
+          {% if quote.items.count > 4 %}
+            <li class="t-micro">and {{ quote.items.count|add:"-4" }} more</li>
+          {% endif %}
+        </ul>
+      </a>
+    {% empty %}
+      {% if not active_quotes %}{% ui_empty_state icon="◈" title="No quotes yet" body="Build a selection from the service catalogue and send it through. It appears here with its progress, and we reply inside this workspace rather than by email." action_label="Browse services" action_href="/services/" %}{% endif %}
+    {% endfor %}
+  </div>
+{% endblock %}

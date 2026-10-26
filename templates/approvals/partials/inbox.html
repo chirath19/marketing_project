@@ -1,0 +1,31 @@
+{% load ui %}
+{% component "page_header" title="Client approvals" subtitle="Decisions, discussion and history in one place." %}{% endcomponent %}
+<p class="mt-4 t-meta"><strong class="t-numeric">{{ pending_count }}</strong> pending. Notifications stay in the app; no email or SMS is sent.</p>
+<form method="get" class="mt-6 surface p-5">
+  {% ui_form_errors filter_form %}
+  <div class="grid gap-4 sm:grid-cols-2">{% for field in filter_form %}{% ui_field field %}{% endfor %}</div>
+  <div class="mt-4">{% ui_button label="Apply filters" type="submit" %}</div>
+</form>
+{% if is_staff_workspace and can_create %}
+<details class="mt-5 surface p-5">
+  <summary class="cursor-pointer focus-ring t-card-title">Request approval for a client</summary>
+  <ul class="mt-3 grid gap-3 sm:grid-cols-2">{% for organization in organizations %}<li><a class="underline focus-ring" href="{% url 'staff:approval_create' organization.slug %}">{{ organization.label }}</a></li>{% empty %}<li class="t-meta">No assigned clients.</li>{% endfor %}</ul>
+</details>
+{% endif %}
+<div class="mt-6 surface p-5 overflow-x-auto">
+  <table class="w-full ui-table-stack">
+    <thead><tr><th class="ui-th">Request</th>{% if is_staff_workspace %}<th class="ui-th">Client</th>{% endif %}<th class="ui-th">Campaign</th><th class="ui-th">Requested</th><th class="ui-th">Status</th></tr></thead>
+    <tbody>
+      {% for approval in page_obj %}
+      <tr>
+        <td class="ui-td" data-label="Request"><a class="underline focus-ring" href="{% if is_staff_workspace %}{% url 'staff:approval_detail' approval.pk %}{% else %}{% url 'organizations:approval_detail' approval.pk %}{% endif %}">{{ approval.title }}</a>{% if approval.source_module %}<p class="t-micro">Versioned deliverable</p>{% endif %}</td>
+        {% if is_staff_workspace %}<td class="ui-td" data-label="Client">{{ approval.organization.label }}</td>{% endif %}
+        <td class="ui-td" data-label="Campaign">{{ approval.campaign.name }}</td>
+        <td class="ui-td" data-label="Requested">{{ approval.requested_at }}</td>
+        <td class="ui-td" data-label="Status">{{ approval.get_status_display }}</td>
+      </tr>
+      {% empty %}<tr><td class="ui-td" colspan="5">{% ui_empty_state title="No approvals in this view" body="Requests will appear here when staff submit work for your organization. Change the filter to see resolved requests." %}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  {% ui_pagination page_obj querystring=querystring %}
+</div>

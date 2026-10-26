@@ -1,0 +1,64 @@
+{% load ui %}
+{% component "page_header" title="Email Marketing" subtitle=organization.label %}
+  {% if can_create %}{% url 'staff:email_marketing_create' organization.slug as create_url %}{% ui_button label="New email work" href=create_url %}{% endif %}
+{% endcomponent %}
+<p class="mt-4 t-meta">Manage email campaigns, newsletters and automation flows delivered for this client. This workspace sends no emails. Schedules, external execution and results are recorded manually.</p>
+<form method="get" class="mt-6 surface p-5">
+  {% ui_form_errors filter_form %}
+  <div class="grid gap-4 sm:grid-cols-3">{% for field in filter_form %}{% ui_field field %}{% endfor %}</div>
+  <p class="mt-3 t-micro">Dates filter scheduled work and daily observation dates. Leave dates blank to include unscheduled work.</p>
+  <div class="mt-4">{% ui_button label="Apply filters" type="submit" %}</div>
+</form>
+{% if not filter_form.errors %}
+<div class="mt-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+  <div class="surface p-5"><p class="t-meta">Work items</p><p class="t-section t-numeric">{{ work_count }}</p></div>
+  <div class="surface p-5"><p class="t-meta">Awaiting review</p><p class="t-section t-numeric">{{ pending_reviews }}</p></div>
+  <div class="surface p-5"><p class="t-meta">Recipient deliveries</p><p class="t-section t-numeric">{{ totals.recipients|default_if_none:"—" }}</p></div>
+  <div class="surface p-5"><p class="t-meta">Open events</p><p class="t-section t-numeric">{{ totals.opens|default_if_none:"—" }}</p></div>
+  <div class="surface p-5"><p class="t-meta">Click events</p><p class="t-section t-numeric">{{ totals.clicks|default_if_none:"—" }}</p></div>
+  <div class="surface p-5"><p class="t-meta">Conversions</p><p class="t-section t-numeric">{{ totals.conversions|default_if_none:"—" }}</p></div>
+</div>
+<section class="mt-8 surface p-5">
+  <h2 class="t-section">Email work and schedule</h2>
+  <div class="mt-4 overflow-x-auto">
+    <table class="w-full ui-table-stack">
+      <thead><tr><th class="ui-th">Name / type</th><th class="ui-th">Campaign</th><th class="ui-th">Planned audience</th><th class="ui-th">Scheduled</th><th class="ui-th">Status</th></tr></thead>
+      <tbody>
+        {% for item in work_items %}
+        <tr>
+          <td class="ui-td" data-label="Name / type"><a class="text-navy underline focus-ring" href="{% if is_staff_workspace %}{% url 'staff:email_marketing_detail' organization.slug item.pk %}{% else %}{% url 'organizations:email_marketing_detail' item.pk %}{% endif %}">{{ item.name }}</a><p class="t-micro">{{ item.get_kind_display }}</p></td>
+          <td class="ui-td" data-label="Campaign">{{ item.campaign.name }}</td>
+          <td class="ui-td" data-label="Planned audience">{{ item.audience_size|default_if_none:"Not recorded" }}</td>
+          <td class="ui-td" data-label="Scheduled">{{ item.scheduled_at|date:"M j, Y H:i T"|default:"Unscheduled" }}</td>
+          <td class="ui-td" data-label="Status">{{ item.get_status_display }}</td>
+        </tr>
+        {% empty %}<tr><td colspan="5" class="ui-td">{% ui_empty_state title="No email work to show" body="Campaign work, newsletter issues and flow plans appear here when added and shared. Try clearing the filters." %}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% ui_pagination work_items querystring=querystring %}
+</section>
+<section class="mt-8 surface p-5">
+  <h2 class="t-section">Recorded performance</h2>
+  <p class="mt-2 t-meta">Daily event counts from external reports, including repeat opens and clicks. Recipient deliveries are not a unique audience count. Missing observations remain blank; no sample or live-provider values are shown.</p>
+  {% include "email_marketing/partials/results.html" %}
+  {% if results.has_other_pages %}
+  <nav class="mt-4 flex gap-4" aria-label="Results pages">
+    {% if results.has_previous %}<a class="underline focus-ring" href="?{{ results_querystring }}&amp;results_page={{ results.previous_page_number }}">Previous results</a>{% endif %}
+    <span>Page {{ results.number }} of {{ results.paginator.num_pages }}</span>
+    {% if results.has_next %}<a class="underline focus-ring" href="?{{ results_querystring }}&amp;results_page={{ results.next_page_number }}">Next results</a>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endif %}
+<section class="mt-8 surface p-5">
+  <div class="flex flex-wrap justify-between gap-4">
+    <h2 class="t-section">Service campaigns</h2>
+    {% if is_staff_workspace and perms.permissions.campaigns_create %}<a class="underline focus-ring" href="{% url 'staff:campaign_create' organization.slug %}?service_type=email_marketing">New service campaign</a>{% endif %}
+  </div>
+  <ul class="mt-4 divide-y divide-mist">
+    {% for campaign in campaigns %}
+    <li class="py-3"><p class="t-card-title">{{ campaign.name }}</p><p class="t-meta">{{ campaign.get_status_display }} · {{ campaign.client_summary }}</p>{% if is_staff_workspace and perms.permissions.campaigns_view %}<a class="underline focus-ring" href="{% url 'staff:campaign_detail' campaign.pk %}">Manage campaign</a>{% endif %}</li>
+    {% empty %}<li class="t-meta">No Email Marketing service campaigns yet.</li>{% endfor %}
+  </ul>
+</section>

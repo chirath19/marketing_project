@@ -1,0 +1,13 @@
+{
+  "name": "heliograph-platform",
+  "private": true,
+  "description": "Tailwind build for the Heliograph marketing platform. The source lives in assets/ rather than static/ so collectstatic never tries to resolve its @import as a served URL. Node is build-time only; the compiled stylesheet is committed, so deployment needs Python alone.",
+  "scripts": {
+    "css": "tailwindcss -i ./assets/css/app.css -o ./static/dist/app.css --minify",
+    "css:watch": "tailwindcss -i ./assets/css/app.css -o ./static/dist/app.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.3",
+    "tailwindcss": "4.3.3"
+  }
+}

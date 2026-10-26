@@ -1,0 +1,18 @@
+{% comment %}
+  The staff dashboard's section navigation.
+
+  A single <nav> with grouped lists. On narrow screens the layout renders
+  it inside a drawer rather than duplicating it here.
+
+  Note the argument names: `heading`, not `brand`. A component argument
+  that shares a name with a global context variable renders that variable
+  when the caller omits it — which is how this template once printed the
+  whole brand dict onto the page.
+{% endcomment %}
+<nav aria-label="{{ label|default:'Sections' }}" class="flex h-full flex-col gap-6 p-4">
+  {% if heading %}
+    <a href="{{ heading_href|default:'/' }}"
+       class="px-3 text-base font-semibold tracking-tight text-navy focus-ring">{{ heading }}</a>
+  {% endif %}
+  {{ slot }}
+</nav>

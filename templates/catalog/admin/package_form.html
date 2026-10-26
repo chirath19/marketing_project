@@ -1,0 +1,44 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <form method="post" class="grid gap-5 lg:grid-cols-2" novalidate>
+    {% csrf_token %}
+
+    {% component "card" title="Package" %}
+      {% ui_form_errors form %}
+      {% ui_field form.name %}
+      {% ui_field form.summary %}
+      {% ui_field form.price_visibility %}{% ui_field form.price %}
+      <div class="grid gap-x-5 sm:grid-cols-2">
+        {% ui_field form.currency %}
+        {% ui_field form.billing_type %}
+      </div>
+      {% ui_field form.is_recommended %}
+      {% ui_field form.is_visible %}
+      {% ui_field form.slug %}
+    {% endcomponent %}
+
+    {% component "card" title="Included features" subtitle="From this service's list. Unticking one removes it from the comparison." %}
+      {% if features %}
+        <div class="space-y-2">
+          {% for item in features %}
+            <div class="flex items-start gap-2.5">
+              <input type="checkbox" name="features" value="{{ item.feature.pk }}"
+                     id="feature_{{ item.feature.pk }}" class="ui-checkbox mt-0.5"
+                     {% if item.included %}checked{% endif %}>
+              <label for="feature_{{ item.feature.pk }}" class="ui-label font-normal">{{ item.feature.label }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        {% ui_empty_state title="No features yet" body="Add features to the service first, then tick the ones this tier includes." %}
+      {% endif %}
+
+      {% slot "footer" %}
+        {% ui_button label="Save package" type="submit" variant="primary" %}
+      {% endslot %}
+    {% endcomponent %}
+  </form>
+{% endblock %}

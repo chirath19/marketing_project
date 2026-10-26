@@ -1,0 +1,12 @@
+<div>
+  <div class="flex items-baseline justify-between gap-4 text-sm">
+    {% if label %}<span class="font-medium text-navy">{{ label }}</span>{% endif %}
+    <span class="t-meta t-numeric">{{ current }} of {{ target }}{% if suffix %} {{ suffix }}{% endif %}</span>
+  </div>
+  <div class="mt-2 h-2 w-full overflow-hidden rounded-[var(--radius-pill)] bg-mist"
+       role="progressbar" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"
+       aria-label="{{ label|default:'Progress' }}">
+    <div class="h-full rounded-[var(--radius-pill)] bg-gold transition-[width] duration-[var(--duration-base)]"
+         style="width: {{ pct }}%"></div>
+  </div>
+</div>

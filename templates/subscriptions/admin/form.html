@@ -1,0 +1,40 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <form method="post" class="max-w-2xl surface p-6" novalidate>
+    {% csrf_token %}
+    {% ui_form_errors form %}
+
+    {% ui_field form.service %}
+    {% ui_field form.package %}
+    {% ui_field form.name %}
+
+    <div class="grid gap-x-5 sm:grid-cols-3">
+      {% ui_field form.price %}
+      {% ui_field form.currency %}
+      {% ui_field form.billing_type %}
+    </div>
+
+    <div class="grid gap-x-5 sm:grid-cols-2">
+      {% ui_field form.starts_on %}
+      {% ui_field form.ends_on %}
+    </div>
+
+    {% ui_field form.custom_scope %}
+    {% ui_field form.client_notes %}
+    {% ui_field form.internal_notes %}
+
+    <div class="flex items-center gap-3">
+      {% ui_button label="Add service" type="submit" variant="primary" %}
+      <a href="{% url 'staff:client_detail' organization.slug %}" class="text-sm font-medium text-steel underline-offset-2 hover:text-navy hover:underline focus-ring">Cancel</a>
+    </div>
+
+    <p class="mt-4 t-micro">
+      It is added as <span class="font-medium">pending</span>. Activating it is
+      a separate step, because that is what opens the matching area in the
+      client's workspace.
+    </p>
+  </form>
+{% endblock %}

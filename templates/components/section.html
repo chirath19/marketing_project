@@ -1,0 +1,13 @@
+{# Container component for public page sections. #}
+<section class="{% if tone == 'navy' %}bg-navy text-mist{% elif tone == 'mist' %}bg-mist text-navy{% else %}bg-white text-navy{% endif %}">
+  <div class="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+    {% if eyebrow or title or subtitle %}
+      <header class="max-w-2xl">
+        {% if eyebrow %}<p class="text-sm font-semibold uppercase tracking-wide text-gold">{{ eyebrow }}</p>{% endif %}
+        {% if title %}<h2 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{{ title }}</h2>{% endif %}
+        {% if subtitle %}<p class="mt-3 text-base {% if tone == 'navy' %}text-steel-200{% else %}text-steel{% endif %}">{{ subtitle }}</p>{% endif %}
+      </header>
+    {% endif %}
+    <div class="{% if eyebrow or title %}mt-10{% endif %}">{{ slot }}</div>
+  </div>
+</section>

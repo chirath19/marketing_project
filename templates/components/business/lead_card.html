@@ -1,0 +1,25 @@
+{% load ui %}
+<article class="surface relative flex flex-col gap-3 p-5 transition hover:shadow-raised">
+  <div class="flex items-start justify-between gap-3">
+    <div class="min-w-0">
+      <h3 class="t-card-title truncate">
+        {% if href %}<a href="{{ href }}" class="focus-ring after:absolute after:inset-0">{{ lead.name }}</a>
+        {% else %}{{ lead.name }}{% endif %}
+      </h3>
+      {% if lead.company %}<p class="t-micro truncate">{{ lead.company }}</p>{% endif %}
+    </div>
+    {% if lead.status %}{% ui_status_badge lead.status %}{% endif %}
+  </div>
+
+  {% if lead.summary %}<p class="t-meta line-clamp-2">{{ lead.summary }}</p>{% endif %}
+
+  <div class="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-mist pt-3 t-micro">
+    {% if lead.email %}
+      {# A mailto is a contact detail, not an outbound message from the platform. #}
+      <a href="mailto:{{ lead.email }}" class="relative z-10 underline-offset-2 hover:text-navy hover:underline focus-ring">{{ lead.email }}</a>
+    {% endif %}
+    {% if lead.source %}<span>via {{ lead.source }}</span>{% endif %}
+    {% if lead.value_display %}<span class="font-semibold text-navy t-numeric">{{ lead.value_display }}</span>{% endif %}
+    {% if lead.created_at %}<span class="ml-auto">{{ lead.created_at }}</span>{% endif %}
+  </div>
+</article>

@@ -1,0 +1,44 @@
+{% extends "base/public.html" %}
+{% load ui %}
+
+{% block title %}Your profile · {{ brand.name }}{% endblock %}
+{% block main_class %}mx-auto w-full max-w-2xl px-[var(--gutter)] py-16 sm:px-6{% endblock %}
+
+{% block content %}
+  {% comment %}
+    {% url %} cannot be nested inside another tag's argument, so it is
+    resolved into a variable first.
+  {% endcomment %}
+  {% url 'accounts:password_change' as password_change_url %}
+  {% component "page_header" title="Your profile" subtitle="Keep your details up to date." %}
+    {% ui_button label="Change password" href=password_change_url variant="outline" size="sm" %}
+  {% endcomponent %}
+
+  <form method="post" class="mt-6 surface p-6" novalidate>
+    {% csrf_token %}
+    {% ui_form_errors form %}
+
+    {% ui_field form.full_name %}
+
+    {% comment %}
+      Email is shown but not editable. It is the login identifier, and
+      with nothing sent outbound there is no way to verify a new address
+      or warn the old one — so a typo would silently lock someone out.
+      Staff change it deliberately, through the admin.
+    {% endcomment %}
+    <div class="mb-4">
+      <span class="ui-label">Email address</span>
+      <p class="mt-1.5 rounded-[var(--radius-control)] border border-mist bg-mist px-3 py-2 text-sm text-steel">
+        {{ request.user.email }}
+      </p>
+      <p class="ui-help">Contact your account manager to change this.</p>
+    </div>
+
+    <div class="grid gap-x-5 sm:grid-cols-2">
+      {% ui_field form.job_title %}
+      {% ui_field form.phone %}
+    </div>
+
+    {% ui_button label="Save changes" type="submit" variant="primary" %}
+  </form>
+{% endblock %}

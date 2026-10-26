@@ -1,0 +1,15 @@
+{% load ui %}
+{% comment %}Only CMS-managed figures appear here. Each metric is a valid dt/dd group.{% endcomment %}
+{% component "cms_section" section=section %}
+  <dl class="grid gap-6 sm:grid-cols-2 {% if section.columns == 2 %}lg:grid-cols-2{% elif section.columns == 4 %}lg:grid-cols-4{% else %}lg:grid-cols-3{% endif %}">
+    {% for item in section.items.all %}
+      <div class="site-stat" data-reveal>
+        <dt class="text-xs font-semibold uppercase tracking-[0.16em] {% if section.tone == 'navy' %}text-white/75{% else %}text-steel-700{% endif %}">{{ item.label }}</dt>
+        <dd class="mt-5">
+          <span class="site-display site-numeric block text-5xl sm:text-6xl {% if section.tone == 'navy' %}text-white{% else %}text-navy{% endif %}">{{ item.value }}</span>
+          {% if item.body %}<p class="site-body mt-4 {% if section.tone == 'navy' %}text-white/75{% else %}text-steel-700{% endif %}">{{ item.body }}</p>{% endif %}
+        </dd>
+      </div>
+    {% endfor %}
+  </dl>
+{% endcomponent %}

@@ -1,0 +1,35 @@
+{% load site %}
+{% service_disciplines as disciplines %}
+{% if disciplines %}
+{% comment %}
+  The strip of disciplines under the hero.
+
+  On the home stage it scrolls: the list is written twice and the track
+  is translated by exactly half its width, which is what makes the loop
+  seamless rather than snapping back. The second copy is hidden from
+  assistive technology — it is the same six words again, and announcing
+  them twice would be noise. The animation pauses on hover and stops
+  outright under `prefers-reduced-motion`, where the track simply sits
+  still and shows the first copy.
+
+  Everywhere else it stays the static centred list it was: those pages
+  have a light hero and no stage to run it across.
+{% endcomment %}
+<div class="site-ticker {% if tone == 'navy' %}site-ticker-live{% else %}border-y border-navy/8{% endif %}">
+  {% if tone == 'navy' %}
+    <div class="site-ticker-track">
+      {% for pass in "12" %}
+        <ul class="site-ticker-list" {% if not forloop.first %}aria-hidden="true"{% else %}aria-label="Our disciplines"{% endif %}>
+          {% for discipline in disciplines %}<li>{{ discipline }}</li>{% endfor %}
+        </ul>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="site-shell">
+      <ul class="site-ticker-list" aria-label="Our disciplines">
+        {% for discipline in disciplines %}<li>{{ discipline }}</li>{% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+</div>
+{% endif %}

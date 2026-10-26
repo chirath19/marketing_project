@@ -1,0 +1,10 @@
+{% if href %}
+<a href="{{ href }}" class="{{ css }}"{% for key, value in attrs.items %} {{ key }}="{{ value }}"{% endfor %}>
+  {% if icon %}<span class="shrink-0" aria-hidden="true">{{ icon }}</span>{% endif %}{{ label }}{% if icon_after %}<span class="shrink-0" aria-hidden="true">{{ icon_after }}</span>{% endif %}
+</a>
+{% else %}
+<button type="{{ type }}" class="{{ css }}"{% if disabled %} disabled{% endif %}{% for key, value in attrs.items %} {{ key }}="{{ value }}"{% endfor %}>
+  {% if icon %}<span class="shrink-0" aria-hidden="true">{{ icon }}</span>{% endif %}{{ label }}{% if icon_after %}<span class="shrink-0" aria-hidden="true">{{ icon_after }}</span>{% endif %}
+  {% if busy_label %}<span class="htmx-indicator sr-only" role="status">{{ busy_label }}</span>{% endif %}
+</button>
+{% endif %}

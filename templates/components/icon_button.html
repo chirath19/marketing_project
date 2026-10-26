@@ -1,0 +1,16 @@
+{% comment %}
+  Icon-only control. `label` is required and becomes the accessible name:
+  the glyph itself is hidden from assistive technology, and a title
+  attribute gives sighted users a tooltip.
+{% endcomment %}
+{% if href %}
+<a href="{{ href }}" class="{{ css }}" title="{{ label }}"{% for key, value in attrs.items %} {{ key }}="{{ value }}"{% endfor %}>
+  <span aria-hidden="true">{{ icon }}</span>
+  <span class="sr-only">{{ label }}</span>
+</a>
+{% else %}
+<button type="{{ type }}" class="{{ css }}" title="{{ label }}"{% for key, value in attrs.items %} {{ key }}="{{ value }}"{% endfor %}>
+  <span aria-hidden="true">{{ icon }}</span>
+  <span class="sr-only">{{ label }}</span>
+</button>
+{% endif %}

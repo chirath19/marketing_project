@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <div class="surface p-2 sm:p-4">
+    {% component "table" caption="Sync history" columns=columns %}
+      {% for run in history %}
+        <tr class="border-b border-mist last:border-0">
+          <td class="ui-td" data-label="Provider">{{ run.get_provider_display }}</td>
+          <td class="ui-td t-micro" data-label="Client">{% if run.organization %}{{ run.organization.label }}{% else %}Agency-wide{% endif %}</td>
+          <td class="ui-td t-micro" data-label="Started">{{ run.started_at|date:"j M Y, H:i" }}</td>
+          <td class="ui-td" data-label="Status">{% ui_status_badge run.status label=run.get_status_display %}</td>
+          <td class="ui-td t-micro" data-label="Records">{{ run.records_received }} received · {{ run.records_created }} new</td>
+        </tr>
+      {% empty %}
+        {% ui_table_empty colspan=5 icon="◇" title="No syncs recorded yet" body="A row appears here every time a sync is attempted, whatever the result." %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+{% endblock %}

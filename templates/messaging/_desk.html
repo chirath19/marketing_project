@@ -1,0 +1,21 @@
+{% if staff_desk %}
+<div class="journey-actions mb-5">{% if perms.permissions.organizations_view %}<a class="workspace-link" href="{% url 'staff:client_detail' organization.slug %}?client={{ client.pk }}">← {{ organization.label }} · Client overview</a>{% endif %}</div>
+<nav class="workspace-tabs" aria-label="Client contact records">
+{% if show_messages %}<a href="?tab=messages" {% if tab == 'messages' %}aria-current="page"{% endif %}>Conversation</a>{% endif %}
+{% if show_reports %}<a href="?tab=reports" {% if tab == 'reports' %}aria-current="page"{% endif %}>Progress reports &amp; files</a>{% endif %}
+{% if show_receipts %}<a href="?tab=invoices" {% if tab == 'invoices' or tab == 'receipts' %}aria-current="page"{% endif %}>Payments</a>{% endif %}
+</nav>
+{% endif %}
+{% if project %}<p class="journey-context">Regarding <strong>{{ project.name }}</strong> · {{ project.get_status_display }}</p>{% endif %}
+
+{% if tab == 'messages' %}
+{% include "messaging/_chat.html" %}
+{% elif tab == 'reports' %}
+{% if can_report or editing_report %}<details class="workspace-panel mb-6" {% if report_form.is_bound or editing_report %}open{% endif %}><summary class="t-section cursor-pointer">{% if editing_report %}Update progress report{% else %}Create a progress report{% endif %}</summary><form method="post" enctype="multipart/form-data" class="workspace-form mt-6">{% csrf_token %}<input type="hidden" name="action" value="{% if editing_report %}update_report{% else %}report{% endif %}">{{ report_form.as_p }}<button class="ui-btn ui-btn-primary">Save report</button></form></details>{% endif %}
+<div class="space-y-5">{% for report in reports %}<article class="workspace-panel" id="report-{{ report.pk }}"><p class="workspace-kicker">{% if report.published_at %}PUBLISHED {{ report.published_at|date:"M j, Y" }}{% else %}DRAFT · VISIBLE TO STAFF ONLY{% endif %}</p><h2 class="t-section mt-2">{{ report.title }}</h2>{% if can_publish %}<a class="workspace-link inline-block mt-3" href="?tab=reports&amp;edit={{ report.pk }}">Edit report</a>{% endif %}{% if report.subscription %}<p class="t-meta mt-2">{{ report.subscription.name }}</p>{% endif %}<div class="flex justify-between mt-5"><span>{{ report.get_status_display }}</span><strong>{{ report.progress }}%</strong></div><progress class="workspace-progress" value="{{ report.progress }}" max="100" aria-label="Reported progress">{{ report.progress }}%</progress><div class="whitespace-pre-wrap break-words mt-5">{{ report.summary }}</div>{% if report.milestones %}<h3 class="font-semibold mt-6">Milestones</h3><p class="whitespace-pre-wrap mt-2">{{ report.milestones }}</p>{% endif %}{% if report.completed_work %}<h3 class="font-semibold mt-6">Completed work</h3><p class="whitespace-pre-wrap mt-2">{{ report.completed_work }}</p>{% endif %}
+<ul class="mt-4">{% for attachment in report.attachments.all %}<li><a class="workspace-link" href="{% url 'organizations:report_attachment' attachment.pk %}">{{ attachment.name }}</a> <span class="t-meta">{{ attachment.size|filesizeformat }}</span></li>{% endfor %}</ul>
+{% if can_report %}<details class="mt-4"><summary>Add a private attachment</summary><form method="post" enctype="multipart/form-data" class="workspace-form mt-3">{% csrf_token %}<input type="hidden" name="action" value="attachment"><input type="hidden" name="record" value="{{ report.pk }}"><label for="file-{{ report.pk }}">PDF, PNG or JPEG (up to 5 MB)</label><input type="file" id="file-{{ report.pk }}" name="attachment" accept=".pdf,.png,.jpg,.jpeg" required><button class="ui-btn ui-btn-outline">Add attachment</button></form></details>{% endif %}
+{% if report.next_steps %}<h3 class="font-semibold mt-6">Next steps</h3><div class="whitespace-pre-wrap break-words mt-2">{{ report.next_steps }}</div>{% endif %}{% if not report.published_at and can_publish %}<form method="post" class="mt-5">{% csrf_token %}<input type="hidden" name="action" value="publish"><input type="hidden" name="record" value="{{ report.pk }}"><button class="ui-btn ui-btn-primary">Publish to client</button></form>{% endif %}</article>{% empty %}<div class="workspace-panel workspace-empty">No published progress reports yet. Updates will appear here when your team shares them.</div>{% endfor %}</div>
+{% else %}
+{% include "messaging/_payments.html" %}
+{% endif %}

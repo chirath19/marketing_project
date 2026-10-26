@@ -1,0 +1,25 @@
+{% comment %}
+  Loading placeholder. The boxes are hidden from assistive technology and
+  a single polite announcement stands in for them, so a screen reader
+  hears "Loading" once instead of reading a wall of empty elements.
+{% endcomment %}
+<div>
+  <span class="sr-only" role="status">Loading</span>
+  <div aria-hidden="true">
+    {% if variant == "card" %}
+      <div class="surface p-5">
+        <span class="ui-skeleton h-3 w-24"></span>
+        <span class="ui-skeleton mt-3 h-8 w-32"></span>
+        <span class="ui-skeleton mt-3 h-3 w-20"></span>
+      </div>
+    {% elif variant == "table" %}
+      <div class="space-y-2">
+        {% for _ in lines %}<span class="ui-skeleton h-10 w-full"></span>{% endfor %}
+      </div>
+    {% else %}
+      <div class="space-y-2">
+        {% for _ in lines %}<span class="ui-skeleton h-3 {% cycle 'w-full' 'w-11/12' 'w-4/5' %}"></span>{% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</div>

@@ -1,0 +1,18 @@
+{% extends "base/public_classic.html" %}
+
+{% comment %}
+  The shell for signed-in pages: the account screens, the client
+  workspace and the error pages.
+
+  It deliberately adds nothing of its own. It used to carry a second,
+  hand-written header and footer from before the CMS existed — with
+  links pointing at `#`, a "Work" section that was never built, and
+  "Privacy policy" rendered as plain text next to a privacy page that
+  now exists. A client signing in met a different, broken version of the
+  site they had just been browsing.
+
+  Everything now comes from `base/public_classic.html`: the same header
+  and footer, built from the same CMS rows. It is a separate file from
+  the marketing shell only so that redesigning a landing page cannot
+  reach into the signed-in workspace, which is held still on purpose.
+{% endcomment %}

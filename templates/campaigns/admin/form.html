@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <form method="post" class="max-w-2xl surface p-6" novalidate>
+    {% csrf_token %}
+    {% ui_form_errors form %}
+
+    {% ui_field form.name %}
+    <div class="grid gap-x-5 sm:grid-cols-2">
+      {% ui_field form.service_type %}
+      {% ui_field form.subscription %}
+    </div>
+    {% ui_field form.objective %}
+    {% ui_field form.description %}
+
+    <div class="grid gap-x-5 sm:grid-cols-2">
+      {% ui_field form.budget %}
+      {% ui_field form.currency %}
+    </div>
+    <div class="grid gap-x-5 sm:grid-cols-2">
+      {% ui_field form.starts_on %}
+      {% ui_field form.ends_on %}
+    </div>
+
+    {% ui_field form.client_summary %}
+    {% ui_field form.internal_notes %}
+
+    <div class="flex items-center gap-3">
+      {% ui_button label="Create campaign" type="submit" variant="primary" %}
+      <a href="{% url 'staff:client_detail' organization.slug %}" class="text-sm font-medium text-steel underline-offset-2 hover:text-navy hover:underline focus-ring">Cancel</a>
+    </div>
+
+    <p class="mt-4 t-micro">
+      It starts as <span class="font-medium">planned</span>. Taking it live is
+      a separate step, because that is when the client is told and the budget
+      starts being spent.
+    </p>
+  </form>
+{% endblock %}

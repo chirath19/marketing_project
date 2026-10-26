@@ -1,0 +1,13 @@
+<div class="rounded-[var(--radius-card)] border border-dashed border-steel-200 px-6 py-12 text-center">
+  {% if icon %}<p class="text-2xl text-steel-400" aria-hidden="true">{{ icon }}</p>{% endif %}
+  <p class="t-card-title">{{ title }}</p>
+  {% if body %}<p class="mx-auto mt-1 max-w-sm t-meta">{{ body }}</p>{% endif %}
+  {% if action_label and action_href %}
+    <div class="mt-4 flex justify-center">
+      <a href="{{ action_href }}"
+         class="inline-flex rounded-[var(--radius-control)] bg-gold px-4 py-2 text-sm font-semibold text-navy transition hover:bg-gold-600 focus-ring">
+        {{ action_label }}
+      </a>
+    </div>
+  {% endif %}
+</div>

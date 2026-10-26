@@ -1,0 +1,56 @@
+{% extends "public/base_site.html" %}
+{% load ui %}
+
+{% comment %}
+  Sign-in is the front door, so it wears the marketing shell. What sits
+  behind it — the client workspace — keeps its own, unchanged chrome.
+{% endcomment %}
+
+{% block title %}Sign in · {{ brand.name }}{% endblock %}
+{% block meta_description %}Sign in to your {{ brand.name }} client workspace.{% endblock %}
+
+{% block content %}
+<div class="site-section site-auth">
+  <div class="mx-auto w-full max-w-md px-5 sm:px-8">
+    <p class="site-label">Client workspace</p>
+    <h1 class="site-display mt-5 text-4xl text-navy">Welcome back</h1>
+    <p class="site-body mt-4 text-steel-700">
+      Sign in to see your services, campaigns, reports and anything waiting on
+      your approval.
+    </p>
+
+    <form method="post" class="site-form site-card-static mt-9 p-7" novalidate>
+      {% csrf_token %}
+
+      {% for error in form.non_field_errors %}
+        {% ui_alert message=error tone="danger" %}
+      {% endfor %}
+
+      {% ui_field form.username %}
+      {% ui_field form.password %}
+
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="site-btn site-btn-primary site-btn-block site-btn-lg">
+        Sign in<span class="site-btn-arrow" aria-hidden="true">&rarr;</span>
+      </button>
+    </form>
+
+    <div class="mt-8 space-y-3 text-center">
+      <p class="site-micro text-steel-700">
+        Not registered yet?
+        <a href="{% url 'accounts:register' %}" class="site-link text-xs focus-ring">Create a client account</a>
+      </p>
+      <p class="site-micro text-steel-700">
+        {% comment %}
+          Honest about the mechanism: there is no automated reset in this
+          version, so the page says a person handles it rather than
+          pointing at a link that does not exist.
+        {% endcomment %}
+        Forgotten your password? Email
+        <a href="mailto:{{ brand.contact_email }}" class="site-link text-xs focus-ring">{{ brand.contact_email }}</a>
+        and someone will reset it for you.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

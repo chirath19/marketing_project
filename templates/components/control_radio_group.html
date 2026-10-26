@@ -1,0 +1,29 @@
+{% comment %}
+  A fieldset and legend group the options into one question. Without
+  them a screen reader announces each radio on its own, with no clue what
+  the choice is for.
+{% endcomment %}
+<fieldset class="mb-4"
+          {% if described_by %}aria-describedby="{{ described_by }}"{% endif %}
+          {% if disabled %}disabled{% endif %}>
+  {% if label %}
+    <legend class="ui-label">
+      {{ label }}{% if required %}<span class="text-danger" aria-hidden="true"> *</span>{% endif %}
+    </legend>
+  {% endif %}
+  {% if help_text %}<p id="{{ help_id }}" class="ui-help mb-2">{{ help_text }}</p>{% endif %}
+
+  <div class="mt-2 {% if inline %}flex flex-wrap gap-x-6 gap-y-2{% else %}space-y-2{% endif %}">
+    {% for option_value, option_label in options %}
+      <div class="flex items-start gap-2.5">
+        <input type="radio" name="{{ name }}" id="{{ id }}_{{ forloop.counter }}"
+               value="{{ option_value }}" class="ui-radio mt-0.5"
+               {% if option_value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}
+               {% if required %}required{% endif %}>
+        <label for="{{ id }}_{{ forloop.counter }}" class="ui-label font-normal">{{ option_label }}</label>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if error %}<p id="{{ error_id }}" class="ui-error">{{ error }}</p>{% endif %}
+</fieldset>

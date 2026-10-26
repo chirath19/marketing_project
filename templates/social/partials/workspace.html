@@ -1,0 +1,34 @@
+{% load ui %}
+{% component "page_header" title="Social Media" subtitle=organization.label %}
+  {% if can_create %}{% url 'staff:social_create' organization.slug 'content' as create_url %}{% ui_button label="New content" href=create_url %}{% endif %}
+{% endcomponent %}
+<p class="mt-4 t-meta">Plan posts, reels and creator deliverables. Scheduled dates do not publish to any platform. Results are manually recorded observations.</p>
+<form method="get" class="mt-6 surface p-5">
+  {% ui_form_errors filter_form %}
+  <div class="grid gap-4 sm:grid-cols-3">{% for field in filter_form %}{% ui_field field %}{% endfor %}</div>
+  <p class="mt-3 t-micro">Dates filter scheduled work and daily result dates. Leave dates blank to include unscheduled work.</p>
+  <div class="mt-4">{% ui_button label="Apply filters" type="submit" %}</div>
+</form>
+{% if not filter_form.errors %}
+<div class="mt-6 grid gap-4 sm:grid-cols-4">
+  <div class="surface p-5"><p class="t-meta">Content items</p><p class="t-section t-numeric">{{ content_count }}</p></div>
+  <div class="surface p-5"><p class="t-meta">Awaiting client review</p><p class="t-section t-numeric">{{ pending_reviews }}</p></div>
+  <div class="surface p-5"><p class="t-meta">Recorded impressions</p><p class="t-section t-numeric">{{ totals.impressions|default_if_none:"—" }}</p></div>
+  <div class="surface p-5"><p class="t-meta">Recorded clicks</p><p class="t-section t-numeric">{{ totals.clicks|default_if_none:"—" }}</p></div>
+</div>
+<section class="mt-8 surface p-5">
+  <h2 class="t-section">Content schedule</h2>
+  <div class="mt-4 overflow-x-auto"><table class="w-full ui-table-stack"><thead><tr><th class="ui-th">Content</th><th class="ui-th">Campaign</th><th class="ui-th">Channel</th><th class="ui-th">Scheduled</th><th class="ui-th">Status</th></tr></thead><tbody>
+  {% for item in content_items %}<tr><td class="ui-td" data-label="Content"><a class="text-navy underline focus-ring" href="{% if is_staff_workspace %}{% url 'staff:social_detail' organization.slug item.pk %}{% else %}{% url 'organizations:social_detail' item.pk %}{% endif %}">{{ item.title }}</a><p class="t-micro">{{ item.get_kind_display }}</p></td><td class="ui-td" data-label="Campaign">{{ item.campaign.name }}</td><td class="ui-td" data-label="Channel">{{ item.channel }}</td><td class="ui-td" data-label="Scheduled">{{ item.scheduled_at|date:"M j, Y H:i T"|default:"Unscheduled" }}</td><td class="ui-td" data-label="Status">{{ item.get_status_display }}</td></tr>
+  {% empty %}<tr><td colspan="5" class="ui-td">{% ui_empty_state title="No content to show" body="Content will appear here when work is added and shared. Try clearing the filters." %}</td></tr>{% endfor %}
+  </tbody></table></div>{% ui_pagination content_items querystring=querystring %}
+</section>
+<section class="mt-8 surface p-5"><h2 class="t-section">Daily results</h2><p class="mt-2 t-meta">Daily increments from recorded source reports. Missing observations are not treated as zero. Reach is not summed across days or posts.</p>{% include "social/partials/results.html" %}
+{% if results.has_other_pages %}<nav class="mt-4 flex gap-4" aria-label="Results pages">{% if results.has_previous %}<a class="underline focus-ring" href="?{{ results_querystring }}&amp;results_page={{ results.previous_page_number }}">Previous results</a>{% endif %}<span>Page {{ results.number }} of {{ results.paginator.num_pages }}</span>{% if results.has_next %}<a class="underline focus-ring" href="?{{ results_querystring }}&amp;results_page={{ results.next_page_number }}">Next results</a>{% endif %}</nav>{% endif %}
+</section>
+{% endif %}
+<section class="mt-8 surface p-5"><div class="flex flex-wrap justify-between gap-4"><h2 class="t-section">Social campaigns</h2>{% if is_staff_workspace and perms.permissions.campaigns_create %}<a class="underline focus-ring" href="{% url 'staff:campaign_create' organization.slug %}?service_type=social">New campaign</a>{% endif %}</div>
+<ul class="mt-4 divide-y divide-mist">{% for campaign in campaigns %}<li class="py-3"><p class="t-card-title">{{ campaign.name }}</p><p class="t-meta">{{ campaign.get_status_display }} · {{ campaign.client_summary }}</p>{% if is_staff_workspace and perms.permissions.campaigns_view %}<a class="underline focus-ring" href="{% url 'staff:campaign_detail' campaign.pk %}">Manage campaign</a>{% endif %}</li>{% empty %}<li class="t-meta">No social campaigns yet.</li>{% endfor %}</ul></section>
+{% if is_staff_workspace %}<section class="mt-8 surface p-5"><div class="flex justify-between gap-4"><h2 class="t-section">Channels</h2>{% if can_create %}<a class="underline focus-ring" href="{% url 'staff:social_create' organization.slug 'channel' %}">Add channel</a>{% endif %}</div><ul class="mt-4 divide-y divide-mist">{% for channel in channels %}<li class="py-3">{{ channel }} · {{ channel.handle }} · {{ channel.is_active|yesno:"Active,Inactive" }} {% if can_edit %}<a class="underline focus-ring" href="{% url 'staff:social_edit' organization.slug 'channel' channel.pk %}">Edit channel</a>{% endif %}</li>{% empty %}<li class="t-meta">Add a channel before creating content.</li>{% endfor %}</ul></section>{% endif %}
+<section class="mt-8 surface p-5"><div class="flex justify-between gap-4"><h2 class="t-section">Creator partnerships</h2>{% if can_create %}<a class="underline focus-ring" href="{% url 'staff:social_create' organization.slug 'partnership' %}">Add partnership</a>{% endif %}</div>
+<ul class="mt-4 divide-y divide-mist">{% for partnership in partnerships %}<li class="py-4"><p class="t-card-title">{{ partnership.creator_name }} · {{ partnership.get_platform_display }}</p><p class="t-meta">{{ partnership.campaign.name }} · {{ partnership.get_status_display }} · Due {{ partnership.due_on|default:"not set" }}</p><p class="mt-2 whitespace-pre-line">{{ partnership.brief }}</p>{% if can_edit %}<a class="underline focus-ring" href="{% url 'staff:social_edit' organization.slug 'partnership' partnership.pk %}">Edit partnership</a>{% endif %}</li>{% empty %}<li class="t-meta">No creator partnerships to show.</li>{% endfor %}</ul></section>

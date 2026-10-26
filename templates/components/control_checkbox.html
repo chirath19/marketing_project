@@ -1,0 +1,13 @@
+<div class="mb-4">
+  <div class="flex items-start gap-2.5">
+    <input type="checkbox" name="{{ name }}" id="{{ id }}" value="{{ value }}"
+           class="ui-checkbox mt-0.5"
+           {% if checked %}checked{% endif %}{% if disabled %} disabled{% endif %}
+           {% if described_by %}aria-describedby="{{ described_by }}"{% endif %}
+           {% if error %}aria-invalid="true"{% endif %}
+           {% for key, value in attrs.items %} {{ key }}="{{ value }}"{% endfor %}>
+    <label for="{{ id }}" class="ui-label font-normal">{{ label }}</label>
+  </div>
+  {% if help_text %}<p id="{{ help_id }}" class="ui-help">{{ help_text }}</p>{% endif %}
+  {% if error %}<p id="{{ error_id }}" class="ui-error">{{ error }}</p>{% endif %}
+</div>

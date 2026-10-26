@@ -1,0 +1,13 @@
+{% extends "errors/_error_base.html" %}
+{% block title %}Page not found · {{ brand.name }}{% endblock %}
+{% block code %}404{% endblock %}
+{% block heading %}We could not find that page{% endblock %}
+{% block body %}The link may be out of date, or the page may have moved. Everything else is still where you left it.{% endblock %}
+{% block extra_actions %}
+  {% comment %}
+    Somewhere to go, not just somewhere to go back to. Most people who
+    land here were looking for one of these two things.
+  {% endcomment %}
+  <a href="/services/" class="site-btn site-btn-light">Browse services</a>
+  <a href="/contact/" class="site-btn site-btn-light">Contact us</a>
+{% endblock %}

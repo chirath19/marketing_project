@@ -1,0 +1,25 @@
+{% if entry.is_event %}
+  <div class="chat-event{% if entry.is_internal %} is-internal{% endif %}" data-chat-entry>
+    <span class="chat-event-label">{{ entry.label }}</span><span class="chat-event-body">{{ entry.body }}</span>
+    <span class="chat-event-meta">{{ entry.created_at|date:"H:i" }}{% if entry.is_internal %} · Staff only{% endif %}</span>
+  </div>
+{% else %}
+  <div class="chat-row{% if entry.outgoing %} chat-row-own{% endif %}{% if entry.starts_group %} chat-row-start{% endif %}" data-chat-entry>
+    {% if not entry.outgoing %}<span class="chat-avatar{% if not entry.starts_group %} chat-avatar-muted{% endif %}" aria-hidden="true">{{ entry.sender_label|default:fallback_name|slice:":1"|upper }}</span>{% endif %}
+    <article class="conversation-message chat-bubble{% if entry.outgoing %} conversation-own{% endif %}{% if entry.is_internal %} chat-internal{% endif %}{% if entry.was_unread %} unread-highlight{% endif %}">
+      {% if entry.starts_group or entry.is_internal %}
+        <p class="chat-sender">{% if entry.sender_id == request.user.pk %}You{% else %}{{ entry.sender_label|default:fallback_name }}{% endif %}{% if entry.is_internal %}<span class="chat-internal-label">Staff only</span>{% endif %}{% if entry.was_unread %}<span class="unread-label">New</span>{% endif %}</p>
+      {% endif %}
+      <div class="chat-body">{{ entry.body }}</div>
+      {% if not is_quote and entry.quote or not is_quote and entry.subscription %}<div class="chat-tags">
+        {% if entry.quote %}<a class="chat-tag" href="{% if staff %}{{ entry.quote.get_absolute_url }}{% else %}{{ entry.quote.get_client_url }}{% endif %}#quote-conversation">{{ entry.quote.reference }} <span aria-hidden="true">↗</span></a>{% endif %}
+        {% if entry.subscription %}<span class="chat-tag">{{ entry.subscription.name }}</span>{% endif %}
+      </div>{% endif %}
+      <div class="chat-meta">
+        <button type="button" class="chat-copy" data-chat-copy aria-label="Copy message" title="Copy message">{% include "messaging/_icon.html" with icon="copy" %}</button>
+        <time datetime="{{ entry.created_at|date:'c' }}" title="{{ entry.created_at|date:'j M Y, H:i' }}">{{ entry.created_at|date:"H:i" }}</time>
+        {% if entry.outgoing and entry.has_receipt and not entry.is_internal %}{% if entry.read_at %}<span class="chat-receipt chat-receipt-read" title="Read {{ entry.read_at|date:'j M, H:i' }}">✓✓ Read</span>{% else %}<span class="chat-receipt">✓ Sent</span>{% endif %}{% endif %}
+      </div>
+    </article>
+  </div>
+{% endif %}

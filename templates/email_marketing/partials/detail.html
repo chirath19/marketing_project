@@ -1,0 +1,62 @@
+{% load ui %}
+{% component "page_header" title=work.name subtitle=work.campaign.name %}
+  {% if can_edit %}
+    {% url 'staff:email_marketing_edit' organization.slug work.pk as edit_url %}{% ui_button label="Edit record" href=edit_url variant="outline" %}
+    {% if work.status != 'completed' and work.status != 'cancelled' %}{% url 'staff:email_marketing_status' organization.slug work.pk as status_url %}{% ui_button label="Record status" href=status_url %}{% endif %}
+  {% endif %}
+{% endcomponent %}
+<div class="mt-6 surface p-5">
+  <p class="t-card-title">{{ work.get_kind_display }} · {{ work.get_status_display }}</p>
+  <p class="mt-2 t-meta">Revision {{ work.revision }} · Planned {{ work.scheduled_at|date:"M j, Y H:i T"|default:"not set" }}</p>
+  <p class="mt-2 t-meta">This is a service record. It does not send email or run an automation.</p>
+  <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+    <div><dt class="t-micro">Subject</dt><dd>{{ work.subject|default:"Not set" }}</dd></div>
+    <div><dt class="t-micro">Planned audience</dt><dd>{{ work.audience_size|default_if_none:"Unknown" }} · {{ work.audience_description }}</dd></div>
+  </dl>
+  <p class="mt-4 whitespace-pre-line">{{ work.brief }}</p>
+  {% if work.trigger_description %}<h2 class="mt-5 t-card-title">Flow plan</h2><p class="mt-2 whitespace-pre-line">{{ work.trigger_description }}</p>{% endif %}
+  {% if work.executed_at %}<p class="mt-4 t-meta">External execution recorded: {{ work.executed_at }} · {{ work.execution_note }}</p>{% endif %}
+  {% if work.result_summary %}<h2 class="mt-5 t-card-title">Result summary</h2><p class="mt-2 whitespace-pre-line">{{ work.result_summary }}</p>{% endif %}
+  {% if is_staff_workspace %}<p class="mt-4 t-meta">Client visibility: {{ work.client_visible|yesno:"Shared,Internal" }}</p><p class="mt-2 whitespace-pre-line t-meta">{{ work.internal_notes }}</p>{% endif %}
+</div>
+<section class="mt-8">
+  <div class="flex justify-between gap-4">
+    <h2 class="t-section">Deliverables and approvals</h2>
+    {% if can_create and not work.executed_at and work.status != 'cancelled' %}<a class="underline focus-ring" href="{% url 'staff:email_marketing_deliverable_create' organization.slug work.pk %}">Add deliverable</a>{% endif %}
+  </div>
+  {% for card in cards %}
+  <article class="mt-4 surface p-5">
+    <h3 class="t-card-title">{{ card.delivery.name }}</h3>
+    <p class="mt-2 t-meta">Revision {{ card.delivery.revision }} · Due {{ card.delivery.due_on|default:"not set" }} · {{ card.delivery.approval_required|yesno:"Approval required,Approval optional" }} · {% if card.current %}{{ card.current.get_status_display }}{% else %}Not submitted for this revision{% endif %}</p>
+    <p class="mt-3 whitespace-pre-line">{{ card.delivery.description }}</p>
+    {% if card.delivery.asset_url %}<a class="mt-3 inline-block underline focus-ring" href="{{ card.delivery.asset_url }}" rel="noopener noreferrer">Open preview</a>{% endif %}
+    <div class="mt-4 flex flex-wrap items-center gap-4">
+      {% if can_edit and not work.executed_at and work.status != 'cancelled' %}
+        <a class="underline focus-ring" href="{% url 'staff:email_marketing_deliverable_edit' organization.slug work.pk card.delivery.pk %}">Edit deliverable</a>
+        {% if card.current.status != 'pending' and card.current.status != 'approved' %}<form method="post" action="{% url 'staff:email_marketing_request_review' organization.slug work.pk card.delivery.pk %}">{% csrf_token %}{% ui_button label="Request client review" type="submit" %}</form>{% endif %}
+      {% endif %}
+      {% if not is_staff_workspace and card.current.status == 'pending' %}{% url 'organizations:email_marketing_review' card.current.pk as review_url %}{% ui_button label="View review" href=review_url %}{% endif %}
+    </div>
+    {% if card.reviews %}
+    <details class="mt-5">
+      <summary class="cursor-pointer t-meta focus-ring">Review history</summary>
+      <ul class="mt-3 divide-y divide-mist">
+        {% for review in card.reviews %}
+        <li class="py-3">
+          <p class="t-meta">{{ review.created_at }} · Deliverable v{{ review.deliverable_revision }} / work v{{ review.work_revision }} · {{ review.get_status_display }}{% if review.decided_at %} · {{ review.decided_by.get_full_name|default:review.decided_by.email }} · {{ review.decided_at }}{% endif %}</p>
+          <p class="mt-2 whitespace-pre-line">{{ review.feedback }}</p>
+          <details class="mt-2"><summary class="cursor-pointer t-micro focus-ring">Submitted version</summary>{% include "email_marketing/partials/snapshot.html" with snapshot=review.snapshot %}</details>
+        </li>
+        {% endfor %}
+      </ul>
+    </details>
+    {% endif %}
+  </article>
+  {% empty %}<div class="mt-4 surface p-5">{% ui_empty_state title="No deliverables to show" body="Shared deliverables and review requests will appear here." %}</div>{% endfor %}
+</section>
+<section class="mt-8 surface p-5">
+  <div class="flex justify-between gap-4"><h2 class="t-section">Latest daily results</h2>{% if can_create and work.executed_at %}<a class="underline focus-ring" href="{% url 'staff:email_marketing_metrics' organization.slug work.pk %}">Record daily results</a>{% endif %}</div>
+  <p class="mt-2 t-meta">Up to 31 recent observations. Use workspace filters for the full date range. Each daily record replaces that date's existing values; record increments, not cumulative totals.</p>
+  {% include "email_marketing/partials/results.html" %}
+</section>
+<a class="mt-6 inline-block underline focus-ring" href="{% if is_staff_workspace %}{% url 'staff:email_marketing_workspace' organization.slug %}{% else %}{% url 'organizations:portal_module' 'email_marketing' %}{% endif %}">Back to Email Marketing</a>

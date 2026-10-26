@@ -1,0 +1,56 @@
+{% load website_copy %}
+{% load ui %}
+{% comment %}
+  The ways to reach a person, as a hairline list rather than a row of
+  boxes: a label, the thing itself at a size worth tapping, and a rule
+  that lights up.
+{% endcomment %}
+{% component "cms_section" section=section %}
+  <div class="grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+    {% if site.contact_email %}
+      <div class="site-cell site-spot p-6"
+           data-reveal style="--reveal-step: 0">
+        <p class="site-index site-index-invert">{% website_copy "cms.sections.contact_details.001" %}</p>
+        <a href="mailto:{{ site.contact_email }}"
+           class="site-link site-link-invert mt-4 break-all text-base focus-ring">{{ site.contact_email }}</a>
+      </div>
+    {% endif %}
+    {% if site.contact_phone %}
+      <div class="site-cell site-spot p-6"
+           data-reveal style="--reveal-step: 1">
+        <p class="site-index site-index-invert">{% website_copy "cms.sections.contact_details.002" %}</p>
+        <a href="tel:{{ site.contact_phone }}"
+           class="site-link site-link-invert mt-4 text-base focus-ring">{{ site.contact_phone }}</a>
+      </div>
+    {% endif %}
+    {% if site.whatsapp_url %}
+      <div class="site-cell site-spot p-6"
+           data-reveal style="--reveal-step: 2">
+        <p class="site-index site-index-invert">{% website_copy "cms.sections.contact_details.003" %}</p>
+        <a href="{{ site.whatsapp_url }}" target="_blank" rel="noopener"
+           class="site-link site-link-invert mt-4 text-base focus-ring">{% website_copy "cms.sections.contact_details.004" %}<span class="sr-only">{% website_copy "cms.sections.contact_details.005" %}</span><span aria-hidden="true">{% website_copy "cms.sections.contact_details.006" %}</span>
+        </a>
+      </div>
+    {% endif %}
+    {% if site.address_lines %}
+      <div class="site-cell site-spot p-6"
+           data-reveal style="--reveal-step: 3">
+        <p class="site-index site-index-invert">{% website_copy "cms.sections.contact_details.007" %}</p>
+        <address class="site-body mt-4 not-italic text-white/65">
+          {% for line in site.address_lines %}{{ line }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+        </address>
+      </div>
+    {% endif %}
+    {% for contact in contact_points %}
+      <div class="site-cell site-spot p-6" data-reveal>
+        <p class="site-index site-index-invert">{{ contact.label }}</p>
+        {% if contact.href %}
+          <a href="{{ contact.href }}" class="site-link site-link-invert mt-4 break-all text-base focus-ring">{{ contact.value }}</a>
+        {% else %}
+          <p class="site-body mt-4 whitespace-pre-line break-words text-white/65">{{ contact.value }}</p>
+        {% endif %}
+        {% if contact.description %}<p class="site-body mt-4 text-white/65">{{ contact.description }}</p>{% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endcomponent %}

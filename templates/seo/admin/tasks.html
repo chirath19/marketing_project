@@ -1,0 +1,69 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% include "seo/admin/_nav.html" %}
+
+  <nav class="-mx-1 mt-4 overflow-x-auto" aria-label="Kinds of work">
+    <ul class="flex min-w-max items-center gap-1 px-1">
+      <li><a href="?" class="inline-flex whitespace-nowrap rounded-[var(--radius-pill)] px-3 py-1 text-xs font-medium transition focus-ring {% if not kind %}bg-mist text-navy{% else %}text-steel hover:bg-mist{% endif %}">All</a></li>
+      {% for value, label in kinds %}
+        <li><a href="?kind={{ value }}{% if status %}&status={{ status }}{% endif %}" class="inline-flex whitespace-nowrap rounded-[var(--radius-pill)] px-3 py-1 text-xs font-medium transition focus-ring {% if value == kind %}bg-mist text-navy{% else %}text-steel hover:bg-mist{% endif %}">{{ label }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <div class="mt-5 grid gap-5 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <div class="surface p-2 sm:p-4">
+        {% component "table" caption="SEO work" columns=task_columns %}
+          {% for task in tasks %}
+            <tr class="border-b border-mist last:border-0">
+              <td class="ui-td" data-label="Task">
+                <p class="t-body font-medium">{{ task.title }}</p>
+                {% if task.client_summary %}
+                  <span class="block t-micro">{{ task.client_summary|truncatewords:14 }}</span>
+                {% else %}
+                  <span class="block t-micro">Internal — no summary written for the client</span>
+                {% endif %}
+                {% if task.delivered_url %}
+                  <a href="{{ task.delivered_url }}" target="_blank" rel="noopener" class="mt-1 inline-block t-micro font-medium text-gold-600 underline-offset-2 hover:underline focus-ring">What was delivered &rarr;</a>
+                {% endif %}
+              </td>
+              <td class="ui-td t-micro" data-label="Kind">{{ task.get_kind_display }}</td>
+              <td class="ui-td t-micro" data-label="Due">
+                {% if task.due_on %}{{ task.due_on|date:"j M Y" }}{% else %}&mdash;{% endif %}
+                {% if task.is_overdue %}<span class="block font-medium text-danger">Overdue</span>{% endif %}
+              </td>
+              <td class="ui-td" data-label="Status">{% ui_status_badge task.status label=task.get_status_display %}</td>
+            </tr>
+          {% empty %}
+            {% ui_table_empty colspan=4 icon="◷" title="No work recorded" body="Content, technical fixes and outreach all live here. A finished task with a link to what was published is what the client receives as a deliverable." %}
+          {% endfor %}
+        {% endcomponent %}
+      </div>
+    </div>
+
+    {% if can_create %}
+      <aside>
+        {% component "card" title="Add work" %}
+          <form method="post" action="{% url 'staff:seo_task_create' organization.slug %}" novalidate>
+            {% csrf_token %}
+            {% ui_field form.title %}
+            <div class="grid gap-x-5 sm:grid-cols-2">
+              {% ui_field form.kind %}
+              {% ui_field form.status %}
+            </div>
+            {% ui_field form.assigned_to %}
+            {% ui_field form.due_on %}
+            {% ui_field form.client_summary %}
+            {% ui_field form.detail %}
+            {% ui_field form.delivered_url %}
+            {% ui_button label="Add task" type="submit" variant="primary" size="sm" full=True %}
+          </form>
+        {% endcomponent %}
+      </aside>
+    {% endif %}
+  </div>
+{% endblock %}

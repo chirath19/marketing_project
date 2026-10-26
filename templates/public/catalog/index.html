@@ -1,0 +1,117 @@
+{% extends "public/base_site.html" %}
+{% load website_copy pricing %}
+{% load ui %}
+
+{% block title %}{{ page_title }} · {{ site.site_name }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block og_title %}{{ page_title }} · {{ site.site_name }}{% endblock %}
+{% block og_description %}{{ meta_description }}{% endblock %}
+
+{% block site_art %}{% include "public/_backgrounds.html" with art="services" %}{% endblock %}
+
+{% block content %}
+{% comment %}
+  The introduction above the grid is a CMS page of kind "services", so
+  the agency can reframe how it presents its own offering without a
+  deploy. Its first section carries the <h1>; without one, the catalogue
+  heading below supplies it, so the page always has exactly one.
+{% endcomment %}
+{% if intro_sections %}
+  {% for section in intro_sections %}
+    {% include section.template_name with section=section %}
+  {% endfor %}
+{% endif %}
+
+<div class="site-section site-clear">
+  <div class="site-shell">
+    <header class="grid gap-x-10 gap-y-6 lg:grid-cols-12 lg:items-end">
+      <div class="lg:col-span-7">
+        {% if eyebrow %}<p class="site-label" data-reveal="fade">{{ eyebrow }}</p>{% endif %}
+        {% if intro_sections %}
+          <h2 class="site-display site-h2 mt-5" data-reveal>{% website_copy "public.catalog.index.001" %}</h2>
+        {% else %}
+          <h1 class="site-display site-h2 mt-5" data-reveal>{{ page_title }}</h1>
+        {% endif %}
+      </div>
+      <p class="site-body max-w-xl text-steel-700 lg:col-span-5 lg:pb-2" data-reveal style="--reveal-step: 1">
+        {% if intro_sections %}
+          {{ services|length }} service{{ services|length|pluralize }} across
+          {{ categories|length }} discipline{{ categories|length|pluralize }}.
+          Filter by category, or browse the lot.
+        {% elif page_subtitle %}
+          {{ page_subtitle }}
+        {% endif %}
+      </p>
+    </header>
+    <hr class="site-rule mt-10" data-reveal="fade">
+
+    {% if categories %}
+      <nav class="-mx-1 mt-10 overflow-x-auto pb-2" aria-label="Service categories" data-reveal="fade">
+        <ul class="flex min-w-max items-center gap-2 px-1">
+          <li>
+            <a href="{% url 'public:services' %}" {% if not active_category %}aria-current="page"{% endif %}
+               class="site-chip focus-ring">{% website_copy "public.catalog.index.002" %}</a>
+          </li>
+          {% for category in categories %}
+            <li>
+              <a href="{{ category.get_absolute_url }}"
+                 {% if category.slug == active_category %}aria-current="page"{% endif %}
+                 class="site-chip focus-ring">
+                {% if category.icon %}<span aria-hidden="true">{{ category.icon }}</span>{% endif %}
+                {{ category.name }}
+                <span class="site-chip-count">{{ category.service_count }}</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endif %}
+
+    {% if services %}
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {% for service in services %}
+          <div data-reveal style="--reveal-step: {% cycle '0' '1' '2' %}">
+            {% include "public/catalog/_card.html" with service=service %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="mt-12 border-t border-navy/10 pt-12 text-center">
+        <p class="site-display text-3xl text-navy">{% website_copy "public.catalog.index.003" %}</p>
+        <p class="site-body mx-auto mt-4 max-w-md text-steel-700">{% website_copy "public.catalog.index.004" %}</p>
+        <a href="{% url 'public:services' %}" class="site-btn site-btn-dark mt-8">{% website_copy "public.catalog.index.005" %}<span class="site-btn-arrow" aria-hidden="true">{% website_copy "public.catalog.index.006" %}</span>
+        </a>
+      </div>
+    {% endif %}
+
+    {% if global_addons %}
+      <section class="mt-20">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p class="site-label">{% website_copy "public.catalog.index.007" %}</p>
+            <h2 class="site-display mt-4 text-3xl text-navy">{% website_copy "public.catalog.index.008" %}</h2>
+          </div>
+        </div>
+        <hr class="site-rule mt-8">
+
+        <div class="mt-10 grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+          {% for addon in global_addons %}
+            <div class="site-cell site-spot p-6" data-reveal style="--reveal-step: {% cycle '0' '1' '2' %}">
+              <p class="text-base font-semibold tracking-tight text-white">{{ addon.name }}</p>
+              {% if addon.short_description %}<p class="site-micro mt-2 text-white/75">{{ addon.short_description }}</p>{% endif %}
+              {% if addon|public_price:operating %}<p class="site-display site-numeric mt-4 text-2xl text-white">
+                {{ addon.price_display }}
+                {% if addon.billing_display %}<span class="site-micro font-sans text-white/55">{{ addon.billing_display }}</span>{% endif %}
+              </p>{% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+  </div>
+</div>
+
+{% url 'public:quote' as quote_url %}
+{% url 'public:contact_form' as contact_url %}
+{% website_copy "public.catalog.index.009" as editable_9 %}{% website_copy "public.catalog.index.010" as editable_10 %}{% website_copy "public.catalog.index.011" as editable_11 %}{% website_copy "public.catalog.index.012" as editable_12 %}{% include "public/_closing_cta.html" with heading=editable_9 body=editable_10 primary_label=editable_11 primary_href=quote_url secondary_label=editable_12 secondary_href=contact_url %}
+{% endblock %}

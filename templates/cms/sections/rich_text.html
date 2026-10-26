@@ -1,0 +1,16 @@
+<section id="{{ section.anchor }}" class="site-section site-story {% if section.tone == 'navy' %}site-dark-soft{% elif section.tone == 'mist' %}site-band{% else %}site-clear{% endif %}">
+  <div class="site-shell site-editorial-grid">
+    <header>
+      {% if section.eyebrow %}<p class="site-label {% if section.tone == 'navy' %}site-label-invert{% endif %}">{{ section.eyebrow }}</p>{% endif %}
+      {% if section.heading %}<h2 class="site-display site-h2 mt-5">{{ section.heading }}</h2>{% endif %}
+      {% if section.subheading %}<p class="site-body mt-5">{{ section.subheading }}</p>{% endif %}
+      {% comment %}
+        A rule, not an ornament. This column holds a heading and then a
+        lot of air, and the asterisk that used to float in it read as
+        something the page had failed to fill rather than as a mark.
+      {% endcomment %}
+      <div class="site-story-mark" aria-hidden="true"></div>
+    </header>
+    <div class="site-story-copy site-prose {% if section.tone == 'navy' %}site-prose-invert{% endif %}">{{ section.body_html }}</div>
+  </div>
+</section>

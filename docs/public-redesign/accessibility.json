@@ -1,0 +1,58 @@
+[
+  {
+    "route": "/",
+    "violations": []
+  },
+  {
+    "route": "/services/",
+    "violations": []
+  },
+  {
+    "route": "/about/",
+    "violations": []
+  },
+  {
+    "route": "/contact/",
+    "violations": []
+  },
+  {
+    "route": "/contact/enquiry/",
+    "violations": []
+  },
+  {
+    "route": "/quote/",
+    "violations": []
+  },
+  {
+    "route": "/blog/",
+    "violations": []
+  },
+  {
+    "route": "/privacy/",
+    "violations": []
+  },
+  {
+    "route": "/accounts/login/",
+    "violations": []
+  },
+  {
+    "route": "/accounts/register/",
+    "violations": []
+  },
+  {
+    "route": "/contact/sent/",
+    "violations": []
+  },
+  {
+    "route": "/services/technical-seo-audit/",
+    "violations": []
+  },
+  {
+    "route": "/services/seo-growth-retainer/",
+    "violations": []
+  },
+  {
+    "route": "/blog/choosing-marketing-channels/",
+    "violations": []
+  }
+]

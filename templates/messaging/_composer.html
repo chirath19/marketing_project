@@ -1,0 +1,33 @@
+<form method="post" action="{% if is_quote %}{{ reply_url }}{% else %}{{ request.get_full_path }}{% endif %}" class="chat-composer{% if reply_mode == 'note' %} is-note{% endif %}" data-chat-form data-chat-composer hx-post="{% if is_quote %}{{ reply_url }}{% else %}{{ request.get_full_path }}{% endif %}" hx-target="{{ target }}" hx-select="{{ target }}" hx-swap="outerHTML" hx-sync="closest [data-chat]:replace" hx-disabled-elt="find button[type=submit]">
+  {% csrf_token %}
+  {% if not is_quote %}<input type="hidden" name="action" value="message">{% endif %}
+  {% if reply_error or message_form.errors %}<div class="chat-errors" role="alert">{{ reply_error }}{{ message_form.non_field_errors }}{{ message_form.body.errors }}{{ message_form.quote.errors }}{{ message_form.subscription.errors }}</div>{% endif %}
+  <div class="chat-composer-top">
+    {% if staff and is_quote %}
+      <div class="chat-mode" role="radiogroup" aria-label="Message visibility">
+        <label><input type="radio" name="mode" value="reply" {% if reply_mode != 'note' %}checked{% endif %} data-chat-mode> Reply to client</label>
+        <label><input type="radio" name="mode" value="note" {% if reply_mode == 'note' %}checked{% endif %} data-chat-mode> Internal note</label>
+      </div>
+    {% else %}<span class="chat-composer-label">Your message</span>{% endif %}
+    {% if is_quote %}<span class="chat-scope">{{ quote.reference }}</span>{% endif %}
+  </div>
+  {% if not is_quote %}
+    {% if message_form.fields.subscription.queryset.exists or message_form.fields.quote.queryset.exists %}
+      <details class="chat-context" {% if message_form.quote.value or message_form.subscription.value or message_form.errors %}open{% endif %}>
+        <summary>Link to a quotation or project <span>Optional</span></summary>
+        <div class="chat-context-fields">
+          {% if message_form.fields.quote.queryset.exists %}<label class="chat-select">Quotation{{ message_form.quote }}</label>{% endif %}
+          {% if message_form.fields.subscription.queryset.exists %}<label class="chat-select">Project / service{{ message_form.subscription }}</label>{% endif %}
+        </div>
+      </details>
+    {% endif %}
+  {% endif %}
+  <p class="chat-note-notice" {% if reply_mode != 'note' %}hidden{% endif %} data-chat-note-notice>Only your team can see this note. It will not appear in the client's Messages.</p>
+  <div class="chat-input">
+    <label for="{{ chat_id }}-body" class="sr-only">Message</label>
+    <textarea name="body" id="{{ chat_id }}-body" rows="2" maxlength="5000" required placeholder="Write a message…" data-chat-input data-placeholder-note="Write a private note for your team…">{% if is_quote %}{{ reply_body }}{% else %}{{ message_form.body.value|default_if_none:"" }}{% endif %}</textarea>
+    <button type="submit" class="chat-send" aria-label="{% if reply_mode == 'note' %}Save internal note{% else %}Send message{% endif %}">{% include "messaging/_icon.html" with icon="send" %}<span class="chat-send-label" data-chat-send-label>{% if reply_mode == 'note' %}Save note{% else %}Send{% endif %}</span></button>
+  </div>
+  <div class="chat-hint"><span><kbd>Enter</kbd> to send · <kbd>Shift + Enter</kbd> for a new line</span><span data-chat-count>0 / 5000</span></div>
+  <p class="chat-feedback" data-chat-feedback role="status" aria-live="polite"></p>
+</form>

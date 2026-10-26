@@ -1,0 +1,68 @@
+{% load website_copy pricing %}
+{% load media_tags site %}
+{% comment %}
+  One service in the catalogue grid.
+
+  The card is light by default and dark when the service is featured, so
+  a grid of twenty-eight reads as a page with a few things picked out
+  rather than a wall. Nothing here states a colour: every value comes
+  from `.site-catalog-card` and its `.site-cell-featured` variant, which
+  is the only way two treatments of the same card stay in step.
+
+  Every card opens with a band of the same height. Five services have a
+  photograph of the actual working surface — a crawl report, a campaign
+  dashboard, a publishing board — and show it; the rest show their
+  discipline's line motif drawn large on a tinted panel. Equal height is
+  the point: a grid where only some cards carry a picture leaves the
+  others with a hole above the price, and a reader reads the hole as a
+  mistake.
+
+  The motif comes from the category, not from where the card happens to
+  land in the grid. Position chose it once, and put an envelope on
+  "On-page SEO".
+{% endcomment %}
+<article class="site-cell site-catalog-card {% if service.is_featured %}site-cell-featured{% endif %}">
+  <div class="site-catalog-shot">
+    {% if service.image %}
+      {% media_img service.image alt=service.image_alt preset="card" css_class="w-full" sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw" %}
+    {% else %}
+      <div class="site-catalog-plate">{% include "public/_motif.html" with motif=service.category.slug|motif_for %}</div>
+    {% endif %}
+  </div>
+
+  <header>
+    <p class="site-category">{{ service.category.name }}</p>
+    {% if service.is_featured %}<span class="site-tag site-tag-gold">{% website_copy "public.catalog._card.001" %}</span>{% endif %}
+  </header>
+
+  <h3><a href="{{ service.get_absolute_url }}" class="focus-ring">{{ service.name }}</a></h3>
+  <p class="site-body site-catalog-summary">{{ service.short_description }}</p>
+
+  {% if service.features.all %}
+    <details class="site-catalog-includes">
+      <summary class="site-includes focus-ring">{% website_copy "public.catalog._card.002" %}<span aria-hidden="true">+</span></summary>
+      <ul class="mt-3 space-y-2">
+        {% for feature in service.features.all %}
+          <li class="site-micro flex gap-2"><span class="site-tick" aria-hidden="true">✓</span>{{ feature.label }}</li>
+        {% endfor %}
+      </ul>
+    </details>
+  {% endif %}
+
+  {% if service|public_price:operating %}
+  <div class="site-price-row">
+    <div>
+      <p class="site-card-price">{% if service.packages.all %}<small>{% website_copy "public.catalog._card.004" %}</small>{% endif %}{{ service.price_display }}</p>
+      {% if service.billing_display %}<span class="site-micro site-card-billing">{{ service.billing_display }}</span>{% endif %}
+    </div>
+  </div>
+
+  {% else %}<p class="site-micro site-card-billing mt-5">{% website_copy "public.catalog._card.003" %}</p>{% endif %}
+
+  <div class="site-card-actions">
+    {% if service.can_request_quote %}
+      {% include "public/catalog/_quote_add.html" with package="" button_class="site-btn-card" form_class="" %}
+    {% endif %}
+    <a href="{{ service.get_absolute_url }}" class="site-card-arrow" aria-label="Explore {{ service.name }}">↗</a>
+  </div>
+</article>

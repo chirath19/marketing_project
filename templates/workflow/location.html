@@ -1,0 +1,5 @@
+{% if show %}<nav class="journey-location" aria-label="Workspace location"><a href="{{ parent.href }}">{{ parent.label }}</a>{% for crumb in breadcrumbs %}<span aria-hidden="true">/</span><a href="{{ crumb.href }}">{{ crumb.label }}</a>{% endfor %}<span aria-hidden="true">/</span><span aria-current="page">{{ title }}</span></nav>{% endif %}
+{% if not staff %}
+{% if current == 'quotes' or current == 'service_requests' %}<nav class="workspace-tabs" aria-label="Requests"><a href="{% url 'organizations:quotes' %}" {% if current == 'quotes' %}aria-current="page"{% endif %}>Quotations</a>{% if features.service_requests %}<a href="{% url 'organizations:service_requests' %}" {% if current == 'service_requests' %}aria-current="page"{% endif %}>Renewals &amp; extra work</a>{% endif %}</nav>{% endif %}
+{% if current == 'settings' or current == 'people' %}<nav class="workspace-tabs" aria-label="Account"><a href="{% url 'organizations:settings' %}">Company details</a><a href="{% url 'organizations:members' %}">People &amp; access</a><a href="{% url 'accounts:profile' %}">Your profile</a></nav>{% endif %}
+{% endif %}

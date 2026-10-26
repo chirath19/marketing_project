@@ -1,0 +1,35 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ role.name }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+{% if can_manage %}<a class="ui-btn ui-btn-outline mb-5" href="{% url 'staff:role_edit' role.pk %}">Edit role details</a>{% if not role.is_system %}<details class="mb-6"><summary>Delete role</summary><p class="t-meta mt-2">Remove this role only after assigning replacement access to affected staff.</p><form method="post" action="{% url 'staff:role_delete' role.pk %}">{% csrf_token %}<button class="ui-btn ui-btn-outline mt-3">Confirm delete role</button></form></details>{% endif %}{% endif %}
+  
+  <form method="post" action="{% url 'staff:role_set_permissions' role.pk %}" class="mt-8">
+    {% csrf_token %}
+    <div class="space-y-5">
+      {% for group in modules %}
+        {% component "card" title=group.module.label subtitle=group.module.description %}
+          <div class="flex flex-wrap gap-x-6 gap-y-2">
+            {% for item in group.actions %}
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="permissions" value="{{ item.codename }}"
+                       id="perm_{{ item.codename }}" class="ui-checkbox"
+                       {% if item.held %}checked{% endif %}
+                       {% if not can_manage %}disabled{% endif %}>
+                <label for="perm_{{ item.codename }}" class="text-sm text-navy">{{ item.action }}</label>
+              </div>
+            {% endfor %}
+          </div>
+          {% if not group.module.client_scoped %}
+            <p class="mt-2 t-micro">Platform-wide: not limited to assigned clients.</p>
+          {% endif %}
+        {% endcomponent %}
+      {% endfor %}
+    </div>
+
+    {% if can_manage %}
+      <div class="mt-6">{% ui_button label="Save permissions" type="submit" variant="primary" %}</div>
+    {% endif %}
+  </form>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% load website_copy %}
+{% load site %}
+{% quote_selected service package as selected %}
+<form method="post" action="{% url 'public:quote_add' %}" class="{{ form_class }} site-quote-add"
+      id="quote-service-{{ service.pk }}{% if package %}-{{ package.pk }}{% endif %}"
+      data-quote-add data-service="{{ service.pk }}" data-package="{% if package %}{{ package.pk }}{% endif %}">
+  {% csrf_token %}
+  <input type="hidden" name="service" value="{{ service.pk }}">
+  {% if package %}<input type="hidden" name="package" value="{{ package.pk }}">{% endif %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}#quote-service-{{ service.pk }}{% if package %}-{{ package.pk }}{% endif %}">
+  <button type="submit" class="site-btn {{ button_class }}" data-quote-button
+          data-idle-label="{% if package %}{% website_copy 'quote.choose_tier' %}{% else %}{% website_copy 'quote.add' %}{% endif %}"
+          data-added-label="{% website_copy 'quote.added' %}"
+          data-selected="{{ selected|yesno:'true,false' }}" {% if selected %}disabled{% endif %}
+          data-hg-event="service_select" data-hg-context="{{ service.slug }}">
+    <span data-quote-label>{% if selected %}{% website_copy 'quote.added' %}{% elif package %}{% website_copy 'quote.choose_tier' %}{% else %}{% website_copy 'quote.add' %}{% endif %}</span>
+    <span class="sr-only">: {{ service.name }}{% if package %} — {{ package.name }}{% endif %}</span>
+    <span data-quote-icon aria-hidden="true">{% if selected %}✓{% else %}+{% endif %}</span>
+  </button>
+  <div class="site-quote-review-space">
+    <a href="{% url 'public:quote' %}" class="site-quote-review" data-quote-review {% if not selected %}hidden{% endif %}>View your quote →</a>
+  </div>
+  <p class="site-quote-error" data-quote-error role="alert" hidden></p>
+</form>

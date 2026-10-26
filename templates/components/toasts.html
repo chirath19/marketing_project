@@ -1,0 +1,37 @@
+{% comment %}
+  The single toast region.
+
+  Server-side Django messages are rendered into it on load. Client-side
+  ones arrive as a `ui-toast` window event, which an HTMX response can
+  raise with `HX-Trigger: {"ui-toast": {"message": "Saved", "tone": "success"}}`.
+
+  One aria-live region for the whole page: several would compete, and a
+  screen reader would announce them out of order.
+{% endcomment %}
+<div x-data="uiToasts()" @ui-toast.window="add($event.detail)"
+     x-init="{% for message in messages %}add({ message: '{{ message|escapejs }}', tone: '{{ message.tags|escapejs }}' });{% endfor %}"
+     class="pointer-events-none fixed inset-x-0 bottom-0 z-[var(--z-toast)] flex flex-col items-center gap-2 p-4 sm:items-end"
+     role="region" aria-label="Notifications">
+
+  <div aria-live="polite" aria-atomic="false" class="contents">
+    <template x-for="item in items" :key="item.id">
+      <div class="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-[var(--radius-control)] border px-4 py-3 text-sm shadow-raised"
+           :class="{
+             'bg-live-soft border-live text-live': item.tone === 'success',
+             'bg-danger-soft border-danger text-danger': item.tone === 'error' || item.tone === 'danger',
+             'bg-paused-soft border-paused text-paused': item.tone === 'warning',
+             'bg-white border-steel-200 text-navy': ['success','error','danger','warning'].indexOf(item.tone) === -1
+           }"
+           x-transition:enter="transition ease-[var(--ease-soft)] duration-200"
+           x-transition:enter-start="opacity-0 translate-y-2"
+           x-transition:enter-end="opacity-100 translate-y-0">
+        <div class="flex-1">
+          <p class="font-semibold" x-show="item.title" x-text="item.title"></p>
+          <p x-text="item.message"></p>
+        </div>
+        <button type="button" @click="dismiss(item.id)" aria-label="Dismiss notification"
+                class="shrink-0 rounded px-1 opacity-60 transition hover:opacity-100 focus-ring">&times;</button>
+      </div>
+    </template>
+  </div>
+</div>

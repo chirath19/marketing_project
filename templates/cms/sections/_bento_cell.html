@@ -1,0 +1,9 @@
+{% load site %}
+<article class="site-cell site-feature" data-reveal>
+  <div class="site-feature-top">
+    <span class="site-index site-index-invert">{{ index|stringformat:"02d" }}</span>
+    {% if item.icon %}<span class="site-glyph site-glyph-invert" aria-hidden="true">{{ item.icon }}</span>{% else %}{% include "public/_motif.html" with motif=index %}{% endif %}
+  </div>
+  {% if item.label %}<h3>{{ item.label }}</h3>{% endif %}
+  {% if item.body %}<p>{{ item.body }}</p>{% endif %}
+</article>

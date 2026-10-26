@@ -1,0 +1,45 @@
+{% load ui %}{% comment %}
+  {% component "table" caption="Campaigns" columns=columns %}
+    <tr class="border-t border-mist">
+      <td class="ui-td" data-label="Campaign">Brand search</td>
+    </tr>
+  {% endcomponent %}
+
+  `columns` is an iterable of {"label", "align", "numeric"} or plain
+  strings.
+
+  Responsive behaviour is CSS, not a second markup path: below `sm` the
+  `.ui-table-stack` rules turn each row into a card and surface each
+  cell's `data-label` as its heading. A horizontally scrolling table on a
+  phone hides exactly the columns that matter. Give every <td> a
+  `data-label` matching its column.
+
+  The caption is the table's accessible name. Pass `caption_visible=True`
+  to show it; it is read either way.
+{% endcomment %}
+<div class="{% if stack|default_if_none:True %}sm:overflow-x-auto{% else %}overflow-x-auto{% endif %}">
+  <table class="w-full border-collapse text-left {% if stack|default_if_none:True %}ui-table-stack{% endif %}">
+    {% if caption %}
+      <caption class="{% if caption_visible %}mb-3 text-left t-meta{% else %}sr-only{% endif %}">{{ caption }}</caption>
+    {% endif %}
+
+    <thead>
+      <tr class="border-b border-mist">
+        {% for column in columns %}
+          <th scope="col"
+              class="ui-th {% if column.align == 'right' %}text-right{% elif column.align == 'center' %}text-center{% endif %}"
+              {% if column.width %}style="width: {{ column.width }}"{% endif %}>
+            {% with heading=column|column_label %}
+              {% if heading %}{{ heading }}{% else %}
+                {# An actions column has no visible heading but still needs a name. #}
+                <span class="sr-only">{{ column|column_sr_label }}</span>
+              {% endif %}
+            {% endwith %}
+          </th>
+        {% endfor %}
+      </tr>
+    </thead>
+
+    <tbody>{{ slot }}</tbody>
+  </table>
+</div>

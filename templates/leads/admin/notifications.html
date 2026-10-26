@@ -1,0 +1,36 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}Notifications · {{ brand.name }}{% endblock %}
+
+{% block page_actions %}
+  <form method="post" action="{% url 'staff:notifications_read' %}">
+    {% csrf_token %}
+    {% ui_button label="Mark all read" type="submit" variant="outline" size="sm" %}
+  </form>
+{% endblock %}
+
+{% block admin_content %}
+  <div class="surface overflow-hidden">
+    {% for notification in notifications %}
+      <article class="relative flex gap-3 border-b border-mist px-5 py-4 last:border-0 {% if not notification.is_read %}unread-highlight{% endif %}">
+        <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full {% if notification.is_read %}bg-transparent{% else %}bg-gold{% endif %}" aria-hidden="true"></span>
+        <div class="min-w-0 flex-1">
+          <p class="t-body {% if not notification.is_read %}font-semibold{% endif %}">
+            {% if not notification.is_read %}<span class="unread-label mr-2">New</span><span class="sr-only">Unread. </span>{% endif %}
+            <a href="{% url 'staff:notification_open' notification.pk %}" class="focus-ring after:absolute after:inset-0">{{ notification.title }}</a>
+          </p>
+          {% if notification.body %}<p class="mt-0.5 t-meta line-clamp-2">{{ notification.body }}</p>{% endif %}
+          <p class="mt-0.5 t-micro"><time datetime="{{ notification.created_at|date:'c' }}">{{ notification.created_at|date:"j M Y, H:i" }}</time></p>
+        </div>
+      </article>
+    {% empty %}
+      <div class="p-6">
+        {% ui_empty_state title="Nothing to deal with" body="New enquiries and assignments will appear here." %}
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    {% ui_pagination page_obj label="Notification pages" %}
+  {% endif %}
+{% endblock %}

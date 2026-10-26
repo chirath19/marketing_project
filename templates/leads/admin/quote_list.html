@@ -1,0 +1,77 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% comment %} Stages, not a dropdown: this is the shape of the work. {% endcomment %}
+  <nav class="-mx-1 overflow-x-auto" aria-label="Quote stages">
+    <ul class="flex min-w-max items-center gap-1 px-1">
+      <li>
+        <a href="?{% if owner %}owner={{ owner }}{% endif %}" {% if not status %}aria-current="page"{% endif %}
+           class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                  {% if not status %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">All</a>
+      </li>
+      {% for stage in stages %}
+        <li>
+          <a href="?status={{ stage.value }}{% if owner %}&owner={{ owner }}{% endif %}"
+             {% if stage.value == status %}aria-current="page"{% endif %}
+             class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                    {% if stage.value == status %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">
+            {{ stage.label }}
+            <span class="rounded-[var(--radius-pill)] px-1.5 py-0.5 text-xs t-numeric
+                         {% if stage.value == status %}bg-white/20 text-white{% else %}bg-mist text-steel{% endif %}">{{ stage.count }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <form method="get" class="max-w-md flex-1">
+      {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+      {% if owner %}<input type="hidden" name="owner" value="{{ owner }}">{% endif %}
+      {% ui_search_box name="q" value=search placeholder="Search reference, name, company or email" %}
+    </form>
+    <div class="flex items-center gap-1">
+      <a href="?{% if status %}status={{ status }}&{% endif %}owner=me"
+         class="rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring {% if owner == 'me' %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Mine</a>
+      <a href="?{% if status %}status={{ status }}&{% endif %}owner=none"
+         class="rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring {% if owner == 'none' %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Unassigned</a>
+    </div>
+  </div>
+
+  <div class="mt-5 surface p-2 sm:p-4">
+    {% component "table" caption="Quote requests" columns=columns %}
+      {% for quote in quotes %}
+        <tr class="border-b border-mist last:border-0">
+          <td class="ui-td" data-label="Reference">
+            <a href="{% url 'staff:quote_detail' quote.pk %}" class="font-semibold text-navy underline-offset-2 hover:underline focus-ring">{{ quote.reference }}</a>
+            <span class="block t-micro">{{ quote.items.count }} line{{ quote.items.count|pluralize }}</span>
+          </td>
+          <td class="ui-td" data-label="Client">
+            <span class="t-body font-medium">{{ quote.contact_name }}</span>
+            <span class="block t-micro">{{ quote.company_name|default:quote.contact_email }}</span>
+            {% if quote.organization %}
+              <span class="mt-1 inline-flex">{% ui_badge label=quote.organization.label tone="info" %}</span>
+            {% endif %}
+          </td>
+          <td class="ui-td" data-label="Status">{% ui_status_badge quote.status label=quote.lifecycle_label %}</td>
+          <td class="ui-td t-micro" data-label="Owner">
+            {% if quote.assigned_to %}{{ quote.assigned_to.get_full_name|default:quote.assigned_to.email }}{% else %}<span class="text-steel-400">Unassigned</span>{% endif %}
+          </td>
+          <td class="ui-td t-micro" data-label="Received">{{ quote.created_at|date:"j M Y" }}</td>
+        </tr>
+      {% empty %}
+        {% if is_filtered %}
+          {% ui_table_empty colspan=5 icon="⌕" title="No quotes match these filters" body="Nothing in the pipeline fits what you have selected. Clear the filters to see every request." action_label="Show all quotes" action_href="?" %}
+        {% else %}
+          {% ui_table_empty colspan=5 icon=empty_state.icon title=empty_state.title body=empty_state.body %}
+        {% endif %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    {% ui_pagination page_obj querystring=querystring label="Quote pages" %}
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <p class="max-w-3xl t-meta">
+    SEO work is only meaningful against one site, so pick a client. Every
+    figure below is a count of what has been recorded here — nothing is
+    fetched from a search engine.
+  </p>
+
+  <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {% for row in rows %}
+      <a href="{% url 'staff:seo_workspace' row.organization.slug %}"
+         class="surface block p-5 transition hover:shadow-raised focus-ring">
+        <div class="flex items-start justify-between gap-3">
+          <p class="t-card-title">{{ row.organization.label }}</p>
+          {% ui_status_badge row.organization.status %}
+        </div>
+
+        {% if row.summary.keywords_tracked or row.summary.issues_open %}
+          <dl class="mt-4 grid grid-cols-3 gap-3">
+            <div>
+              <dt class="t-micro">Keywords</dt>
+              <dd class="t-body font-semibold t-numeric">{{ row.summary.keywords_tracked }}</dd>
+            </div>
+            <div>
+              <dt class="t-micro">Top 10</dt>
+              <dd class="t-body font-semibold t-numeric">{{ row.summary.keywords_top_10 }}</dd>
+            </div>
+            <div>
+              <dt class="t-micro">Open issues</dt>
+              <dd class="t-body font-semibold t-numeric {% if row.summary.issues_critical %}text-danger{% endif %}">{{ row.summary.issues_open }}</dd>
+            </div>
+          </dl>
+        {% else %}
+          <p class="mt-4 t-meta">Nothing recorded yet.</p>
+        {% endif %}
+      </a>
+    {% empty %}
+      <div class="sm:col-span-2 lg:col-span-3">
+        {% ui_empty_state icon="⌕" title="No clients to work on" body="You see a client here once an administrator assigns you to one. SEO records belong to a client, so there is nowhere to put them until then." %}
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

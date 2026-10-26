@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+venv/
+.venv/
+
+# Django
+*.log
+db.sqlite3
+/staticfiles/
+/mediafiles/
+/static/dist/*.map
+
+# Environment — never commit real credentials
+.env
+.env.*
+!.env.example
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Node (Tailwind build only)
+node_modules/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Reference material (kept locally, not source)
+*.pdf
+
+# Private local recovery snapshots
+/.local-backups/

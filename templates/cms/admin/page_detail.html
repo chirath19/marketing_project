@@ -1,0 +1,84 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page.title }} · {{ brand.name }}{% endblock %}
+
+{% block page_actions %}
+  {% url 'staff:cms_page_edit' page.pk as edit_url %}
+  {% url 'staff:cms_section_create' page.pk as add_url %}
+  {% if perms.permissions.cms_edit %}{% ui_button label="Page settings" href=edit_url variant="outline" size="sm" %}{% endif %}
+  {% if perms.permissions.cms_create %}{% ui_button label="Add section" href=add_url variant="primary" size="sm" %}{% endif %}
+{% endblock %}
+
+{% block admin_content %}
+  <p class="mb-4 t-meta">Edit a section to change its text, image and buttons. Add section creates new content on this page. Changes to a published page appear immediately.</p>
+  {% if page.kind == 'contact' %}
+    <div class="flex flex-wrap gap-3 mb-5">
+      {% if perms.permissions.cms_edit %}<a href="{% url 'staff:cms_contacts' %}" class="ui-btn ui-btn-outline">Edit primary contact details</a>{% endif %}
+      <a href="{% url 'staff:cms_collection' 'contacts' %}" class="ui-btn ui-btn-outline">Additional contacts</a>
+      {% if perms.permissions.cms_create %}<a href="{% url 'staff:cms_collection_create' 'contacts' %}" class="ui-btn ui-btn-primary">Add contact</a>{% endif %}
+    </div>
+  {% endif %}
+  <p class="mb-4 t-meta">For shared form labels and other fixed wording, use <a class="underline focus-ring" href="{% url 'staff:cms_wording' %}">Website wording</a>. To link a new page from the menu, use <a class="underline focus-ring" href="{% url 'staff:cms_collection' 'navigation' %}">Menus &amp; footer links</a>.</p>
+  <div class="flex flex-wrap items-center gap-3">
+    {% ui_status_badge page.status %}
+    {% if perms.permissions.cms_publish %}
+      <form method="post" action="{% url 'staff:cms_page_publish' page.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="publish" value="{% if page.is_published %}0{% else %}1{% endif %}">
+        {% if page.is_published %}
+          {% ui_button label="Move back to draft" type="submit" variant="outline" size="sm" %}
+        {% else %}
+          {% ui_button label="Publish" type="submit" variant="primary" size="sm" %}
+        {% endif %}
+      </form>
+    {% endif %}
+    {% if page.is_published %}
+      <a href="{{ page.get_absolute_url }}" target="_blank" rel="noopener"
+         class="text-sm font-medium text-gold-600 underline-offset-2 hover:underline focus-ring">View on the site</a>
+    {% endif %}
+  </div>
+
+  <div class="mt-6 space-y-3">
+    {% for section in sections %}
+      <div class="surface flex flex-wrap items-center justify-between gap-3 p-4 {% if not section.is_visible %}opacity-60{% endif %}">
+        <div class="min-w-0">
+          <p class="t-body font-medium">
+            {{ section.get_section_type_display }}
+            {% if not section.is_visible %}<span class="ml-2 t-micro">hidden</span>{% endif %}
+          </p>
+          <p class="truncate t-micro">{{ section.heading|default:section.body|default:"—"|truncatechars:80 }}</p>
+          <div class="mt-2 flex flex-wrap gap-2">{% include "cms/admin/section_content_links.html" %}</div>
+        </div>
+
+        <div class="flex shrink-0 flex-wrap items-center gap-2">
+          {% if perms.permissions.cms_edit %}
+            <form method="post" action="{% url 'staff:cms_section_move' section.pk %}" class="inline">
+              {% csrf_token %}<input type="hidden" name="direction" value="up">
+              <button type="submit" class="rounded px-2 py-1 text-xs text-steel hover:bg-mist focus-ring" aria-label="Move {{ section.get_section_type_display }} up">↑</button>
+            </form>
+            <form method="post" action="{% url 'staff:cms_section_move' section.pk %}" class="inline">
+              {% csrf_token %}<input type="hidden" name="direction" value="down">
+              <button type="submit" class="rounded px-2 py-1 text-xs text-steel hover:bg-mist focus-ring" aria-label="Move {{ section.get_section_type_display }} down">↓</button>
+            </form>
+            <form method="post" action="{% url 'staff:cms_section_toggle' section.pk %}" class="inline">
+              {% csrf_token %}
+              <input type="hidden" name="visible" value="{% if section.is_visible %}0{% else %}1{% endif %}">
+              <button type="submit" class="rounded px-2 py-1 text-xs font-semibold text-steel hover:bg-mist focus-ring">
+                {% if section.is_visible %}Hide{% else %}Show{% endif %}<span class="sr-only"> {{ section.get_section_type_display }}</span>
+              </button>
+            </form>
+            <a href="{% url 'staff:cms_section' section.pk %}" class="text-xs font-semibold text-gold-600 underline-offset-2 hover:underline focus-ring">Edit</a>
+          {% endif %}
+          {% if perms.permissions.cms_delete %}
+            <form method="post" action="{% url 'staff:cms_section_delete' section.pk %}" class="inline">
+              {% csrf_token %}
+              <button type="submit" class="text-xs font-semibold text-danger underline-offset-2 hover:underline focus-ring">Remove<span class="sr-only"> {{ section.get_section_type_display }}</span></button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      {% ui_empty_state title="No sections yet" body="A page is built from sections. Add the first one to get started." %}
+    {% endfor %}
+  </div>
+{% endblock %}

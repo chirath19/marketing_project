@@ -1,0 +1,50 @@
+{% load ui %}
+{% comment %}
+  An item waiting on a client decision — the "Waiting for your approval"
+  list in the reference.
+
+  Approve and reject are form submissions, never links: they change state,
+  so they must not be reachable by a browser prefetch or a crawler. Each
+  button names the item in its accessible label, because a page with four
+  identical "Approve" buttons is unusable with a screen reader.
+{% endcomment %}
+<article class="flex flex-wrap items-center justify-between gap-3 {% if compact %}border-b border-mist py-3 last:border-0{% else %}surface p-5{% endif %}">
+  <div class="min-w-0 flex-1">
+    <div class="flex items-center gap-2">
+      <h3 class="t-card-title truncate">{{ approval.title }}</h3>
+      {% if approval.status and not compact %}{% ui_status_badge approval.status %}{% endif %}
+    </div>
+    {% comment %}
+      Kept on one line: a newline between the label and the comma renders
+      as a space, giving "Paid ads , $2,900 budget".
+    {% endcomment %}
+    <p class="mt-0.5 t-meta">{% if approval.module_label %}{{ approval.module_label }}{% if approval.summary %}, {% endif %}{% endif %}{% if approval.summary %}{{ approval.summary }}{% endif %}</p>
+    {% if approval.due_date or approval.requested_by %}
+      <p class="mt-0.5 t-micro">
+        {% if approval.requested_by %}Requested by {{ approval.requested_by }}{% endif %}
+        {% if approval.due_date %}&middot; due {{ approval.due_date }}{% endif %}
+      </p>
+    {% endif %}
+  </div>
+
+  <div class="flex shrink-0 items-center gap-2">
+    {% if reject_url %}
+      <form method="post" action="{{ reject_url }}">
+        {% csrf_token %}
+        <button type="submit"
+                class="inline-flex items-center justify-center rounded-[var(--radius-control)] border border-steel-200 bg-white px-3 py-1.5 text-xs font-semibold text-navy transition hover:bg-mist focus-ring">
+          Reject<span class="sr-only">: {{ approval.title }}</span>
+        </button>
+      </form>
+    {% endif %}
+    {% if approve_url %}
+      <form method="post" action="{{ approve_url }}">
+        {% csrf_token %}
+        <button type="submit"
+                class="inline-flex items-center justify-center rounded-[var(--radius-control)] bg-gold px-3 py-1.5 text-xs font-semibold text-navy transition hover:bg-gold-600 focus-ring">
+          Approve<span class="sr-only">: {{ approval.title }}</span>
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</article>

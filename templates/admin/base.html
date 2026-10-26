@@ -1,0 +1,101 @@
+{% extends "base/base.html" %}
+{% load ui assets workflow %}
+
+{% comment %}
+  The admin shell: a fixed sidebar on desktop, a drawer on mobile, and a
+  top bar carrying search and the account menu.
+
+  Navigation comes from apps/staff/navigation.py, already filtered by
+  permission. That filtering is presentation only — every route behind it
+  carries its own guard, and a test asserts it.
+{% endcomment %}
+
+{% block body_class %}workspace workspace-admin{% endblock %}
+
+{% block chrome_top %}
+
+
+{% comment %} Mobile navigation, in the shared drawer component. {% endcomment %}
+{% component "drawer" id="admin-nav" title=brand.name side="left" %}
+  {% include "admin/_nav.html" with variant="drawer" %}
+{% endcomponent %}
+
+<div class="flex min-h-screen">
+  {% comment %} Desktop sidebar. {% endcomment %}
+  <aside class="workspace-sidebar hidden w-64 shrink-0 border-r border-mist bg-white lg:block">
+    <div class="sticky top-0 flex h-screen flex-col">
+      <a href="{% url 'staff:dashboard' %}"
+         class="flex h-14 shrink-0 items-center gap-2 border-b border-mist px-5 text-base font-semibold tracking-tight text-navy focus-ring">
+        {{ brand.name }}
+        <span class="rounded bg-mist px-1.5 py-0.5 text-[0.65rem] font-medium uppercase tracking-wide text-steel">{% if request.user.is_super_admin %}Admin{% elif request.user.is_system_owner %}Owner{% else %}Staff{% endif %}</span>
+      </a>
+      <div class="flex-1 overflow-y-auto px-3 py-4">
+        {% include "admin/_nav.html" with variant="sidebar" %}
+      </div>
+    </div>
+  </aside>
+
+  <div class="flex min-w-0 flex-1 flex-col">
+    {% comment %} Top bar. {% endcomment %}
+    <header class="workspace-header sticky top-0 z-[var(--z-sticky)] border-b border-mist bg-white/95 backdrop-blur">
+      <div class="flex h-14 items-center gap-3 px-[var(--gutter)] sm:px-6">
+        <button type="button" data-ui-open="admin-nav"
+                class="rounded p-1.5 text-navy transition hover:bg-mist focus-ring lg:hidden"
+                aria-label="Open navigation">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8"
+               viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/>
+          </svg>
+        </button>
+
+        <a href="{% url 'staff:dashboard' %}" class="text-sm font-semibold tracking-tight text-navy focus-ring lg:hidden">{{ brand.name }}</a>
+
+        <form method="get" action="{% url 'staff:search' %}" role="search"
+              class="ml-auto hidden w-full max-w-sm sm:block">
+          {% ui_search_box name="q" value=search_query placeholder="Search clients and staff" label="Search the dashboard" %}
+        </form>
+
+        <div class="ml-auto flex items-center gap-2 sm:ml-0">
+          {% include "notifications/_bell.html" %}
+          {% url 'staff:search' as search_url %}
+          {% ui_icon_button icon="⌕" label="Search" href=search_url variant="ghost" size="sm" extra_class="sm:hidden" %}
+
+          {% component "dropdown" label=request.user.get_short_name align="right" trigger_css="inline-flex max-w-[27vw] items-center gap-2 rounded-[var(--radius-control)] px-2 py-1.5 text-sm font-medium text-navy transition hover:bg-mist focus-ring sm:max-w-none" %}
+            <a href="/accounts/profile/" class="ui-menu-item" role="menuitem">Your profile</a>
+            <a href="/accounts/password/" class="ui-menu-item" role="menuitem">Change password</a>
+            {% if request.user.is_superuser %}
+              {% comment %}
+                The Django admin stays available to superusers for
+                developer work. It is not the business dashboard.
+              {% endcomment %}
+              <a href="/admin/" class="ui-menu-item" role="menuitem">Django admin</a>
+            {% endif %}
+            <form method="post" action="/accounts/logout/" role="none">
+              {% csrf_token %}
+              <button type="submit" class="ui-menu-item" role="menuitem">Sign out</button>
+            </form>
+          {% endcomponent %}
+        </div>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1" class="flex-1 px-[var(--gutter)] py-6 sm:px-6 sm:py-8">
+      <div class="mx-auto w-full max-w-7xl">
+        {% workflow_location staff=True %}
+
+        {% component "page_header" title=page_title subtitle=page_subtitle eyebrow=page_eyebrow %}
+          {% block page_actions %}{% endblock %}
+        {% endcomponent %}
+
+        <div class="mt-6">{% block admin_content %}{% endblock %}</div>
+      </div>
+    </main>
+  </div>
+</div>
+{% endblock %}
+
+{% comment %} The shell owns the layout, so the default main wrapper is unused. {% endcomment %}
+{% block content %}{% endblock %}
+{% block main_wrapper %}{% endblock %}
+
+{% block scripts %}{{ block.super }}<script src="{% static_version 'js/workspace.js' %}" defer></script>{% endblock %}

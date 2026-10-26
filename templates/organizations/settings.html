@@ -1,0 +1,42 @@
+{% extends "portal/base.html" %}
+{% load ui %}
+
+{% block title %}Organization settings · {{ brand.name }}{% endblock %}
+
+{% block portal_content %}
+  {% component "page_header" title="Organization settings" subtitle=organization.label %}{% endcomponent %}
+
+  {% if not can_manage %}
+    <div class="mt-6">
+      {% ui_alert tone="info" message="Only an owner or admin can change these details." %}
+    </div>
+  {% endif %}
+
+  <form method="post" class="mt-6 surface p-6" novalidate>
+    {% csrf_token %}
+    {% ui_form_errors form %}
+
+    {% ui_field form.name %}
+    {% ui_field form.display_name %}
+
+    <div class="grid gap-x-5 sm:grid-cols-2">
+      {% ui_field form.website %}
+      {% ui_field form.email %}
+      {% ui_field form.phone %}
+      {% ui_field form.country %}
+    </div>
+
+    <h2 class="mt-4 mb-2 t-card-title">Address</h2>
+    {% ui_field form.address_line1 %}
+    {% ui_field form.address_line2 %}
+    <div class="grid gap-x-5 sm:grid-cols-3">
+      {% ui_field form.city %}
+      {% ui_field form.region %}
+      {% ui_field form.postal_code %}
+    </div>
+
+    {% if can_manage %}
+      {% ui_button label="Save changes" type="submit" variant="primary" %}
+    {% endif %}
+  </form>
+{% endblock %}

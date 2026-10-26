@@ -1,0 +1,93 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ profile.user.get_full_name }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  
+  {% if can_manage %}
+    <form method="post" action="{% url 'staff:set_active' profile.pk %}" class="mt-4">
+      {% csrf_token %}
+      {% if profile.user.is_active %}
+        <input type="hidden" name="active" value="0">
+        {% ui_button label="Deactivate account" type="submit" variant="outline" size="sm" %}
+      {% else %}
+        <input type="hidden" name="active" value="1">
+        {% ui_button label="Activate account" type="submit" variant="primary" size="sm" %}
+      {% endif %}
+    </form>
+  {% endif %}
+
+  <div class="mt-8 grid gap-5 lg:grid-cols-2">
+    {% component "card" title="Profile" %}
+      <form method="post" action="{% url 'staff:update' profile.pk %}" novalidate>
+        {% csrf_token %}
+        {% ui_field profile_form.job_title %}
+        {% ui_field profile_form.department %}
+        {% ui_field profile_form.notes %}
+        {% if can_manage %}{% ui_button label="Save profile" type="submit" variant="primary" size="sm" %}{% endif %}
+      </form>
+    {% endcomponent %}
+
+    {% component "card" title="Roles" subtitle="What this person may do" %}
+      <form method="post" action="{% url 'staff:set_roles' profile.pk %}" novalidate>
+        {% csrf_token %}
+        {% ui_field role_form.roles %}
+        {% if can_assign_roles %}{% ui_button label="Save roles" type="submit" variant="primary" size="sm" %}{% endif %}
+      </form>
+    {% endcomponent %}
+  </div>
+
+  <div class="mt-5">
+    {% component "card" title="Client assignments" subtitle="Whose work this person may touch" %}
+      {% if profile.has_all_client_access %}
+        {% ui_alert tone="warning" message="This person has access to every client, so assignments do not limit them." %}
+      {% endif %}
+
+      <ul class="divide-y divide-mist">
+        {% for assignment in assignments %}
+          <li class="flex items-center justify-between gap-3 py-2.5">
+            <div class="min-w-0">
+              <p class="truncate t-body font-medium">{{ assignment.organization.label }}</p>
+              <p class="t-micro">{{ assignment.get_role_display }}{% if assignment.is_primary %} · primary contact{% endif %}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              {% ui_status_badge assignment.status %}
+              {% if can_assign_clients and assignment.is_active %}
+                <form method="post" action="{% url 'staff:end_assignment' assignment.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="text-xs font-semibold text-danger underline-offset-2 hover:underline focus-ring">End<span class="sr-only"> assignment to {{ assignment.organization.label }}</span></button>
+                </form>
+              {% endif %}
+            </div>
+          </li>
+        {% empty %}
+          <li class="py-3 t-meta">No clients assigned, so this person sees no client data.</li>
+        {% endfor %}
+      </ul>
+
+      {% if can_assign_clients %}
+        {% slot "footer" %}
+          <form method="post" action="{% url 'staff:assign_client' profile.pk %}" class="grid gap-x-5 sm:grid-cols-3" novalidate>
+            {% csrf_token %}
+            {% ui_field assignment_form.organization %}
+            {% ui_field assignment_form.role %}
+            {% ui_field assignment_form.is_primary %}
+            {% ui_button label="Assign client" type="submit" variant="primary" size="sm" %}
+          </form>
+        {% endslot %}
+      {% endif %}
+    {% endcomponent %}
+  </div>
+
+  <div class="mt-5">
+    {% component "card" title="Effective permissions" subtitle="After roles and any personal overrides" %}
+      <div class="flex flex-wrap gap-1.5">
+        {% for codename in permissions %}
+          <code class="rounded bg-mist px-1.5 py-0.5 text-xs text-steel">{{ codename }}</code>
+        {% empty %}
+          <p class="t-meta">None. This person can sign in but do nothing yet.</p>
+        {% endfor %}
+      </div>
+    {% endcomponent %}
+  </div>
+{% if request.user.is_super_admin %}<section class="workspace-panel mt-6"><h2 class="t-section">Personal permission exceptions</h2><p class="t-meta mt-2">A deny overrides every role. Only the owner can grant or remove these exceptions.</p><ul class="my-4">{% for override in overrides %}<li>{{ override.permission.codename }} · {{ override.effect }} · {{ override.reason }}</li>{% endfor %}</ul><form method="post" action="{% url 'staff:staff_override' profile.pk %}" class="workspace-form">{% csrf_token %}{{ override_form.as_p }}<div class="flex flex-wrap gap-3"><button class="ui-btn ui-btn-primary">Save exception</button><button class="ui-btn ui-btn-outline" name="action" value="clear">Clear exception</button></div></form></section>{% endif %}{% if perms.permissions.staff_delete %}<details class="workspace-panel mt-6"><summary>Remove this account</summary><p class="t-meta mt-3">This stops sign-in permanently. Messages, quotes and payment records keep their original authorship.</p><form method="post" action="{% url 'staff:staff_remove' profile.pk %}" class="mt-4">{% csrf_token %}<button class="ui-btn ui-btn-outline">Confirm account removal</button></form></details>{% endif %}{% endblock %}

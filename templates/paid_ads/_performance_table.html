@@ -1,0 +1,31 @@
+{% load ui %}
+<div class="overflow-x-auto">
+  <table class="w-full ui-table-stack">
+    <caption class="sr-only">{{ caption }}</caption>
+    <thead><tr>
+      <th scope="col" class="ui-th">{{ group_label }}</th>
+      <th scope="col" class="ui-th">Ad spend</th><th scope="col" class="ui-th">Impressions</th>
+      <th scope="col" class="ui-th">Clicks</th><th scope="col" class="ui-th">Leads</th>
+      <th scope="col" class="ui-th">Conversions</th><th scope="col" class="ui-th">Revenue</th>
+      <th scope="col" class="ui-th">ROAS</th><th scope="col" class="ui-th">CPL</th>
+      <th scope="col" class="ui-th">CTR</th><th scope="col" class="ui-th">CPC</th>
+    </tr></thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td class="ui-td" data-label="{{ group_label }}">{{ row.label }}{% if row.status %}<div class="mt-1">{% ui_status_badge row.status %}</div>{% endif %}</td>
+          <td class="ui-td t-numeric" data-label="Ad spend">{{ row.display.spend }}</td>
+          <td class="ui-td t-numeric" data-label="Impressions">{{ row.display.impressions }}</td>
+          <td class="ui-td t-numeric" data-label="Clicks">{{ row.display.clicks }}</td>
+          <td class="ui-td t-numeric" data-label="Leads">{{ row.display.leads }}</td>
+          <td class="ui-td t-numeric" data-label="Conversions">{{ row.display.conversions }}</td>
+          <td class="ui-td t-numeric" data-label="Revenue">{{ row.display.revenue }}</td>
+          <td class="ui-td t-numeric" data-label="ROAS">{{ row.display.roas }}</td>
+          <td class="ui-td t-numeric" data-label="CPL">{{ row.display.cpl }}</td>
+          <td class="ui-td t-numeric" data-label="CTR">{{ row.display.ctr }}</td>
+          <td class="ui-td t-numeric" data-label="CPC">{{ row.display.cpc }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

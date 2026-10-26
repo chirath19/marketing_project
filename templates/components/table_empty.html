@@ -1,0 +1,26 @@
+{% comment %}
+  An empty state that lives inside a table body.
+
+  A one-line "Nothing here." in a stray cell reads as a bug. This spans
+  the full width, explains why the area is empty and what will appear in
+  it, and offers the action when the reader is someone who can resolve
+  it — which is what separates an empty state from a blank space.
+
+  Rendered as a row so the table's own structure stays valid; the
+  responsive stacking rules leave a cell with no `data-label` alone.
+{% endcomment %}
+<tr>
+  <td colspan="{{ colspan|default:6 }}" class="px-4 py-12 text-center sm:px-6">
+    {% if icon %}<p class="text-2xl text-steel-400" aria-hidden="true">{{ icon }}</p>{% endif %}
+    <p class="{% if icon %}mt-2 {% endif %}t-card-title">{{ title }}</p>
+    {% if body %}<p class="mx-auto mt-1 max-w-md t-meta">{{ body }}</p>{% endif %}
+    {% if action_label and action_href %}
+      <div class="mt-4 flex justify-center">
+        <a href="{{ action_href }}"
+           class="inline-flex rounded-[var(--radius-control)] bg-gold px-4 py-2 text-sm font-semibold text-navy transition hover:bg-gold-600 focus-ring">
+          {{ action_label }}
+        </a>
+      </div>
+    {% endif %}
+  </td>
+</tr>

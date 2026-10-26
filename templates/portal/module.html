@@ -1,0 +1,106 @@
+{% extends "portal/base.html" %}
+{% load ui %}
+
+{% comment %}
+  One delivery module, rendered from its entry in the registry.
+
+  Campaigns are the first real content to reach here, and they reach
+  every area at once: the combined page and each service area show the
+  same records filtered differently. Where there is nothing real yet the
+  page says so and names what is coming — it never invents a figure, so
+  that the first number a client sees here is one they can trust.
+{% endcomment %}
+
+{% block title %}{{ module.label }} · {{ brand.name }}{% endblock %}
+
+{% block portal_content %}
+  {% component "page_header" title=module.label subtitle=module.description eyebrow="Your workspace" %}{% endcomponent %}
+
+  {% if has_content %}
+    {% comment %}
+      A service module may contribute its own workspace. SEO is the
+      first; its partial is included here rather than the module page
+      branching per area.
+    {% endcomment %}
+    {% if seo %}
+      <div class="mt-6">
+        {% include "seo/client/_workspace.html" with seo=seo %}
+      </div>
+    {% endif %}
+
+    {% if campaigns.total %}
+      <div class="mt-8">
+        {% include "campaigns/client/_list.html" with campaigns=campaigns %}
+      </div>
+    {% endif %}
+
+    {% if not module.built %}
+      <div class="mt-10 rounded-[var(--radius-card)] border border-dashed border-steel-200 px-6 py-6">
+        <p class="t-card-title">More is coming to this area</p>
+        <p class="mt-1 max-w-2xl t-meta">
+          Your campaigns are above. The rest of what will live here is still
+          being built, and nothing will appear until it is real.
+        </p>
+        <ul class="mt-4 flex flex-wrap gap-2">
+          {% for area in module.will_show %}
+            <li class="rounded-[var(--radius-pill)] bg-mist px-3 py-1 t-micro">{{ area }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+  {% else %}
+    <div class="mt-6 surface px-6 py-10 sm:px-8">
+      <div class="max-w-2xl">
+        <p class="t-eyebrow">Open to you</p>
+        <h2 class="mt-2 t-section">
+          {% if campaigns %}Nothing running here yet{% else %}We are still building this area{% endif %}
+        </h2>
+        <p class="mt-3 t-meta">
+          {% if campaigns %}
+            Your services give you access to this area. Campaigns appear here
+            as your account team sets them up, and nothing is shown until it
+            is real — we would rather give you an empty page than an invented
+            one.
+          {% else %}
+            Your services give you access to it, and it will fill up as work
+            is delivered and reporting is published. Nothing is shown here
+            until it is real.
+          {% endif %}
+        </p>
+      </div>
+
+      {% if module.will_show %}
+        <div class="mt-8 border-t border-mist pt-7">
+          <p class="t-card-title">What you will find here</p>
+          <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+            {% for area in module.will_show %}
+              <li class="flex gap-3 rounded-[var(--radius-control)] bg-mist px-4 py-3">
+                <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" aria-hidden="true"></span>
+                <span class="t-body">{{ area }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if opened_by %}
+    <div class="mt-5">
+      {% component "card" title="Why you can see this" subtitle="The services that opened this area." %}
+        <ul class="divide-y divide-mist">
+          {% for subscription in opened_by %}
+            <li class="flex flex-wrap items-center justify-between gap-3 py-2.5">
+              <a href="{% url 'organizations:service_detail' subscription.pk %}" class="t-body font-medium underline-offset-2 hover:underline focus-ring">{{ subscription.name }}</a>
+              {% ui_status_badge subscription.status label=subscription.get_status_display %}
+            </li>
+          {% endfor %}
+        </ul>
+        <p class="mt-4 t-micro">
+          If one of these is paused or ends, this area closes again.
+        </p>
+      {% endcomponent %}
+    </div>
+  {% endif %}
+{% endblock %}

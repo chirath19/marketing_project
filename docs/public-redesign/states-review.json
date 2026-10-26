@@ -1,0 +1,97 @@
+[
+  {
+    "route": "/",
+    "width": 320,
+    "overflow": false
+  },
+  {
+    "route": "/services/",
+    "width": 320,
+    "overflow": false
+  },
+  {
+    "route": "/services/technical-seo-audit/",
+    "width": 320,
+    "overflow": false
+  },
+  {
+    "route": "/contact/",
+    "width": 320,
+    "overflow": false
+  },
+  {
+    "route": "/quote/",
+    "width": 320,
+    "overflow": false
+  },
+  {
+    "route": "/blog/",
+    "width": 320,
+    "overflow": false
+  },
+  {
+    "route": "/accounts/register/",
+    "width": 320,
+    "overflow": false
+  },
+  {
+    "fixture": "error-400",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "fixture": "error-400",
+    "width": 390,
+    "violations": []
+  },
+  {
+    "fixture": "error-403",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "fixture": "error-403",
+    "width": 390,
+    "violations": []
+  },
+  {
+    "fixture": "error-404",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "fixture": "error-404",
+    "width": 390,
+    "violations": []
+  },
+  {
+    "fixture": "error-500",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "fixture": "error-500",
+    "width": 390,
+    "violations": []
+  },
+  {
+    "fixture": "error-403_csrf",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "fixture": "error-403_csrf",
+    "width": 390,
+    "violations": []
+  },
+  {
+    "fixture": "component-states",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "fixture": "component-states",
+    "width": 390,
+    "violations": []
+  }
+]

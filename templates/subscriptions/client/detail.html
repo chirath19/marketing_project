@@ -1,0 +1,123 @@
+{% extends "portal/base.html" %}
+{% load ui %}
+
+{% comment %}
+  A client's view of one of their services. Everything here came through
+  a selector that filtered internal history out; the template does no
+  filtering of its own on purpose.
+{% endcomment %}
+
+{% block title %}{{ subscription.name }} · {{ brand.name }}{% endblock %}
+
+{% block portal_content %}
+{% if features.service_requests %}<a class="ui-btn ui-btn-outline mb-6" href="{% url 'organizations:service_change_create' subscription.pk %}">Request renewal, extension or extras</a>{% endif %}
+  <nav aria-label="Breadcrumb" class="mb-4">
+    <ol class="flex flex-wrap items-center gap-x-1.5 text-sm">
+      <li><a href="{% url 'organizations:services' %}" class="text-steel underline-offset-2 hover:text-navy hover:underline focus-ring">Projects &amp; services</a></li>
+      <li><span class="text-steel-400" aria-hidden="true">/</span></li>
+      <li class="t-micro">{{ subscription.name }}</li>
+    </ol>
+  </nav>
+
+  {% component "page_header" title=subscription.name subtitle=subscription.service.category.name %}
+    {% ui_status_badge subscription.status label=subscription.get_status_display %}
+  {% endcomponent %}
+
+  <div class="journey-actions">{% if features.messages %}<a class="ui-btn ui-btn-primary" href="{% url 'organizations:client_desk' %}?project={{ subscription.pk }}">Message about this project</a>{% endif %}<a class="ui-btn ui-btn-outline" href="#project-progress">Progress &amp; files</a></div>
+  <div class="mt-8 grid gap-5 lg:grid-cols-3">
+    <div class="space-y-5 lg:col-span-2">
+      {% include "workflow/project_updates.html" %}
+      {% component "card" title="What this covers" %}
+        {% if subscription.custom_scope %}
+          <p class="whitespace-pre-line t-body">{{ subscription.custom_scope }}</p>
+        {% elif subscription.service.short_description %}
+          <p class="t-body">{{ subscription.service.short_description }}</p>
+        {% endif %}
+
+        {% if subscription.service.deliverable_lines %}
+          <h3 class="mt-5 t-card-title">What you receive</h3>
+          <ul class="mt-3 space-y-2">
+            {% for line in subscription.service.deliverable_lines %}
+              <li class="flex gap-3">
+                <span class="mt-0.5 text-gold" aria-hidden="true">&check;</span>
+                <span class="t-body">{{ line }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% if subscription.client_notes %}
+          <div class="mt-5 rounded-[var(--radius-control)] bg-mist p-4">
+            <p class="t-micro">From your account team</p>
+            <p class="mt-1 whitespace-pre-line t-body">{{ subscription.client_notes }}</p>
+          </div>
+        {% endif %}
+
+        {% slot "footer" %}
+          <a href="{{ subscription.service.get_absolute_url }}" class="text-sm font-medium text-gold-600 underline-offset-2 hover:underline focus-ring">
+            Read the full service description
+          </a>
+        {% endslot %}
+      {% endcomponent %}
+
+      {% component "card" title="History" subtitle="What has happened with this service." %}
+        <ol class="divide-y divide-mist">
+          {% for event in events %}
+            <li class="flex gap-3 py-3">
+              <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" aria-hidden="true"></span>
+              <div class="min-w-0 flex-1">
+                <p class="t-body">{{ event.body }}</p>
+                <p class="t-micro">{{ event.created_at|date:"j M Y, H:i" }}</p>
+              </div>
+            </li>
+          {% empty %}
+            <li class="py-3"><p class="t-meta">Nothing recorded yet.</p></li>
+          {% endfor %}
+        </ol>
+      {% endcomponent %}
+    </div>
+
+    <aside class="space-y-5">
+      {% component "card" title="The arrangement" %}
+        <dl class="space-y-3 text-sm">
+          <div><dt class="t-micro">Price</dt>
+            <dd class="t-body font-semibold">{{ subscription.price_display }}
+              {% if subscription.billing_display %}<span class="block t-micro font-normal">{{ subscription.billing_display }}</span>{% endif %}</dd></div>
+          {% if subscription.starts_on %}
+            <div><dt class="t-micro">Started</dt><dd class="t-body">{{ subscription.starts_on|date:"j F Y" }}</dd></div>
+          {% endif %}
+          {% if subscription.ends_on %}
+            <div><dt class="t-micro">Runs until</dt><dd class="t-body">{{ subscription.ends_on|date:"j F Y" }}</dd></div>
+          {% else %}
+            <div><dt class="t-micro">Term</dt><dd class="t-body">Ongoing, with no agreed end date</dd></div>
+          {% endif %}
+        </dl>
+      {% endcomponent %}
+
+      {% if project_module %}
+        {% component "card" title="Work details & results" %}
+          <p class="t-body font-medium">{{ project_module.label }}</p>
+          <p class="mt-1 t-meta">{{ project_module.description }}</p><a class="workspace-link inline-block mt-3" href="{% url 'organizations:portal_module' project_module.key %}">Open work details →</a>
+        {% endcomponent %}
+      {% endif %}
+
+      {% if campaigns %}
+        {% url 'organizations:portal_module' 'campaigns' as campaigns_url %}
+        {% component "card" title="Campaigns under this service" %}
+          <p class="t-body"><span class="text-2xl font-semibold">{{ live_campaign_count }}</span> live {{ live_campaign_count|pluralize:"campaign,campaigns" }}, {{ campaigns|length }} total</p>
+          <ul class="journey-list">{% for campaign in campaigns %}<li><a class="workspace-link" href="{% url 'organizations:campaign_detail' campaign.pk %}">{{ campaign.name }}</a></li>{% endfor %}</ul>
+        {% endcomponent %}
+      {% endif %}
+
+      {% component "card" title="Something to change?" %}
+        <p class="t-meta">
+          Scope, pause or stop — talk to your account team and they will
+          sort it. Nothing changes without your agreement.
+        </p>
+        {% slot "footer" %}
+          {% if features.messages %}<a class="workspace-link" href="{% url 'organizations:client_desk' %}?project={{ subscription.pk }}">Message your team →</a>{% endif %}
+        {% endslot %}
+      {% endcomponent %}
+    </aside>
+  </div>
+{% endblock %}

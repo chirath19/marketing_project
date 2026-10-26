@@ -1,0 +1,1 @@
+{% include "messaging/_thread.html" with entries=chat_messages fallback_name="Client" chat_id="client-conversation" feed_id="conversation-feed" title_id="chat-title" target="#client-conversation" staff=staff_desk can_write=can_message poll_url=request.get_full_path %}

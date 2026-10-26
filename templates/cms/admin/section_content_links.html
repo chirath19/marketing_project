@@ -1,0 +1,7 @@
+{% if section.type_config.collection %}
+  <a class="ui-btn ui-btn-outline" href="{% url 'staff:cms_collection' section.type_config.collection %}">Manage {{ section.get_section_type_display|lower }} entries</a>
+  <p class="t-meta">These entries are shared with other pages that use this section.</p>
+{% elif section.section_type == 'contact_details' %}
+  {% if perms.permissions.cms_edit %}<a class="ui-btn ui-btn-outline" href="{% url 'staff:cms_contacts' %}">Edit primary contact details</a>{% endif %}
+  <a class="ui-btn ui-btn-outline" href="{% url 'staff:cms_collection' 'contacts' %}">Manage additional contacts</a>
+{% endif %}

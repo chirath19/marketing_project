@@ -1,0 +1,40 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}Roles · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+{% if perms.permissions.roles_manage %}<a href="{% url 'staff:role_create' %}" class="ui-btn ui-btn-primary mb-6">Create role</a>{% endif %}
+  <div class="grid gap-5 sm:grid-cols-2">
+    {% component "card" title="What a role controls" %}
+      <p class="t-meta">
+        A role is a set of permissions — which parts of the platform
+        somebody may open, and what they may change once there. Staff can
+        hold more than one, and permissions add up.
+      </p>
+    {% endcomponent %}
+    {% component "card" title="What a role does not control" %}
+      <p class="t-meta">
+        Which clients somebody may see. That is set per person on their own
+        page, as client assignments. Acting on a client record needs both:
+        the permission for the action, and access to that client.
+      </p>
+    {% endcomponent %}
+  </div>
+
+  <div class="mt-6 surface p-2 sm:p-4">
+    {% component "table" caption="Roles" columns=columns %}
+      {% for role in roles %}
+        <tr class="border-b border-mist last:border-0">
+          <td class="ui-td" data-label="Role">
+            <a href="{% url 'staff:role_detail' role.pk %}" class="font-medium text-navy underline-offset-2 hover:underline focus-ring">{{ role.name }}</a>
+            {% if role.is_system %}<span class="ml-1 t-micro">system</span>{% endif %}
+          </td>
+          <td class="ui-td text-right t-numeric" data-label="Permissions">{{ role.permission_count }}</td>
+          <td class="ui-td t-micro" data-label="Description">{{ role.description }}</td>
+        </tr>
+      {% empty %}
+        {% ui_table_empty colspan=3 icon="◆" title="No roles defined yet" body="Without a role, a staff account can sign in and see nothing. Create roles that match the jobs people actually do — an SEO specialist, an account manager — rather than one role per person." %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+{% endblock %}

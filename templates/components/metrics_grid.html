@@ -1,0 +1,7 @@
+{% comment %}
+  Container for metric cards: {% component "metrics_grid" columns=4 %} … {% endcomponent %}
+  One column on a phone, two on a tablet, `columns` on desktop.
+{% endcomment %}
+<div class="grid gap-5 sm:grid-cols-2 {% if columns == 3 %}lg:grid-cols-3{% elif columns == 2 %}lg:grid-cols-2{% else %}lg:grid-cols-4{% endif %}">
+  {{ slot }}
+</div>

@@ -1,0 +1,64 @@
+{% comment %}
+  The line mark in the corner of a card, picked by position.
+
+  There are eight, because the grids these sit in run to six and the
+  catalogue runs to twenty-eight: with three marks every grid repeated
+  itself twice before it finished, which is the single clearest tell
+  that a page was filled rather than designed. Eight covers a grid
+  outright and makes the catalogue's repeat long enough not to read as
+  one.
+
+  All eight are drawn on the same 80×64 canvas with the same stroke
+  weights, so they sit as a set rather than as eight borrowed icons, and
+  each says something about the discipline it tends to land on — a lens,
+  a trend, a target, a message, a measure, a schedule, a pair of people,
+  a signal. Decorative: every card states its own subject in words, so
+  there is nothing here for a screen reader to announce.
+{% endcomment %}
+<svg class="site-motif" viewBox="0 0 80 64" fill="none" aria-hidden="true" focusable="false">
+{% if motif == 2 or motif == 10 or motif == 18 or motif == 26 %}
+  {% comment %} Trend: a line that climbs out of its own frame. {% endcomment %}
+  <path d="M12 49 32 29l12 12 25-28M47 13h22v22" stroke="currentColor" stroke-width="2"/>
+  <path d="M12 58h57M12 8v50" stroke="currentColor" opacity=".25"/>
+{% elif motif == 3 or motif == 11 or motif == 19 or motif == 27 %}
+  {% comment %} Approval: two sheets, the top one signed off. {% endcomment %}
+  <rect x="12" y="8" width="39" height="39" rx="10" stroke="currentColor"/>
+  <rect x="28" y="21" width="39" height="39" rx="10" stroke="currentColor"/>
+  <path d="m33 32 7 7 17-17" stroke="currentColor" stroke-width="2"/>
+{% elif motif == 4 or motif == 12 or motif == 20 or motif == 28 %}
+  {% comment %} Target: concentric rings with the shot off-centre. {% endcomment %}
+  <circle cx="38" cy="32" r="24" stroke="currentColor" opacity=".45"/>
+  <circle cx="38" cy="32" r="15" stroke="currentColor"/>
+  <circle cx="38" cy="32" r="5.5" fill="currentColor" opacity=".9"/>
+  <path d="M38 32 69 8m0 0h-9m9 0v9" stroke="currentColor" stroke-width="2"/>
+{% elif motif == 5 or motif == 13 or motif == 21 %}
+  {% comment %} Message: an envelope with the fold drawn open. {% endcomment %}
+  <rect x="11" y="13" width="58" height="38" rx="7" stroke="currentColor"/>
+  <path d="m11 20 25 17a7 7 0 0 0 8 0l25-17" stroke="currentColor" stroke-width="2"/>
+  <path d="M11 51 32 34M69 51 48 34" stroke="currentColor" opacity=".4"/>
+{% elif motif == 6 or motif == 14 or motif == 22 %}
+  {% comment %} Measure: four bars against a baseline, one of them ahead. {% endcomment %}
+  <path d="M12 8v50h57" stroke="currentColor" opacity=".3"/>
+  <rect x="20" y="38" width="9" height="16" rx="3" stroke="currentColor"/>
+  <rect x="34" y="28" width="9" height="26" rx="3" stroke="currentColor"/>
+  <rect x="48" y="33" width="9" height="21" rx="3" stroke="currentColor"/>
+  <rect x="62" y="16" width="9" height="38" rx="3" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="2"/>
+{% elif motif == 7 or motif == 15 or motif == 23 %}
+  {% comment %} Schedule: a month with one date claimed. {% endcomment %}
+  <rect x="12" y="12" width="56" height="44" rx="8" stroke="currentColor"/>
+  <path d="M12 25h56M26 6v10M54 6v10" stroke="currentColor" stroke-width="2"/>
+  <rect x="24" y="33" width="11" height="9" rx="2.5" fill="currentColor" opacity=".75"/>
+  <path d="M43 37h14M24 49h33" stroke="currentColor" opacity=".4"/>
+{% elif motif == 8 or motif == 16 or motif == 24 %}
+  {% comment %} Audience: two figures, one brought forward. {% endcomment %}
+  <circle cx="30" cy="22" r="10" stroke="currentColor" stroke-width="2"/>
+  <path d="M13 56a17 17 0 0 1 34 0" stroke="currentColor" stroke-width="2"/>
+  <circle cx="56" cy="25" r="7.5" stroke="currentColor" opacity=".55"/>
+  <path d="M43 56a13 13 0 0 1 26 0" stroke="currentColor" opacity=".55"/>
+{% else %}
+  {% comment %} Signal: the heliograph itself — a lens catching light. {% endcomment %}
+  <circle cx="40" cy="32" r="25" stroke="currentColor"/>
+  <ellipse cx="40" cy="32" rx="12" ry="25" stroke="currentColor"/>
+  <path d="M15 32h50M20 18h40M20 46h40" stroke="currentColor" opacity=".65"/>
+{% endif %}
+</svg>

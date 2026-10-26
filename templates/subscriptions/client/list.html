@@ -1,0 +1,82 @@
+{% extends "portal/base.html" %}
+{% load ui %}
+
+{% block title %}Projects & services · {{ brand.name }}{% endblock %}
+
+{% block portal_content %}
+  {% component "page_header" title="Projects & services" subtitle="Open a project to see its progress, files, decisions and payment records." eyebrow="Your workspace" %}{% endcomponent %}
+
+
+  {% if active %}
+    <h2 class="mt-8 t-section">Active</h2>
+    <div class="mt-4 space-y-3">
+      {% for subscription in active %}
+        <a href="{% url 'organizations:service_detail' subscription.pk %}"
+           class="surface block p-5 transition hover:shadow-raised focus-ring">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="t-card-title">{{ subscription.name }}</p>
+              <p class="mt-1 t-micro">
+                {{ subscription.service.category.name }}
+                {% if subscription.starts_on %}· since {{ subscription.starts_on|date:"F Y" }}{% endif %}
+              </p>
+              {% if subscription.client_notes %}
+                <p class="mt-2 t-meta">{{ subscription.client_notes|truncatewords:28 }}</p>
+              {% endif %}
+            </div>
+            <div class="text-right">
+              {% ui_status_badge subscription.status label=subscription.get_status_display %}
+              <p class="mt-2 t-body font-semibold">{{ subscription.price_display }}</p>
+              {% if subscription.billing_display %}<p class="t-micro">{{ subscription.billing_display }}</p>{% endif %}
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="mt-8">
+      {% ui_empty_state icon="◱" title="No active services yet" body="Your agreed projects will appear here when your team starts the work. You can follow a quotation in Requests & quotes." action_label="Browse services" action_href="/services/" %}
+    </div>
+  {% endif %}
+
+  {% if features.reports %}<section class="journey-panel mt-6"><h2>Updates from your team</h2><p class="t-meta">Find all published progress reports and files, including updates for your whole account.</p><a class="workspace-link inline-block mt-3" href="{% url 'organizations:client_reports' %}">Read progress updates →</a></section>{% endif %}
+  {% if project_reviews %}<section class="journey-panel journey-attention"><h2>Work needing your review</h2><div class="journey-list">{% for review in project_reviews %}<a href="{% url 'organizations:approval_detail' review.pk %}"><div><strong>{{ review.title }}</strong><span>{{ review.campaign.name }} · {{ review.description|truncatewords:18 }}</span></div><span>Review →</span></a>{% endfor %}</div></section>{% endif %}
+  {% if can_review_work %}<a class="workspace-link" href="{% url 'organizations:portal_module' 'approvals' %}">Past decisions about your work →</a>{% endif %}
+
+  {% if other_open %}
+    <h2 class="mt-10 t-section">Not running right now</h2>
+    <div class="mt-4 space-y-3">
+      {% for subscription in other_open %}
+        <a href="{% url 'organizations:service_detail' subscription.pk %}"
+           class="surface flex flex-wrap items-center justify-between gap-3 p-4 transition hover:shadow-raised focus-ring">
+          <div class="min-w-0">
+            <p class="t-body font-medium">{{ subscription.name }}</p>
+            <p class="t-micro">{{ subscription.service.category.name }}</p>
+          </div>
+          {% ui_status_badge subscription.status label=subscription.get_status_display %}
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if finished %}
+    <h2 class="mt-10 t-section">Finished</h2>
+    <p class="mt-1 t-meta">Kept for your records.</p>
+    <div class="mt-4 space-y-3">
+      {% for subscription in finished %}
+        <a href="{% url 'organizations:service_detail' subscription.pk %}"
+           class="surface flex flex-wrap items-center justify-between gap-3 p-4 opacity-80 transition hover:opacity-100 hover:shadow-raised focus-ring">
+          <div class="min-w-0">
+            <p class="t-body font-medium">{{ subscription.name }}</p>
+            <p class="t-micro">
+              {% if subscription.starts_on %}{{ subscription.starts_on|date:"M Y" }}{% endif %}
+              {% if subscription.ends_on %}&ndash; {{ subscription.ends_on|date:"M Y" }}{% endif %}
+            </p>
+          </div>
+          {% ui_status_badge subscription.status label=subscription.get_status_display %}
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% if shared_work_modules %}<details class="journey-panel mt-6"><summary>Work shared across projects</summary><p class="t-meta mt-3">Explore work and results that may cover more than one project.</p><div class="journey-actions">{% for area in shared_work_modules %}<a class="workspace-link" href="{% url 'organizations:portal_module' area.key %}">{% if area.key == 'campaigns' %}All campaign work{% else %}{{ area.label }}{% endif %} →</a>{% endfor %}</div></details>{% endif %}
+{% endblock %}

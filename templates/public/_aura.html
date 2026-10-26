@@ -1,0 +1,24 @@
+{% comment %}
+  The ambient field behind a dark section.
+
+  Four pieces, each doing one job: coloured light that drifts, a
+  measured grid that fades out, a slow conic sweep that keeps the
+  surface from looking like a static gradient, and a film of grain that
+  stops the blurred colour banding on an 8-bit display.
+
+  All of it is CSS. There is no canvas, no library and no scroll
+  listener, so it costs one composited layer and nothing per frame on
+  the main thread — and the reduced-motion rule in the base layer stops
+  every animation at once for anyone who has asked for that.
+
+  Purely decorative, and hidden from assistive technology: nothing here
+  carries meaning that the words beside it do not already carry.
+{% endcomment %}
+<div class="site-aura" aria-hidden="true">
+  <span class="site-aura-orb site-aura-orb-gold"></span>
+  <span class="site-aura-orb site-aura-orb-teal"></span>
+  <span class="site-aura-orb site-aura-orb-deep"></span>
+  <span class="site-aura-grid"></span>
+  <span class="site-aura-sweep"></span>
+  <span class="site-aura-grain"></span>
+</div>

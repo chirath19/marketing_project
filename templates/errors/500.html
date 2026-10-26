@@ -1,0 +1,49 @@
+{% comment %} Deliberately self-contained.
+
+   Django renders this with an empty context: no context processors run,
+   and the failure that caused it may well be the database or the static
+   manifest. A page that depends on either would fail to render too, and
+   the visitor would get a blank screen instead of an explanation. {% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Something went wrong</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      padding: 2rem 1rem; background: radial-gradient(ellipse at top right, #eddfc7, transparent 65%), #f3f1ea; color: #111C38;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .card {
+      max-width: 34rem; width: 100%; text-align: center; background: #f8f6f0; border: 1px solid #d9d8d0;
+      border-radius: 1.5rem; padding: 3rem 1.5rem;
+      box-shadow: 0 1px 2px rgba(17,28,56,.06), 0 8px 24px rgba(17,28,56,.06);
+    }
+    .code { font-size: .875rem; font-weight: 600; letter-spacing: .05em;
+            text-transform: uppercase; color: #8f6212; margin: 0; }
+    h1 { font-size: 1.75rem; line-height: 1.2; margin: .75rem 0 0;
+         letter-spacing: -0.02em; }
+    p.body { color: #5f6b84; margin: 1rem auto 0; max-width: 26rem; font-size: 1rem; }
+    a { display: inline-block; margin-top: 2rem; background: #E4A33C; color: #111C38;
+        text-decoration: none; font-weight: 600; font-size: .875rem;
+        padding: .625rem 1rem; border-radius: .5rem; }
+    a:focus-visible { outline: 2px solid #111C38; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <p class="code">500</p>
+    <h1>Something went wrong on our side</h1>
+    <p class="body">
+      The fault is ours, not yours, and it has been logged for the team to
+      look at. Please try again in a moment.
+    </p>
+    <a href="/">Back to home</a>
+  </main>
+</body>
+</html>

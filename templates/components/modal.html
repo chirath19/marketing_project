@@ -1,0 +1,52 @@
+{% comment %}
+  {% component "modal" id="delete" title="Remove campaign" %}
+    body
+    {% slot "footer" %} buttons {% endslot %}
+  {% endcomponent %}
+
+  Opened by any control carrying data-ui-open="delete".
+
+  role="dialog" + aria-modal tell assistive technology the rest of the
+  page is inert; focus is trapped, Escape closes, and focus returns to
+  the control that opened it. All of that lives in static/js/ui.js so no
+  individual modal has to remember it.
+{% endcomment %}
+<div x-data="uiOverlay('{{ id }}')"
+     @ui-open.window="openFromEvent($event)"
+     @ui-close.window="closeFromEvent($event)"
+     @keydown.escape.window="close()"
+     @keydown="trap($event)"
+     x-show="open" x-cloak
+     class="fixed inset-0 z-[var(--z-modal)] flex items-end justify-center p-0 sm:items-center sm:p-4">
+
+  <div class="ui-backdrop" @click="close()" aria-hidden="true"
+       x-transition.opacity.duration.200ms></div>
+
+  <div x-ref="panel" tabindex="-1"
+       role="dialog" aria-modal="true" aria-labelledby="{{ id }}-title"
+       {% if slots.description %}aria-describedby="{{ id }}-description"{% endif %}
+       class="ui-panel relative w-full max-h-[90vh] overflow-y-auto rounded-b-none sm:rounded-b-[var(--radius-card)] {% if size == 'sm' %}max-w-sm{% elif size == 'lg' %}max-w-2xl{% elif size == 'xl' %}max-w-4xl{% else %}max-w-lg{% endif %}"
+       x-transition:enter="transition ease-[var(--ease-soft)] duration-200"
+       x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95 sm:translate-y-0"
+       x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+
+    <header class="flex items-start justify-between gap-4 border-b border-mist px-5 py-4">
+      <div>
+        <h2 id="{{ id }}-title" class="t-card-title">{{ title }}</h2>
+        {% if slots.description %}
+          <p id="{{ id }}-description" class="mt-1 t-meta">{{ slots.description }}</p>
+        {% endif %}
+      </div>
+      <button type="button" @click="close()" aria-label="Close dialog"
+              class="shrink-0 rounded px-1.5 text-xl leading-none text-steel transition hover:text-navy focus-ring">&times;</button>
+    </header>
+
+    <div class="px-5 py-5">{{ slot }}</div>
+
+    {% if slots.footer %}
+      <footer class="flex flex-wrap items-center justify-end gap-2 border-t border-mist px-5 py-4">
+        {{ slots.footer }}
+      </footer>
+    {% endif %}
+  </div>
+</div>

@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block admin_content %}
+  {% component "page_header" title="Paid Ads" subtitle="Recorded advertising performance, per client." %}{% endcomponent %}
+  <div class="mt-6 surface p-6">
+    <ul class="divide-y divide-mist">
+      {% for organization in page_obj %}
+        <li class="py-4"><a class="font-medium text-navy underline focus-ring" href="{% url 'staff:paid_ads_workspace' organization.slug %}">{{ organization.label }}</a></li>
+      {% empty %}
+        <li>{% ui_empty_state title="No client workspaces available" body="An administrator can assign you to a client before you record or view their performance." %}</li>
+      {% endfor %}
+    </ul>
+    {% ui_pagination page_obj %}
+  </div>
+{% endblock %}

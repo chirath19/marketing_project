@@ -1,0 +1,130 @@
+{% extends "public/base_site.html" %}
+{% load website_copy %}
+{% load ui media_tags %}
+
+{% block title %}{{ meta_title }} · {{ site.site_name }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block og_title %}{{ meta_title }}{% endblock %}
+{% block og_description %}{{ meta_description }}{% endblock %}
+{% block og_image %}
+  {% if post.featured_image %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ post.featured_image.url }}">
+  {% endif %}
+{% endblock %}
+
+{% block head_extra %}
+  {{ block.super }}
+  {% comment %}
+    Article structured data, so a search engine can show the date and the
+    author rather than guessing at them.
+  {% endcomment %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "{{ post.title|escapejs }}",
+    "description": "{{ meta_description|escapejs }}",
+    "datePublished": "{{ post.published_at|date:'c' }}",
+    "dateModified": "{{ post.updated_at|date:'c' }}",
+    "mainEntityOfPage": "{{ request.build_absolute_uri }}"
+    {% if post.byline %},"author": {"@type": "Person", "name": "{{ post.byline|escapejs }}"}{% endif %}
+    {% if post.featured_image %},"image": "{{ request.scheme }}://{{ request.get_host }}{{ post.featured_image.url }}"{% endif %},
+    "publisher": {"@type": "Organization", "name": "{{ site.site_name|escapejs }}"}
+  }
+  </script>
+{% endblock %}
+
+{% block site_art %}{% include "public/_backgrounds.html" with art="blog" %}{% endblock %}
+
+{% block content %}
+{% comment %}
+  How far through the article the reader is. Decorative and additive:
+  with no script it simply never moves, and it is hidden from assistive
+  technology, which has better ways of reporting position.
+{% endcomment %}
+<div class="site-progress" data-site-progress aria-hidden="true"></div>
+
+<article class="site-article">
+  <header class="site-article-header">
+    <div class="site-shell-narrow py-14 sm:py-20">
+      <nav aria-label="Breadcrumb">
+        <ol class="flex flex-wrap items-center gap-x-2 text-sm text-steel-700">
+          <li><a href="/blog/" class="transition hover:text-navy focus-ring">{% website_copy "public.blog.detail.001" %}</a></li>
+          {% if post.category %}
+            <li aria-hidden="true">/</li>
+            <li><a href="{{ post.category.get_absolute_url }}" class="transition hover:text-navy focus-ring">{{ post.category.name }}</a></li>
+          {% endif %}
+        </ol>
+      </nav>
+
+      {% if post.category %}<p class="site-label mt-8">{{ post.category.name }}</p>{% endif %}
+      <h1 class="site-display mt-5 text-4xl leading-[1.05] text-navy sm:text-5xl">{{ post.title }}</h1>
+
+      <p class="site-micro mt-7 flex flex-wrap items-center gap-x-2.5 text-steel-700">
+        {% if post.byline %}<span class="font-medium text-navy">{{ post.byline }}</span><span aria-hidden="true">·</span>{% endif %}
+        <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"j F Y" }}</time>
+        <span aria-hidden="true">·</span>
+        <span>{{ post.reading_minutes }} min read</span>
+      </p>
+    </div>
+  </header>
+
+  {% if post.featured_image %}
+    <div class="site-clear">
+      <div class="site-shell-narrow">
+        <div class="site-frame" data-reveal="mask">
+          {% media_img post.featured_image alt=post.featured_image_alt preset="wide" css_class="w-full" loading="eager" fetchpriority="high" sizes="(min-width: 768px) 768px, 100vw" %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="site-clear pb-20 pt-14 sm:pb-24">
+    <div class="site-shell-narrow">
+      {% if post.excerpt %}
+        <p class="site-display border-l-2 border-gold pl-6 text-xl leading-snug text-navy sm:text-2xl">{{ post.excerpt }}</p>
+      {% endif %}
+
+      {% comment %}
+        Rendered by apps/cms/richtext.py, which escapes the author's text
+        before producing any markup — so nothing typed into the field can
+        become a tag.
+      {% endcomment %}
+      <div class="site-prose {% if post.excerpt %}mt-10{% endif %}">{{ post.body_html }}</div>
+
+      {% if post.tags.all %}
+        <ul class="mt-12 flex flex-wrap gap-2 border-t border-navy/10 pt-8">
+          {% for tag in post.tags.all %}
+            <li>
+              <a href="{{ tag.get_absolute_url }}" class="site-chip px-3 py-1 text-xs focus-ring">{{ tag.name }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+</article>
+
+{% if related %}
+  <section class="site-section site-band">
+    <div class="site-shell">
+      <header class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="site-label">{% website_copy "public.blog.detail.002" %}</p>
+          <h2 class="site-display mt-4 text-3xl text-navy">{% website_copy "public.blog.detail.003" %}</h2>
+        </div>
+        <a href="/blog/" class="site-link focus-ring">{% website_copy "public.blog.detail.004" %}<span aria-hidden="true">{% website_copy "public.blog.detail.005" %}</span></a>
+      </header>
+      <hr class="site-rule mt-8">
+
+      <div class="mt-12 grid gap-6 {% if related|length != 1 %}sm:grid-cols-2 lg:grid-cols-3{% endif %}">
+        {% for post in related %}
+          <div class="{% if related|length == 1 %}site-blog-featured{% endif %}" data-reveal>
+            {% include "public/blog/_card.html" with post=post %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

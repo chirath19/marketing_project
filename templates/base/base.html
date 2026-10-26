@@ -1,0 +1,75 @@
+{% load static ui assets %}<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ brand.name }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ brand.tagline }}{% endblock %}">
+  <meta name="theme-color" content="{{ brand.theme_color }}">
+
+  {% block canonical %}{% endblock %}
+
+  {% comment %}
+    `?v=` is the stylesheet's own fingerprint. Development serves static
+    files unhashed, so a browser holding a cached `dist/app.css` keeps
+    using it after a rebuild — and markup referencing classes that stale
+    copy has never heard of renders as an unstyled page, which reads as a
+    broken deploy rather than a stale file. The tag stamps the built
+    file's modification time, so the URL changes exactly when the file
+    does. Under the hashing storage used in production the name is
+    already fingerprinted and this adds nothing.
+  {% endcomment %}
+  <link rel="stylesheet" href="{% static_version 'dist/app.css' %}">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+
+  {% comment %}
+    Self-hosted, so the page makes no third-party request before consent.
+
+    ui.js comes before alpine.min.js: it registers the `alpine:init`
+    listener that defines the design system's Alpine components, and that
+    has to happen before Alpine boots. Both are deferred, which preserves
+    document order.
+  {% endcomment %}
+  <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/ui.js' %}" defer></script>
+  <script src="{% static 'vendor/alpine.min.js' %}" defer></script>
+
+  {% comment %}
+    hgConsent has to exist before anything below checks it, and before
+    Alpine's x-data on the consent banner runs — hence no `defer` here,
+    unlike every other script on this page.
+  {% endcomment %}
+  {% if operating.analytics_enabled and not suppress_tracking %}<script src="{% static 'js/tracking.js' %}"></script>{% endif %}
+
+  {% comment %} Tags are injected only once the visitor has consented. Nothing
+     third-party is emitted before that — see templates/tracking/_tags_head.html. {% endcomment %}
+  {% block tracking_head %}{% if operating.analytics_enabled and not suppress_tracking %}{% include "tracking/_tags_head.html" %}{% endif %}{% endblock %}
+
+  {% block head_extra %}{% endblock %}
+</head>
+<body class="h-full {% block body_class %}bg-mist text-navy{% endblock %}"
+      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  {% block tracking_body %}{% if operating.analytics_enabled and not suppress_tracking %}{% include "tracking/_consent_banner.html" %}{% endif %}{% endblock %}
+
+  {% block chrome_top %}{% endblock %}
+
+  {% block main_wrapper %}<main id="main" tabindex="-1" class="{% block main_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>{% endblock %}
+
+  {% block chrome_bottom %}{% endblock %}
+
+  {% comment %}
+    One toast region for the whole page. Django messages are rendered into
+    it on load; HTMX responses can add more with an `HX-Trigger: ui-toast`
+    header. Several live regions would compete and be announced out of
+    order.
+  {% endcomment %}
+  {% ui_toasts %}
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

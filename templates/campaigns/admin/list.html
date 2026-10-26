@@ -1,0 +1,119 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% if overdue %}
+    {% comment %}
+      An end date that passes unnoticed is either work stopping without
+      anyone saying so, or work continuing past what was agreed.
+    {% endcomment %}
+    <div class="mb-5">
+      {% component "card" title="Past their end date" subtitle="Still open, but the agreed period has gone by." %}
+        <ul class="divide-y divide-mist">
+          {% for campaign in overdue %}
+            <li class="flex flex-wrap items-center justify-between gap-3 py-2.5">
+              <a href="{% url 'staff:campaign_detail' campaign.pk %}" class="t-body font-medium underline-offset-2 hover:underline focus-ring">
+                {{ campaign.organization.label }} · {{ campaign.name }}
+              </a>
+              <span class="t-micro">ended {{ campaign.ends_on|date:"j M Y" }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endcomponent %}
+    </div>
+  {% endif %}
+
+  {% comment %} Service areas, then statuses: the two cuts people actually take. {% endcomment %}
+  <nav class="-mx-1 overflow-x-auto" aria-label="Service areas">
+    <ul class="flex min-w-max items-center gap-1 px-1">
+      <li>
+        <a href="?{% if status %}status={{ status }}{% endif %}" {% if not service_type %}aria-current="page"{% endif %}
+           class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                  {% if not service_type %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Every area</a>
+      </li>
+      {% for area in types %}
+        <li>
+          <a href="?type={{ area.value }}{% if status %}&status={{ status }}{% endif %}"
+             {% if area.value == service_type %}aria-current="page"{% endif %}
+             class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring
+                    {% if area.value == service_type %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">
+            {{ area.label }}
+            <span class="rounded-[var(--radius-pill)] px-1.5 py-0.5 text-xs t-numeric
+                         {% if area.value == service_type %}bg-white/20 text-white{% else %}bg-mist text-steel{% endif %}">{{ area.count }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <nav class="-mx-1 mt-2 overflow-x-auto" aria-label="Campaign statuses">
+    <ul class="flex min-w-max items-center gap-1 px-1">
+      <li>
+        <a href="?{% if service_type %}type={{ service_type }}{% endif %}" {% if not status %}aria-current="page"{% endif %}
+           class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-pill)] px-3 py-1 text-xs font-medium transition focus-ring
+                  {% if not status %}bg-mist text-navy{% else %}text-steel hover:bg-mist{% endif %}">All</a>
+      </li>
+      {% for stage in stages %}
+        <li>
+          <a href="?status={{ stage.value }}{% if service_type %}&type={{ service_type }}{% endif %}"
+             {% if stage.value == status %}aria-current="page"{% endif %}
+             class="inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius-pill)] px-3 py-1 text-xs font-medium transition focus-ring
+                    {% if stage.value == status %}bg-mist text-navy{% else %}text-steel hover:bg-mist{% endif %}">
+            {{ stage.label }} <span class="t-numeric">{{ stage.count }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <form method="get" class="max-w-md flex-1">
+      {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+      {% if service_type %}<input type="hidden" name="type" value="{{ service_type }}">{% endif %}
+      {% ui_search_box name="q" value=search placeholder="Search campaign, objective or client" %}
+    </form>
+    <div class="flex items-center gap-1">
+      <a href="?{% if status %}status={{ status }}&{% endif %}{% if service_type %}type={{ service_type }}&{% endif %}owner=me"
+         class="rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring {% if owner == 'me' %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Mine</a>
+      <a href="?{% if status %}status={{ status }}&{% endif %}{% if service_type %}type={{ service_type }}&{% endif %}owner=none"
+         class="rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-medium transition focus-ring {% if owner == 'none' %}bg-navy text-white{% else %}text-steel hover:bg-mist hover:text-navy{% endif %}">Unowned</a>
+    </div>
+  </div>
+
+  <div class="mt-5 surface p-2 sm:p-4">
+    {% component "table" caption="Campaigns" columns=columns %}
+      {% for campaign in campaigns %}
+        <tr class="border-b border-mist last:border-0">
+          <td class="ui-td" data-label="Campaign">
+            <a href="{% url 'staff:campaign_detail' campaign.pk %}" class="t-body font-medium text-navy underline-offset-2 hover:underline focus-ring">{{ campaign.name }}</a>
+            {% if campaign.objective %}<span class="block t-micro">{{ campaign.objective|truncatewords:10 }}</span>{% endif %}
+          </td>
+          <td class="ui-td" data-label="Client">
+            <a href="{% url 'staff:client_detail' campaign.organization.slug %}" class="t-body underline-offset-2 hover:underline focus-ring">{{ campaign.organization.label }}</a>
+            {% if campaign.owner %}<span class="block t-micro">{{ campaign.owner.get_full_name|default:campaign.owner.email }}</span>{% endif %}
+          </td>
+          <td class="ui-td t-micro" data-label="Area">{{ campaign.type_label }}</td>
+          <td class="ui-td" data-label="Status">
+            {% ui_status_badge campaign.status label=campaign.get_status_display %}
+            {% if campaign.is_overdue %}<span class="mt-1 block t-micro font-medium text-danger">Past its end date</span>{% endif %}
+          </td>
+          <td class="ui-td t-micro" data-label="Period">
+            {% if campaign.starts_on %}{{ campaign.starts_on|date:"j M Y" }}{% else %}&mdash;{% endif %}
+            {% if campaign.ends_on %}<span class="block">to {{ campaign.ends_on|date:"j M Y" }}</span>{% else %}<span class="block">ongoing</span>{% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        {% if is_filtered %}
+          {% ui_table_empty colspan=5 icon="⌕" title="Nothing matches these filters" body="No campaign fits what you have selected." action_label="Show all campaigns" action_href="?" %}
+        {% else %}
+          {% ui_table_empty colspan=5 icon="◴" title="No campaigns yet" body="Campaigns are created against a client's service, from that client's page. Every service area uses this same list — there is no separate SEO or paid-ads campaign record." action_label="Go to clients" action_href="/staff/clients/" %}
+        {% endif %}
+      {% endfor %}
+    {% endcomponent %}
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    {% ui_pagination page_obj querystring=querystring label="Campaign pages" %}
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ campaign.name }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+<div class="grid gap-5 lg:grid-cols-3">
+  <div class="space-y-5 lg:col-span-2">
+
+    {% component "card" title="Campaign detail" %}
+      <form method="post" action="{% url 'staff:campaign_update' campaign.pk %}" novalidate>
+        {% csrf_token %}
+        {% ui_form_errors form %}
+
+        {% ui_field form.name %}
+        <div class="grid gap-x-5 sm:grid-cols-2">
+          {% ui_field form.service_type %}
+          {% ui_field form.subscription %}
+        </div>
+        {% ui_field form.objective %}
+        {% ui_field form.description %}
+        <div class="grid gap-x-5 sm:grid-cols-2">
+          {% ui_field form.budget %}
+          {% ui_field form.currency %}
+        </div>
+        <div class="grid gap-x-5 sm:grid-cols-2">
+          {% ui_field form.starts_on %}
+          {% ui_field form.ends_on %}
+        </div>
+        {% ui_field form.client_summary %}
+        {% ui_field form.internal_notes %}
+
+        {% ui_button label="Save changes" type="submit" variant="primary" size="sm" %}
+      </form>
+    {% endcomponent %}
+
+    {% if detail_form %}
+      {% comment %}
+        The service module's own fields, attached to this campaign rather
+        than living on a campaign model of its own — resolved generically
+        through apps.campaigns.registry, never named here. A paid
+        campaign's platform and objective are what makes its own
+        performance page lead with the right KPIs.
+      {% endcomment %}
+      {% component "card" title=campaign.type_label|add:" detail" subtitle="Fields this service area adds." %}
+        <form method="post" action="{% url 'staff:campaign_detail_update' campaign.pk %}" novalidate>
+          {% csrf_token %}
+          {% ui_form_errors detail_form %}
+          {% for field in detail_form %}{% ui_field field %}{% endfor %}
+          {% ui_button label="Save" type="submit" variant="outline" size="sm" %}
+        </form>
+      {% endcomponent %}
+    {% elif detail %}
+      {% component "card" title=campaign.type_label|add:" detail" subtitle="Fields this service area adds." %}
+        <p class="t-meta">{{ detail }}</p>
+      {% endcomponent %}
+    {% endif %}
+
+    {% component "card" title="External platform mapping" subtitle="Which real advertising-platform campaign this one is — needed before analytics can sync." %}
+      {% if mappings %}
+        <ul class="divide-y divide-mist">
+          {% for mapping in mappings %}
+            <li class="py-3">
+              <p class="t-body font-medium">{{ mapping.connection.get_provider_display }} — {{ mapping.external_campaign_id }}</p>
+              <p class="t-micro">
+                {{ mapping.connection }} ·
+                {% if mapping.last_synced_at %}Last synced {{ mapping.last_synced_at|timesince }} ago{% else %}Never synced yet{% endif %}
+              </p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="t-meta">Not mapped to a platform yet. Analytics cannot sync until it is.</p>
+      {% endif %}
+
+      <form method="post" action="{% url 'staff:campaign_map_external' campaign.pk %}" class="mt-5" novalidate>
+        {% csrf_token %}
+        {% ui_form_errors mapping_form %}
+        {% ui_field mapping_form.connection %}
+        {% ui_field mapping_form.external_campaign_id %}
+        <div class="grid gap-x-5 sm:grid-cols-2">
+          {% ui_field mapping_form.external_ad_set_id %}
+          {% ui_field mapping_form.external_ad_id %}
+        </div>
+        {% if mapping_form.fields.connection.queryset.exists %}
+          {% ui_button label="Map this campaign" type="submit" variant="outline" size="sm" %}
+        {% else %}
+          <p class="t-meta">
+            No connection is configured for {{ campaign.organization.label }} yet.
+            <a href="{% url 'staff:module_integrations' %}" class="underline focus-ring">Add one in Integrations</a> first.
+          </p>
+        {% endif %}
+      </form>
+    {% endcomponent %}
+
+    {% component "card" title="History" subtitle="Everything that has happened to this campaign." %}
+      <form method="post" action="{% url 'staff:campaign_note' campaign.pk %}" class="mb-5" novalidate>
+        {% csrf_token %}
+        {% ui_field note_form.body %}
+        {% ui_field note_form.share_with_client %}
+        {% ui_button label="Add note" type="submit" variant="outline" size="sm" %}
+      </form>
+
+      <ol class="divide-y divide-mist border-t border-mist">
+        {% for event in events %}
+          <li class="flex gap-3 py-3">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full {% if event.is_internal %}bg-steel-400{% else %}bg-gold{% endif %}" aria-hidden="true"></span>
+            <div class="min-w-0 flex-1">
+              <p class="t-body">{{ event.body }}</p>
+              <p class="t-micro">
+                {{ event.get_kind_display }} ·
+                {% if event.actor %}{{ event.actor.get_full_name|default:event.actor.email }} · {% endif %}
+                {{ event.created_at|date:"j M Y, H:i" }}
+                {% if event.is_internal %}· <span class="font-medium">staff only</span>{% else %}· <span class="font-medium text-gold-600">client can see this</span>{% endif %}
+              </p>
+            </div>
+          </li>
+        {% endfor %}
+      </ol>
+    {% endcomponent %}
+  </div>
+
+  <aside class="space-y-5">
+    {% component "card" title="Status" %}
+      <div class="mb-4">{% ui_status_badge campaign.status label=campaign.get_status_display %}</div>
+
+      {% if campaign.is_overdue %}
+        <div class="mb-4">
+          {% ui_alert tone="warning" message="The agreed end date has passed. Extend it, or close the campaign." %}
+        </div>
+      {% endif %}
+
+      {% if status_form.fields.status.choices %}
+        <form method="post" action="{% url 'staff:campaign_status' campaign.pk %}" novalidate>
+          {% csrf_token %}
+          {% ui_field status_form.status %}
+          {% ui_field status_form.note %}
+          {% ui_button label="Update status" type="submit" variant="primary" size="sm" full=True %}
+        </form>
+      {% else %}
+        <p class="t-meta">
+          This campaign was cancelled. Restarting it should be a new campaign
+          rather than a dropdown, so there is nowhere left for it to go.
+        </p>
+      {% endif %}
+    {% endcomponent %}
+
+    {% component "card" title="People" subtitle="Who is accountable, and who is involved." %}
+      <form method="post" action="{% url 'staff:campaign_assign' campaign.pk %}" novalidate>
+        {% csrf_token %}
+        {% ui_field assign_form.owner %}
+        {% ui_field assign_form.assignees %}
+        {% ui_button label="Save people" type="submit" variant="outline" size="sm" full=True %}
+      </form>
+    {% endcomponent %}
+
+    {% component "card" title="Where it belongs" %}
+      <dl class="space-y-2 text-sm">
+        <div><dt class="t-micro">Client</dt>
+          <dd><a href="{% url 'staff:client_detail' campaign.organization.slug %}" class="t-body font-medium underline-offset-2 hover:underline focus-ring">{{ campaign.organization.label }}</a></dd></div>
+        <div><dt class="t-micro">Service area</dt><dd class="t-body">{{ campaign.type_label }}</dd></div>
+        {% if campaign.subscription %}
+          <div><dt class="t-micro">Delivered under</dt>
+            <dd><a href="{% url 'staff:subscription_detail' campaign.subscription.pk %}" class="text-gold-600 underline-offset-2 hover:underline focus-ring">{{ campaign.subscription.name }}</a></dd></div>
+        {% else %}
+          <div><dt class="t-micro">Delivered under</dt>
+            <dd class="t-meta">No service linked. Worth fixing — it is how the client sees it in the right area.</dd></div>
+        {% endif %}
+        {% if campaign.budget %}
+          <div><dt class="t-micro">Budget</dt><dd class="t-body font-semibold">{{ campaign.budget_display }}</dd></div>
+        {% endif %}
+        <div><dt class="t-micro">Created</dt><dd class="t-body">{{ campaign.created_at|date:"j M Y" }}</dd></div>
+        {% if campaign.started_at %}
+          <div><dt class="t-micro">Went live</dt><dd class="t-body">{{ campaign.started_at|date:"j M Y" }}</dd></div>
+        {% endif %}
+      </dl>
+    {% endcomponent %}
+  </aside>
+</div>
+{% endblock %}

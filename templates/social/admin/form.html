@@ -1,0 +1,11 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block admin_content %}
+  {% component "page_header" title=heading subtitle=organization.label %}{% endcomponent %}
+  <p class="mt-4 t-meta">Scheduled dates are planning only. Publication and daily results are recorded manually. Daily results replace the same item's existing date; enter daily increments, not lifetime totals. Content changes require a fresh client review.</p>
+  <form method="post" class="mt-6 max-w-3xl surface p-6">
+    {% csrf_token %}{% ui_form_errors form %}
+    <div class="grid gap-4 sm:grid-cols-2">{% for field in form %}{% if field.is_hidden %}{{ field }}{% else %}{% ui_field field %}{% endif %}{% endfor %}</div>
+    <div class="mt-6 flex gap-4">{% ui_button label="Save" type="submit" %}<a class="ui-menu-item" href="{% url 'staff:social_workspace' organization.slug %}">Back to workspace</a></div>
+  </form>
+{% endblock %}

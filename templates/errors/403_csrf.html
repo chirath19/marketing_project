@@ -1,0 +1,8 @@
+{% extends "errors/_error_base.html" %}
+{% block title %}Session expired · {{ brand.name }}{% endblock %}
+{% block code %}403{% endblock %}
+{% block heading %}Your session expired{% endblock %}
+{% block body %}For your security the form could not be submitted. Sign in again and resubmit — nothing was saved.{% endblock %}
+{% block extra_actions %}
+  <a href="{% url 'accounts:login' %}" class="site-btn site-btn-light">Sign in</a>
+{% endblock %}

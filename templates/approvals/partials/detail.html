@@ -1,0 +1,46 @@
+{% load ui %}
+{% component "page_header" title=approval.title subtitle=approval.organization.label %}{% endcomponent %}
+<article class="mt-6 surface p-6">
+  <p class="t-card-title">{{ approval.get_status_display }} · {{ approval.campaign.name }}</p>
+  <p class="mt-2 t-meta">Requested {{ approval.requested_at }} by {{ approval.requested_by.get_full_name|default:approval.requested_by.email }}</p>
+  <p class="mt-4 whitespace-pre-line">{{ approval.description }}</p>
+  {% if approval.resolved_at %}<p class="mt-4 t-meta">Resolved {{ approval.resolved_at }}{% if approval.resolved_by %} by {{ approval.resolved_by.get_full_name|default:approval.resolved_by.email }}{% endif %}</p>{% endif %}
+  {% if approval.client_response %}<h2 class="mt-5 t-card-title">Client response</h2><p class="mt-2 whitespace-pre-line">{{ approval.client_response }}</p>{% endif %}
+  {% if approval.social_review_id %}
+  <details class="mt-5" open>
+    <summary class="cursor-pointer focus-ring t-card-title">Submitted Social Media version</summary>
+    <p class="mt-3 t-meta">Content v{{ approval.social_review.content_revision }} / deliverable v{{ approval.social_review.deliverable_revision }} · {{ approval.snapshot.kind }} · {{ approval.snapshot.channel }}</p>
+    <p class="mt-2 t-meta">Scheduled {{ approval.snapshot.scheduled_at|default:"not set" }}</p>
+    <p class="mt-3 t-card-title">{{ approval.snapshot.content_title }}</p><p class="mt-2 whitespace-pre-line">{{ approval.snapshot.caption }}</p>
+    <p class="mt-3 whitespace-pre-line">{{ approval.snapshot.description }}</p>
+    {% if approval.snapshot.asset_url %}<a class="mt-3 inline-block underline focus-ring" href="{{ approval.snapshot.asset_url }}" rel="noopener noreferrer">Open submitted asset</a>{% endif %}
+  </details>
+  {% elif approval.email_review_id %}
+  <details class="mt-5" open><summary class="cursor-pointer focus-ring t-card-title">Submitted Email Marketing version</summary><p class="mt-3 t-meta">Work v{{ approval.email_review.work_revision }} / deliverable v{{ approval.email_review.deliverable_revision }}</p>{% include "email_marketing/partials/snapshot.html" with snapshot=approval.snapshot %}</details>
+  {% endif %}
+  <p class="mt-5 t-meta">A decision records approval only. It does not publish content, send email or activate an automation. Externally linked files should use a version-specific URL.</p>
+</article>
+{% if can_respond and approval.status == 'pending' %}
+<section class="mt-6 surface p-6"><h2 class="t-section">Your decision</h2>
+<form method="post" action="{% url 'organizations:approval_decide' approval.pk %}" class="mt-4">
+  {% csrf_token %}{% ui_form_errors decision_form %}
+  <div class="grid gap-4">{% for field in decision_form %}{% ui_field field %}{% endfor %}</div>
+  <div class="mt-4">{% ui_button label="Record decision" type="submit" %}</div>
+</form></section>
+{% elif not is_staff_workspace and approval.status == 'pending' %}<p class="mt-5 t-meta">Your membership permits viewing only.</p>{% endif %}
+<section class="mt-6 surface p-6">
+  <h2 class="t-section">Discussion</h2><p class="mt-2 t-meta">Comments are shared with the client and authorized staff. A comment does not change the decision.</p>
+  <ul class="mt-4 divide-y divide-mist">{% for comment in approval.comments.all %}<li class="py-4"><p class="t-meta">{{ comment.author.get_full_name|default:comment.author.email }} · {{ comment.created_at }}</p><p class="mt-2 whitespace-pre-line">{{ comment.body }}</p></li>{% empty %}<li class="t-meta">No comments yet.</li>{% endfor %}</ul>
+  {% if can_comment %}<form method="post" action="{% if is_staff_workspace %}{% url 'staff:approval_comment' approval.pk %}{% else %}{% url 'organizations:approval_comment' approval.pk %}{% endif %}" class="mt-5">
+    {% csrf_token %}{% ui_form_errors comment_form %}{% for field in comment_form %}{% ui_field field %}{% endfor %}
+    <div class="mt-4">{% ui_button label="Add comment" type="submit" %}</div>
+  </form>{% endif %}
+</section>
+<section class="mt-6 surface p-6"><h2 class="t-section">History</h2>
+  <ol class="mt-4 divide-y divide-mist">{% for entry in approval.history.all %}<li class="py-4"><p class="t-card-title">{{ entry.get_kind_display }}</p><p class="t-meta">{{ entry.created_at }} · {{ entry.actor.get_full_name|default:entry.actor.email|default:"Imported record" }}{% if entry.from_status %} · {{ entry.from_status }} → {{ entry.to_status }}{% else %} · {{ entry.to_status }}{% endif %}</p><p class="mt-2 whitespace-pre-line">{{ entry.detail }}</p></li>{% endfor %}</ol>
+</section>
+{% if can_cancel and approval.status == 'pending' %}
+<details class="mt-6 surface p-6"><summary class="cursor-pointer focus-ring t-card-title">Cancel this request</summary>
+<form method="post" action="{% url 'staff:approval_cancel' approval.pk %}" class="mt-4">{% csrf_token %}{% ui_form_errors cancel_form %}{% for field in cancel_form %}{% ui_field field %}{% endfor %}<div class="mt-4">{% ui_button label="Cancel request" type="submit" variant="danger" %}</div></form>
+</details>{% endif %}
+<a class="mt-6 inline-block underline focus-ring" href="{% if is_staff_workspace %}{% url 'staff:module_approvals' %}{% else %}{% url 'organizations:portal_module' 'approvals' %}{% endif %}">Back to approvals</a>

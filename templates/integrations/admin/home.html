@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}{% if not operating.integrations_enabled %}<div class="workspace-panel mb-6"><h2 class="t-section">External integrations are disabled</h2><p class="t-body mt-3">Connections and credentials are retained. Scheduled and manual syncs are paused.</p>{% if perms.permissions.settings_manage %}<a class="workspace-link mt-4 inline-block" href="{% url 'staff:module_settings' %}">Manage operating settings →</a>{% endif %}</div>{% endif %}
+  <p class="max-w-3xl t-meta">
+    Nothing on this page calls a provider except a sync you start, or one
+    run from the schedule. Client dashboards always read what was last
+    synced here — never the provider directly.
+  </p>
+
+  <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {% for row in providers %}
+      <a href="{% url 'staff:integration_provider' row.provider %}"
+         class="surface block p-5 transition hover:shadow-raised focus-ring">
+        <div class="flex items-start justify-between gap-3">
+          <p class="t-card-title">{{ row.label }}</p>
+          {% if not row.has_adapter %}
+            {% ui_badge label="Routing only" tone="neutral" %}
+          {% endif %}
+        </div>
+
+        {% if row.total_connections %}
+          <dl class="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+            {% for status, count in row.counts.items %}
+              <div>
+                <dt class="t-micro">{{ status|title }}</dt>
+                <dd class="t-body font-semibold t-numeric">{{ count }}</dd>
+              </div>
+            {% endfor %}
+          </dl>
+        {% else %}
+          <p class="mt-4 t-meta">Not configured.</p>
+        {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+
+  <div class="mt-8">
+    {% url 'staff:integration_history' as history_url %}
+    {% ui_button label="View sync history" href=history_url variant="outline" size="sm" %}
+  </div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base/base.html" %}
+{% load website_copy %}
+{% load static ui site assets %}
+
+{% comment %}
+  `site-stage` marks a page whose first section is a dark full-bleed
+  one. The header reads it and starts transparent with light type,
+  turning back into the paper bar as soon as the page scrolls — a
+  paper-coloured bar sitting on top of a dark hero is the detail that
+  gives away a theme applied in pieces.
+{% endcomment %}
+{% block body_class %}site site-pearl text-navy antialiased{% if is_home %} site-stage{% endif %}{% endblock %}
+
+{% block canonical %}<link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">{% endblock %}
+
+{% block head_extra %}
+  {% if page.noindex %}<meta name="robots" content="noindex, nofollow">{% endif %}
+
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+        href="{% static 'fonts/inter-latin-variable.woff2' %}">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+        href="{% static 'fonts/instrument-serif-latin-400.woff2' %}">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ site.site_name }}">
+  <meta property="og:title" content="{% block og_title %}{{ brand.name }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ site.default_meta_description }}{% endblock %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  {% block og_image %}{% endblock %}
+  <meta name="twitter:card" content="summary_large_image">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "{{ site.site_name|escapejs }}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/"
+    {% if site.contact_email %},"email": "{{ site.contact_email|escapejs }}"{% endif %}
+    {% if site.contact_phone %},"telephone": "{{ site.contact_phone|escapejs }}"{% endif %}
+    {% if social_links %},"sameAs": [{% for link in social_links %}"{{ link.url|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}]{% endif %}
+  }
+  </script>
+{% endblock %}
+
+{% block tracking_body %}{% if operating.analytics_enabled and not suppress_tracking %}{% include "public/_consent.html" %}{% endif %}{% endblock %}
+
+{% block chrome_top %}
+  
+  {% block site_art %}{% include "public/_backgrounds.html" %}{% endblock %}
+
+  {% quote_count as quoted %}
+  <div class="sr-only" role="status" aria-live="polite" data-quote-status data-state-url="{% url 'public:quote' %}"></div>
+
+  {% if banner %}
+    <div class="{% if banner.tone == 'navy' %}site-dark-soft{% elif banner.tone == 'mist' %}bg-mist text-navy{% else %}bg-gold text-navy{% endif %}">
+      <div class="site-shell flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-2.5 text-sm">
+        <span>{{ banner.message }}</span>
+        {% if banner.cta_label and banner.cta_url %}
+          <a href="{{ banner.cta_url }}" class="font-semibold underline underline-offset-4 focus-ring">{{ banner.cta_label }}</a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  <header class="site-header" data-site-header>
+    <div class="site-shell site-header-inner">
+      <a href="/" class="site-wordmark focus-ring"><span class="site-mark" aria-hidden="true"></span>{{ site.site_name }}</a>
+      <nav class="hidden items-center gap-8 lg:flex" aria-label="Main">
+        {% for item in header_nav %}{% if not item.is_cta %}
+        <a href="{{ item.href }}"{% if item.opens_in_new_tab %} target="_blank" rel="noopener"{% endif %}{% if item.href == request.path %} aria-current="page"{% endif %} class="site-navlink focus-ring">{{ item.label }}</a>
+        {% endif %}{% endfor %}
+      </nav>
+      <div class="hidden items-center gap-6 lg:flex">
+        <a href="{% if request.user.is_authenticated %}/accounts/profile/{% else %}/accounts/login/{% endif %}" class="site-navlink focus-ring">{% if request.user.is_authenticated %}Your account{% else %}Sign in{% endif %}</a>
+        {% for item in header_nav %}{% if item.is_cta %}
+        <a href="{{ item.href }}"{% if item.opens_in_new_tab %} target="_blank" rel="noopener"{% endif %} class="site-btn site-btn-primary site-btn-sm">{{ item.label }}<span class="site-count" data-quote-count aria-label="{{ quoted }} in your quote" {% if not quoted %}hidden{% endif %}>{{ quoted }}</span><span aria-hidden="true">↗</span></a>
+        {% endif %}{% endfor %}
+      </div>
+      <details class="site-mobile-menu lg:hidden" data-site-menu>
+        <summary class="focus-ring"><span>{% website_copy "public.base_site.001" %}</span><span class="site-menu-symbol" aria-hidden="true"></span></summary>
+        <nav class="site-mobile-panel" aria-label="Mobile navigation">
+          {% for item in header_nav %}
+          <a href="{{ item.href }}"{% if item.opens_in_new_tab %} target="_blank" rel="noopener"{% endif %}{% if item.href == request.path %} aria-current="page"{% endif %} class="{% if item.is_cta %}site-mobile-cta{% endif %}">{{ item.label }}<span aria-hidden="true">↗</span></a>
+          {% endfor %}
+          <a href="{% if request.user.is_authenticated %}/accounts/profile/{% else %}/accounts/login/{% endif %}">{% if request.user.is_authenticated %}Your account{% else %}Sign in{% endif %}<span aria-hidden="true">→</span></a>
+        </nav>
+      </details>
+    </div>
+  </header>
+{% endblock %}
+
+{% block chrome_bottom %}
+<footer class="site-footer">
+  <div class="site-shell">
+    <div class="site-footer-grid">
+      <div>
+        <a href="/" class="site-wordmark focus-ring"><span class="site-mark" aria-hidden="true"></span>{{ site.site_name }}</a>
+        {% if site.tagline %}<p class="site-body mt-4 max-w-xs text-steel-700">{{ site.tagline }}</p>{% endif %}
+        {% if social_links %}<ul class="mt-6 flex flex-wrap gap-4">{% for link in social_links %}<li><a href="{{ link.url }}" target="_blank" rel="noopener" class="site-link text-sm">{{ link.get_platform_display }}<span class="sr-only"> — {{ link.accessible_label }}</span><span aria-hidden="true">↗</span></a></li>{% endfor %}</ul>{% endif %}
+      </div>
+      {% if footer_nav_secondary %}<div><p class="site-footer-heading">{% website_copy "public.base_site.002" %}</p><ul class="mt-5 space-y-3">{% for item in footer_nav_secondary %}<li><a href="{{ item.href }}"{% if item.opens_in_new_tab %} target="_blank" rel="noopener"{% endif %}>{{ item.label }}</a></li>{% endfor %}</ul></div>{% endif %}
+      {% if footer_nav_primary %}<div><p class="site-footer-heading">{% website_copy "public.base_site.003" %}</p><ul class="mt-5 space-y-3">{% for item in footer_nav_primary %}<li><a href="{{ item.href }}"{% if item.opens_in_new_tab %} target="_blank" rel="noopener"{% endif %}>{{ item.label }}</a></li>{% endfor %}</ul></div>{% endif %}
+      <div><p class="site-footer-heading">{% website_copy "public.base_site.004" %}</p><ul class="mt-5 space-y-3">
+        {% if site.contact_email %}<li><a href="mailto:{{ site.contact_email }}" class="break-all">{{ site.contact_email }}</a></li>{% endif %}
+        {% if site.contact_phone %}<li><a href="tel:{{ site.contact_phone }}">{{ site.contact_phone }}</a></li>{% endif %}
+        {% if site.whatsapp_url %}<li><a href="{{ site.whatsapp_url }}" target="_blank" rel="noopener">{% website_copy "public.base_site.005" %}</a></li>{% endif %}
+      </ul>{% if site.address_lines %}<address class="site-micro mt-5 text-steel-700 not-italic">{% for line in site.address_lines %}{{ line }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</address>{% endif %}</div>
+    </div>
+    <div class="site-footer-wordmark" aria-hidden="true">{{ site.site_name }}</div>
+    <div class="site-footer-bottom"><p>© {% now "Y" %} {{ site.site_name }}.{% if site.footer_note %} {{ site.footer_note }}{% endif %}</p>
+      <nav aria-label="Legal"><ul class="flex flex-wrap gap-x-6 gap-y-3">{% for item in footer_nav_legal %}<li><a href="{{ item.href }}"{% if item.opens_in_new_tab %} target="_blank" rel="noopener"{% endif %}>{{ item.label }}</a></li>{% endfor %}{% if operating.analytics_enabled and not suppress_tracking %}<li><button type="button" onclick="window.dispatchEvent(new Event('site:cookie-settings'))" class="underline-offset-4 hover:underline">{% website_copy "public.base_site.006" %}</button></li>{% endif %}</ul></nav>
+    </div>
+    {% include "partials/developer_credit.html" %}
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static_version 'js/site.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,5 @@
+<a href="{% url 'notifications:inbox' %}" class="notification-bell focus-ring {% if activity.notifications %}has-unread{% endif %}" data-notification-bell data-unread-kind="notifications" data-summary-url="{% url 'notifications:summary' %}" aria-label="Notifications{% if activity.notifications %}, {{ activity.notifications }} unread{% endif %}">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+<span class="unread-count notification-bell-count" data-unread-count {% if not activity.notifications %}hidden{% endif %}>{{ activity.notifications }}</span>
+</a>
+<span class="sr-only" data-activity-announcement role="status" aria-live="polite" aria-atomic="true"></span>

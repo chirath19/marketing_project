@@ -1,0 +1,84 @@
+/* Shared payment workspace and printable documents. */
+.billing-workspace { display: grid; gap: 1.4rem; min-width: 0; }
+.billing-intro { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1.6rem; border: 1px solid #dce5ed; border-radius: 1.1rem; background: linear-gradient(125deg,#eef4f8,#fff); }
+.billing-eyebrow { font-size: .67rem; font-weight: 750; letter-spacing: .09em; color: #50667c; }
+.billing-intro h2 { margin-top: .35rem; font-size: 1.35rem; font-weight: 650; letter-spacing: -.03em; color: #172e49; }
+.billing-intro p:last-child { margin-top: .45rem; max-width: 38rem; font-size: .85rem; line-height: 1.6; color: #53667b; }
+.billing-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; }
+.billing-summary { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); border: 1px solid #dce5ed; border-radius: 1rem; background: #fff; overflow: hidden; }
+.billing-summary > div { display: flex; flex-direction: column; gap: .6rem; padding: 1.3rem 1.5rem; border-right: 1px solid #e5ebf1; }
+.billing-summary > div:last-child { border: 0; background: #172e49; color: #fff; }
+.billing-summary span { font-size: .74rem; color: #53667b; }
+.billing-summary strong { font-size: 1.6rem; font-weight: 650; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.billing-summary > div:last-child span { color: #c6d5e3; }
+.billing-form-panel { border: 1px solid #d5e0ea; border-radius: 1rem; background: #fff; scroll-margin-top: 6rem; }
+.billing-form-panel > summary { padding: 1.2rem 1.5rem; cursor: pointer; font-size: .95rem; font-weight: 650; color: #203c55; }
+.billing-form-panel > summary span { display: block; margin: .35rem 0 0 1rem; color: #53667b; font-size: .75rem; font-weight: 400; }
+.billing-form { padding: 1.5rem; border-top: 1px solid #e5ebf1; max-width: 48rem; }
+.billing-form-heading { padding: 1.4rem 1.5rem; }
+.billing-form-heading h3 { font-size: 1.1rem; font-weight: 650; margin: .3rem 0; }
+.billing-form-heading p:last-child { color: #53667b; font-size: .85rem; line-height: 1.6; }
+.billing-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .5rem; scroll-margin-top: 6rem; }
+.billing-section-heading h3 { font-size: 1.05rem; font-weight: 650; color: #172e49; }
+.billing-section-heading span { color: #53667b; font-size: .75rem; }
+.billing-invoices, .billing-history { display: grid; gap: 1rem; }
+.billing-invoice, .billing-payment { padding: 1.5rem; background: #fff; border: 1px solid #dce5ed; border-radius: 1rem; scroll-margin-top: 6rem; }
+.billing-invoice-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.billing-invoice-top > div { min-width: 0; flex: 1; }
+.billing-invoice-top h4 { font-size: 1rem; font-weight: 600; margin: .45rem 0; overflow-wrap: anywhere; }
+.billing-muted { font-size: .76rem; line-height: 1.6; color: #53667b; overflow-wrap: anywhere; }
+.billing-status { display: inline-flex; padding: .35rem .65rem; background: #edf2f7; color: #405b73; border-radius: .5rem; font-size: .7rem; font-weight: 650; white-space: nowrap; }
+.billing-status.is-paid { background: #e6f3ed; color: #235c44; }
+.billing-status.is-overdue { background: #fff0dc; color: #84531b; }
+.billing-status.is-void { background: #f6e9e8; color: #8e3832; }
+.billing-amounts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; margin: 1.25rem 0; padding: 1rem 0; border-block: 1px solid #e6ecf2; }
+.billing-amounts > div { display: flex; flex-direction: column; gap: .4rem; }
+.billing-amounts span { font-size: .7rem; color: #53667b; }
+.billing-amounts strong { font-size: .95rem; font-weight: 650; overflow-wrap: anywhere; }
+.billing-linked { border-top: 1px solid #e6ecf2; margin-top: 1.25rem; padding-top: 1rem; }
+.billing-linked > p { font-size: .72rem; font-weight: 650; color: #53667b; margin-bottom: .4rem; }
+.billing-linked a, .billing-document-payments a { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; padding: .65rem 0; color: #2d536f; font-size: .8rem; }
+.billing-linked a:hover, .billing-document-payments a:hover, .billing-reference:hover { text-decoration: underline; }
+.billing-note { margin: .8rem 0; font-size: .78rem; line-height: 1.6; color: #6a522d; }
+.billing-correction { margin-top: 1rem; font-size: .75rem; color: #53667b; }
+.billing-correction summary { cursor: pointer; }
+.billing-correction p { margin: .7rem 0; }
+.billing-correction form { max-width: 35rem; display: grid; gap: .6rem; }
+.billing-correction button { justify-self: start; }
+.billing-reference { display: inline-block; color: #2d536f; font-size: .78rem; margin-top: .6rem; }
+.billing-payment > .billing-actions { margin-top: 1rem; }
+.billing-empty { padding: 2.5rem 1.5rem; border: 1px dashed #cbd8e3; border-radius: 1rem; text-align: center; background: #f9fbfd; }
+.billing-empty h4 { font-weight: 650; color: #203c55; }
+.billing-empty p { font-size: .83rem; color: #53667b; margin-top: .4rem; }
+.billing-document-actions { max-width: 54rem; margin: 2rem auto 0; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .8rem; }
+.receipt-document.billing-document { max-width: 52rem; background: #fff; border: 1px solid #dbe4ed; border-radius: 1rem; box-shadow: 0 8px 28px #172e4909; margin-top: 1.2rem; }
+.billing-document-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem; padding-bottom: 2rem; border-bottom: 3px solid #203f5c; }
+.billing-document-header h1 { margin: .6rem 0; color: #172e49; font-size: 2.2rem; font-weight: 650; letter-spacing: -.04em; }
+.billing-document-ref { font-size: .9rem; color: #53667b; }
+.billing-issuer { text-align: right; max-width: 20rem; font-size: .76rem; line-height: 1.7; color: #53667b; overflow-wrap: anywhere; }
+.billing-document-details { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 2rem 0; font-size: .85rem; line-height: 1.8; overflow-wrap: anywhere; }
+.billing-document-details strong { display: block; margin-top: .4rem; font-weight: 650; }
+.billing-document-details dl > div { display: flex; justify-content: space-between; gap: .75rem; }
+.billing-document-details dt { color: #53667b; }
+.billing-document-description { padding: 1.2rem 0; border-top: 1px solid #e4ebf1; font-size: .88rem; line-height: 1.7; overflow-wrap: anywhere; }
+.billing-document-description > p:nth-child(2) { margin-top: .6rem; }
+.billing-document-totals { margin: 1.5rem 0; background: #f2f6f9; padding: 1.25rem; border-radius: .65rem; }
+.billing-document-totals > div { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; padding: .45rem 0; font-size: .85rem; }
+.billing-document-totals .billing-total { font-size: 1.1rem; font-weight: 650; color: #172e49; }
+.billing-document-notice { padding: 1rem; border: 1px solid #dcc89f; border-radius: .6rem; background: #fff8ea; color: #75531f; font-size: .85rem; }
+.billing-document-payments { margin-top: 1.5rem; }
+.billing-document-payments h2 { font-size: 1rem; font-weight: 650; }
+.billing-document-footer { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid #e4ebf1; color: #53667b; font-size: .75rem; }
+@media(max-width:640px) {
+ .billing-summary { grid-template-columns: 1fr; }
+ .billing-summary > div { border-right: 0; border-bottom: 1px solid #e5ebf1; flex-direction: row; justify-content: space-between; align-items: center; gap: .75rem; }
+ .billing-summary strong { font-size: 1.2rem; }
+ .billing-intro, .billing-invoice, .billing-payment { padding: 1rem; }
+ .billing-amounts { gap: .6rem; }
+ .billing-amounts strong { font-size: .8rem; }
+ .billing-document-details { grid-template-columns: 1fr; gap: 1.2rem; }
+ .billing-issuer { text-align: left; }
+ .billing-document-header h1 { font-size: 1.8rem; }
+ .billing-form { padding: 1rem; }
+}
+@media print { .receipt-document.billing-document { max-width: none; margin: 0; border: 0; border-radius: 0; padding: .3in; box-shadow: none; } .billing-document-header, .billing-document-totals, .billing-document-payments a { break-inside: avoid; } .billing-document a { color: inherit; text-decoration: none; } }

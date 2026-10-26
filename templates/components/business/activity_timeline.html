@@ -1,0 +1,36 @@
+{% load ui %}
+{% comment %}
+  The "Recent activity" feed.
+
+  An ordered list, because the sequence is the meaning. The connecting
+  line and dots are decoration and hidden from assistive technology;
+  timestamps use <time> so they are machine-readable.
+{% endcomment %}
+{% if entries %}
+<ol class="relative space-y-4">
+  {% for entry in entries %}
+    <li class="relative flex gap-3 pl-6">
+      <span class="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-gold" aria-hidden="true"></span>
+      {% if not forloop.last %}
+        <span class="absolute left-[3px] top-4 h-full w-px bg-mist" aria-hidden="true"></span>
+      {% endif %}
+
+      <div class="min-w-0 flex-1 pb-1">
+        <p class="t-body font-medium">
+          {% if entry.href %}
+            <a href="{{ entry.href }}" class="underline-offset-2 hover:underline focus-ring">{{ entry.title }}</a>
+          {% else %}{{ entry.title }}{% endif %}
+        </p>
+        <p class="t-micro">
+          {% if entry.module_label %}{{ entry.module_label }} &middot; {% endif %}
+          {% if entry.timestamp %}
+            <time {% if entry.datetime %}datetime="{{ entry.datetime }}"{% endif %}>{{ entry.timesince|default:entry.timestamp }}</time>
+          {% else %}{{ entry.timesince }}{% endif %}
+        </p>
+      </div>
+    </li>
+  {% endfor %}
+</ol>
+{% else %}
+  {% ui_empty_state title=empty_title %}
+{% endif %}

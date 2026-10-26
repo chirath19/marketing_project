@@ -1,0 +1,10 @@
+{% extends "messaging/billing_document.html" %}
+{% block document_heading %}Payment receipt{% endblock %}
+{% block document_content %}
+<div class="billing-document-details"><div><p class="billing-eyebrow">RECEIVED FROM</p><strong>{{ receipt.client.get_full_name|default:receipt.client.email }}</strong><p>{{ receipt.organization.label }}</p><p>{{ receipt.client.email }}</p></div><dl><div><dt>Payment date</dt><dd>{{ receipt.paid_on|date:"j M Y" }}</dd></div><div><dt>Method</dt><dd>{{ receipt.payment_method }}</dd></div><div><dt>Status</dt><dd>{% if receipt.voided_at %}VOIDED{% else %}Payment received{% endif %}</dd></div></dl></div>
+<div class="billing-document-description"><p class="billing-eyebrow">PAYMENT FOR</p><p>{{ receipt.description|linebreaksbr }}</p>{% if receipt.invoice %}<a class="billing-reference" href="{% if staff_desk %}{% url 'staff:invoice' receipt.invoice_id %}{% else %}{% url 'organizations:invoice' receipt.invoice_id %}{% endif %}">Invoice {{ receipt.invoice.reference }} ↗</a>{% endif %}{% if receipt.subscription %}<p class="billing-muted">Project: {{ receipt.subscription.name }}</p>{% endif %}</div>
+<dl class="billing-document-totals"><div class="billing-total"><dt>Amount received</dt><dd>{{ receipt.currency }} {{ receipt.amount|floatformat:2 }}</dd></div></dl>
+{% if receipt.notes %}<div class="billing-document-description"><p class="billing-eyebrow">NOTES</p><p>{{ receipt.notes|linebreaksbr }}</p></div>{% endif %}
+{% if receipt.voided_at %}<div class="billing-document-notice">Voided {{ receipt.voided_at|date:"j M Y" }} · {{ receipt.void_reason }}</div>{% endif %}
+<p class="billing-muted">Recorded by {{ receipt.issued_by.get_full_name|default:receipt.issued_by.email }} on {{ receipt.created_at|date:"j M Y" }}.</p>
+{% endblock %}

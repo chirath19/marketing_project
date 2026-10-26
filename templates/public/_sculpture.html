@@ -1,0 +1,32 @@
+{% load website_copy %}
+{% comment %}Decorative folded-light sculpture. No charts or fabricated performance figures.{% endcomment %}
+<div class="site-sculpture" aria-hidden="true">
+  <div class="site-sculpture-grid"></div>
+  <svg viewBox="0 0 560 560" fill="none" focusable="false">
+    <defs>
+      <linearGradient id="metal-{{ sculpture_id|default:'hero' }}" x1="100" y1="80" x2="455" y2="470" gradientUnits="userSpaceOnUse">
+        <stop stop-color="var(--color-gold-200)"/><stop offset=".25" stop-color="var(--color-gold)"/><stop offset=".48" stop-color="var(--color-gold-700)"/><stop offset=".68" stop-color="var(--color-gold-300)"/><stop offset="1" stop-color="var(--color-gold-600)"/>
+      </linearGradient>
+      <linearGradient id="edge-{{ sculpture_id|default:'hero' }}" x1="80" y1="120" x2="450" y2="440" gradientUnits="userSpaceOnUse">
+        <stop stop-color="var(--color-paper)"/><stop offset=".5" stop-color="var(--color-gold-300)"/><stop offset="1" stop-color="var(--color-gold-700)"/>
+      </linearGradient>
+    </defs>
+    <g class="site-sculpture-orbit" stroke="currentColor" opacity=".22">
+      <circle cx="280" cy="280" r="248" stroke-dasharray="2 9"/>
+      <path d="M280 10V550M10 280H550"/>
+      <circle cx="280" cy="280" r="215"/>
+    </g>
+    <g transform="rotate(-32 280 280)">
+      <ellipse cx="280" cy="307" rx="187" ry="102" fill="var(--color-navy)" opacity=".08"/>
+      <ellipse cx="280" cy="280" rx="152" ry="204" stroke="url(#metal-{{ sculpture_id|default:'hero' }})" stroke-width="76"/>
+      <ellipse cx="280" cy="280" rx="183" ry="237" stroke="url(#edge-{{ sculpture_id|default:'hero' }})" stroke-width="2"/>
+      <ellipse cx="280" cy="280" rx="169" ry="222" stroke="url(#edge-{{ sculpture_id|default:'hero' }})" stroke-width="1" opacity=".6"/>
+      <ellipse cx="280" cy="280" rx="154" ry="206" stroke="url(#edge-{{ sculpture_id|default:'hero' }})" stroke-width="1" opacity=".55"/>
+      <ellipse cx="280" cy="280" rx="139" ry="190" stroke="url(#edge-{{ sculpture_id|default:'hero' }})" stroke-width="1" opacity=".5"/>
+      <ellipse cx="280" cy="280" rx="116" ry="167" stroke="url(#edge-{{ sculpture_id|default:'hero' }})" stroke-width="2"/>
+    </g>
+    <circle cx="476" cy="129" r="8" fill="var(--color-navy)"/>
+    <path d="M95 428h22m-11-11v22" stroke="var(--color-gold-700)" stroke-width="2"/>
+  </svg>
+  <span class="site-sculpture-caption">{{ site.site_name }}<span>{% website_copy "public._sculpture.001" %}</span></span>
+</div>

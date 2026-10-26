@@ -1,0 +1,45 @@
+{% load website_copy %}
+{% load ui media_tags %}
+{% comment %}
+  Picture and argument, side by side. The image alternates sides down
+  the page so that two of these in a row do not read as a column of
+  identical rows. Which side is decided in `apps/cms/views/public.py`,
+  which is the only place that knows how many of these a page has
+  already rendered; a page reached by some other route simply gets the
+  first arrangement.
+
+  The image is required by this section type, but a row that predates
+  the rule — or a deleted file — must not leave half the row blank, so
+  the layout collapses to one column instead.
+{% endcomment %}
+<section class="site-section {% if section.tone == 'navy' %}site-dark-soft{% elif section.tone == 'mist' %}site-band text-navy{% else %}site-clear{% endif %}">
+  {% if section.tone == 'navy' %}{% include "public/_aura.html" %}{% endif %}
+  <div class="site-shell grid gap-12 lg:items-center lg:gap-16 {% if section.image %}lg:grid-cols-12{% endif %}">
+    {% if section.image %}
+      <div class="lg:col-span-6 {% if section.image_on_right %}lg:order-last{% endif %}">
+        <div class="site-frame site-frame-tick" data-reveal="mask">
+          {% media_img section.image alt=section.image_alt preset="wide" css_class="w-full" sizes="(min-width: 1024px) 50vw, 100vw" %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="{% if section.image %}lg:col-span-6{% endif %}">
+      {% if section.eyebrow %}
+        <p class="site-label {% if section.tone == 'navy' %}site-label-invert{% endif %}" data-reveal="fade">{{ section.eyebrow }}</p>
+      {% endif %}
+      <h2 class="site-display site-h2 {% if section.eyebrow %}mt-5{% endif %}" data-reveal>{{ section.heading }}</h2>
+
+      <div class="site-prose {% if section.tone == 'navy' %}site-prose-invert{% endif %} mt-6 max-w-xl"
+           data-reveal style="--reveal-step: 1">{{ section.body_html }}</div>
+
+      {% if section.cta_label and section.cta_url %}
+        <div class="mt-9" data-reveal style="--reveal-step: 2">
+          <a href="{{ section.cta_url }}"
+             class="site-btn {% if section.tone == 'navy' %}site-btn-light{% else %}site-btn-dark{% endif %}">
+            {{ section.cta_label }}<span class="site-btn-arrow" aria-hidden="true">{% website_copy "cms.sections.image_text.001" %}</span>
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>

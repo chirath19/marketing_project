@@ -1,0 +1,37 @@
+{% extends "public/base_site.html" %}
+{% load website_copy %}
+
+{% comment %}
+  A page is its sections, in order. Nothing else.
+
+  Every section renders through its own template, chosen by type, so a
+  page can only ever be built from shapes the design system supports.
+{% endcomment %}
+
+{% block title %}{{ meta_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block og_title %}{{ meta_title }}{% endblock %}
+{% block og_description %}{{ meta_description }}{% endblock %}
+{% block og_image %}{% if page.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ page.og_image.url }}">{% elif site.default_og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site.default_og_image.url }}">{% endif %}{% endblock %}
+
+{% block site_art %}{% include "public/_backgrounds.html" with art=page.slug %}{% endblock %}
+
+{% block content %}
+<div class="site-cms-page site-{{ page.kind }}-page">
+  {% for section in sections %}
+    {% include section.template_name with section=section collections=collections %}
+  {% empty %}
+    {% comment %}
+      Either the page has no sections, or every one it has is backed by a
+      collection that is empty. Both are the editor's to fix, and neither
+      should leave the visitor on a blank screen.
+    {% endcomment %}
+    <div class="site-shell-narrow py-28 text-center">
+      <h1 class="site-display text-4xl text-navy">{{ page.title }}</h1>
+      <p class="site-body mt-4 text-steel-700">{% website_copy "public.page.001" %}</p>
+      <a href="/" class="site-btn site-btn-dark mt-8">{% website_copy "public.page.002" %}<span class="site-btn-arrow" aria-hidden="true">{% website_copy "public.page.003" %}</span>
+      </a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

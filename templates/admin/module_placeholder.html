@@ -1,0 +1,56 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+
+{% comment %}
+  Shown for a navigation section whose module does not exist yet.
+
+  Deliberately empty of data. Filling it with a plausible-looking table
+  would make the dashboard untrustworthy exactly when people are
+  learning to rely on it.
+
+  It is not empty of information, though: it names the areas the section
+  will hold, which is what somebody arriving here actually wants to
+  know. "Coming soon" tells them nothing they had not already guessed.
+{% endcomment %}
+
+{% block title %}{{ item.label }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  <div class="surface px-6 py-10 sm:px-10 sm:py-14">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="t-eyebrow">Not built yet</p>
+      <h2 class="mt-2 t-section">{{ item.label }} has no data yet</h2>
+      <p class="mx-auto mt-3 max-w-md t-meta">
+        {% if item.description %}{{ item.description }}{% endif %}
+        This section is wired up and permission-checked, but the module
+        behind it has not been built — so it shows nothing rather than
+        showing something it cannot back up.
+      </p>
+
+      {% if item.phase %}
+        <p class="mx-auto mt-3 max-w-md t-micro">
+          Planned for the <span class="font-medium text-navy">{{ item.phase }}</span> phase.
+        </p>
+      {% endif %}
+    </div>
+
+    {% if item.will_show %}
+      <div class="mx-auto mt-10 max-w-2xl border-t border-mist pt-8">
+        <p class="t-card-title">What this section will hold</p>
+        <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+          {% for area in item.will_show %}
+            <li class="flex gap-3 rounded-[var(--radius-control)] bg-mist px-4 py-3">
+              <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-steel-400" aria-hidden="true"></span>
+              <span class="t-body">{{ area }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="mt-10 flex flex-wrap justify-center gap-3">
+      {% url 'staff:dashboard' as dashboard_url %}
+      {% ui_button label="Back to dashboard" href=dashboard_url variant="outline" %}
+    </div>
+  </div>
+{% endblock %}

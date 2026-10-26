@@ -1,0 +1,1 @@
+{% extends "admin/base.html" %}{% block admin_content %}<div class="workspace-panel max-w-2xl"><form method="post" class="workspace-form">{% csrf_token %}{{ form.as_p }}<button class="ui-btn ui-btn-primary">Save role</button></form><p class="t-meta mt-5">Choose the role’s permissions on the next screen, then assign it to staff members.</p></div>{% endblock %}

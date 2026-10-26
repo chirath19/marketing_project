@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}Contact details · {{ brand.name }}{% endblock %}
+{% block page_actions %}
+  <a href="{% url 'staff:cms_collection' 'contacts' %}" class="ui-btn ui-btn-outline">Additional contacts</a>
+  {% if perms.permissions.cms_create %}<a href="{% url 'staff:cms_collection_create' 'contacts' %}" class="ui-btn ui-btn-primary">Add contact</a>{% endif %}
+{% endblock %}
+{% block admin_content %}
+  <p class="mb-5 t-meta">Edit your main email, telephone, WhatsApp and office address here. To list another department, office or opening hours, choose Add contact. Leave a primary detail empty to remove it from the website.</p>
+  <form method="post" class="max-w-2xl surface p-6" novalidate>
+    {% csrf_token %}{% ui_form_errors form %}
+    {% for field in form %}{% ui_field field %}{% endfor %}
+    {% ui_button label="Save contact details" type="submit" variant="primary" %}
+  </form>
+{% endblock %}

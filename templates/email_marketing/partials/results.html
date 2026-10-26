@@ -1,0 +1,18 @@
+{% load ui %}
+<div class="mt-4 overflow-x-auto">
+<table class="w-full ui-table-stack">
+  <thead><tr><th class="ui-th">Date / work</th><th class="ui-th">Recipient deliveries</th><th class="ui-th">Opens</th><th class="ui-th">Clicks</th><th class="ui-th">Conversions</th><th class="ui-th">Source / summary</th></tr></thead>
+  <tbody>
+    {% for row in results %}
+    <tr>
+      <td class="ui-td" data-label="Date / work">{{ row.date }}<p class="t-micro">{{ row.work.name }}</p></td>
+      <td class="ui-td" data-label="Recipient deliveries">{{ row.recipients }}</td>
+      <td class="ui-td" data-label="Opens">{{ row.opens }}</td>
+      <td class="ui-td" data-label="Clicks">{{ row.clicks }}</td>
+      <td class="ui-td" data-label="Conversions">{{ row.conversions }}</td>
+      <td class="ui-td" data-label="Source / summary">{{ row.source }}<p class="mt-2 whitespace-pre-line t-meta">{{ row.result_summary }}</p></td>
+    </tr>
+    {% empty %}<tr><td colspan="6" class="ui-td">{% ui_empty_state title="No recorded results" body="Staff can record daily observations from external reports after recording execution." %}</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>

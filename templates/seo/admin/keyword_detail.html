@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ keyword.term }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% include "seo/admin/_nav.html" %}
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      {% component "card" title="Recorded positions" subtitle="Every reading, newest last. Each one was entered or imported by a person." %}
+        {% if history %}
+          {% comment %}
+            A plain table rather than a chart. A sparkline drawn from four
+            readings implies a trend nobody measured, and this module
+            would rather show the readings than an inference from them.
+          {% endcomment %}
+          <ol class="divide-y divide-mist">
+            {% for reading in history %}
+              <li class="flex flex-wrap items-center justify-between gap-3 py-2.5">
+                <div class="min-w-0">
+                  <p class="t-body font-medium t-numeric">
+                    {% if reading.position %}Position {{ reading.position }}{% else %}Not in the top 200{% endif %}
+                  </p>
+                  {% if reading.source %}<p class="t-micro">{{ reading.source }}</p>{% endif %}
+                </div>
+                <span class="t-micro">{{ reading.recorded_on|date:"j M Y" }}</span>
+              </li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          {% ui_empty_state icon="⌕" title="No readings yet" body="Record where this term sits today, or import a file from your rank tracker. A position this platform did not receive is one it will not invent." %}
+        {% endif %}
+      {% endcomponent %}
+    </div>
+
+    <aside class="space-y-5">
+      {% if can_edit %}
+        {% component "card" title="Record a position" %}
+          <form method="post" action="{% url 'staff:seo_position_record' keyword.pk %}" novalidate>
+            {% csrf_token %}
+            {% ui_field form.recorded_on %}
+            {% ui_field form.position %}
+            {% ui_field form.source %}
+            {% ui_button label="Record" type="submit" variant="primary" size="sm" full=True %}
+          </form>
+          {% slot "footer" %}
+            <p class="t-micro">One reading per day. A second for the same date replaces the first.</p>
+          {% endslot %}
+        {% endcomponent %}
+      {% endif %}
+
+      {% component "card" title="About this keyword" %}
+        <dl class="space-y-3 text-sm">
+          <div><dt class="t-micro">Target page</dt>
+            <dd class="break-words t-body">{% if keyword.target_url %}<a href="{{ keyword.target_url }}" target="_blank" rel="noopener" class="text-gold-600 underline-offset-2 hover:underline focus-ring">{{ keyword.target_url }}</a>{% else %}<span class="t-meta">Not decided yet</span>{% endif %}</dd></div>
+          <div><dt class="t-micro">Monthly searches</dt>
+            <dd class="t-body">{% if keyword.search_volume %}{{ keyword.search_volume }}{% else %}<span class="t-meta">Not recorded</span>{% endif %}</dd></div>
+          <div><dt class="t-micro">Difficulty</dt>
+            <dd class="t-body">{% if keyword.difficulty %}{{ keyword.difficulty }} / 100{% else %}<span class="t-meta">Not recorded</span>{% endif %}</dd></div>
+          <div><dt class="t-micro">Priority</dt><dd class="t-body">{{ keyword.priority }}</dd></div>
+          <div><dt class="t-micro">Still tracked</dt><dd class="t-body">{{ keyword.is_tracked|yesno:"Yes,No" }}</dd></div>
+        </dl>
+      {% endcomponent %}
+    </aside>
+  </div>
+{% endblock %}

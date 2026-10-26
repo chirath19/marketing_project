@@ -1,0 +1,43 @@
+{% comment %}
+  An off-canvas panel. Same dialog semantics and focus handling as the
+  modal; it differs only in where it comes from and how it moves.
+
+  {% component "drawer" id="filters" title="Filters" side="right" %} … {% endcomponent %}
+{% endcomment %}
+<div x-data="uiOverlay('{{ id }}')"
+     @ui-open.window="openFromEvent($event)"
+     @ui-close.window="closeFromEvent($event)"
+     @keydown.escape.window="close()"
+     @keydown="trap($event)"
+     x-show="open" x-cloak
+     class="fixed inset-0 z-[var(--z-drawer)]">
+
+  <div class="ui-backdrop" @click="close()" aria-hidden="true"
+       x-transition.opacity.duration.200ms></div>
+
+  <div x-ref="panel" tabindex="-1"
+       role="dialog" aria-modal="true" aria-labelledby="{{ id }}-title"
+       class="absolute flex w-full max-w-md flex-col bg-white shadow-overlay
+              {% if side == 'left' %}left-0 top-0 h-full{% elif side == 'bottom' %}bottom-0 left-0 max-h-[85vh] w-full max-w-none{% else %}right-0 top-0 h-full{% endif %}"
+       x-transition:enter="transform transition ease-[var(--ease-soft)] duration-300"
+       x-transition:enter-start="{% if side == 'left' %}-translate-x-full{% elif side == 'bottom' %}translate-y-full{% else %}translate-x-full{% endif %}"
+       x-transition:enter-end="translate-x-0 translate-y-0"
+       x-transition:leave="transform transition ease-[var(--ease-soft)] duration-200"
+       x-transition:leave-start="translate-x-0 translate-y-0"
+       x-transition:leave-end="{% if side == 'left' %}-translate-x-full{% elif side == 'bottom' %}translate-y-full{% else %}translate-x-full{% endif %}">
+
+    <header class="flex items-center justify-between gap-4 border-b border-mist px-5 py-4">
+      <h2 id="{{ id }}-title" class="t-card-title">{{ title }}</h2>
+      <button type="button" @click="close()" aria-label="Close panel"
+              class="rounded px-1.5 text-xl leading-none text-steel transition hover:text-navy focus-ring">&times;</button>
+    </header>
+
+    <div class="flex-1 overflow-y-auto px-5 py-5">{{ slot }}</div>
+
+    {% if slots.footer %}
+      <footer class="flex flex-wrap items-center justify-end gap-2 border-t border-mist px-5 py-4">
+        {{ slots.footer }}
+      </footer>
+    {% endif %}
+  </div>
+</div>

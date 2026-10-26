@@ -1,0 +1,80 @@
+{% extends "admin/base.html" %}
+{% load ui %}
+{% block title %}{{ page_title }} · {{ brand.name }}{% endblock %}
+
+{% block admin_content %}
+  {% if post %}
+    <div class="mb-5 flex flex-wrap items-center gap-3">
+      {% if post.is_scheduled %}
+        {% ui_badge label="Scheduled" tone="planned" dot=True %}
+      {% else %}
+        {% ui_status_badge post.status %}
+      {% endif %}
+
+      {% if perms.permissions.blog_publish %}
+        <form method="post" action="{% url 'staff:blog_publish' post.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="publish" value="{% if post.status == 'published' %}0{% else %}1{% endif %}">
+          {% if post.status == 'published' %}
+            {% ui_button label="Move back to draft" type="submit" variant="outline" size="sm" %}
+          {% else %}
+            {% ui_button label="Publish" type="submit" variant="primary" size="sm" %}
+          {% endif %}
+        </form>
+      {% endif %}
+
+      {% if post.is_published %}
+        <a href="{{ post.get_absolute_url }}" target="_blank" rel="noopener"
+           class="text-sm font-medium text-gold-600 underline-offset-2 hover:underline focus-ring">View on the site</a>
+      {% endif %}
+
+      {% if perms.permissions.blog_delete %}
+        <form method="post" action="{% url 'staff:blog_delete' post.pk %}" class="ml-auto">
+          {% csrf_token %}
+          <button type="submit" class="text-sm font-semibold text-danger underline-offset-2 hover:underline focus-ring">
+            Delete post<span class="sr-only">: {{ post.title }}</span>
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="grid gap-5 lg:grid-cols-3" novalidate>
+    {% csrf_token %}
+
+    <div class="lg:col-span-2">
+      {% component "card" title="Content" %}
+        {% ui_form_errors form %}
+        {% ui_field form.title %}
+        {% ui_field form.excerpt %}
+        {% ui_field form.content %}
+        <p class="t-micro">
+          Blank lines separate paragraphs. <code>## heading</code>,
+          <code>- list item</code>, <code>&gt; quote</code>,
+          <code>**bold**</code>, <code>[text](https://link)</code>.
+        </p>
+      {% endcomponent %}
+    </div>
+
+    <div class="space-y-5">
+      {% component "card" title="Publishing" %}
+        {% ui_field form.published_at %}
+        {% ui_field form.category %}
+        {% ui_field form.tags %}
+      {% endcomponent %}
+
+      {% component "card" title="Image" %}
+        {% ui_field form.featured_image %}
+        {% ui_field form.featured_image_alt %}
+      {% endcomponent %}
+
+      {% component "card" title="Search engines" %}
+        {% ui_field form.slug %}
+        {% ui_field form.meta_title %}
+        {% ui_field form.meta_description %}
+      {% endcomponent %}
+
+      {% ui_button label="Save post" type="submit" variant="primary" full=True %}
+    </div>
+  </form>
+{% endblock %}
