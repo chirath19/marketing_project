@@ -20,6 +20,12 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 TRUST_PROXY_HEADERS = env.bool("DJANGO_TRUST_PROXY_HEADERS", default=True)
 SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=True)
 
+# Railway's healthcheck prober hits the container directly over plain
+# HTTP, with no X-Forwarded-Proto header — it never goes through the
+# edge that real traffic does. Without this, the redirect above turns
+# every health check into a 301 and the deploy never goes healthy.
+SECURE_REDIRECT_EXEMPT = [r"^healthz$"]
+
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
